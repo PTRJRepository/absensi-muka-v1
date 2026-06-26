@@ -8,7 +8,7 @@
       "name": "Attendance Pipeline Sync",
       "machines": [],
       "intervalMinutes": 60,
-      "enabled": false,
+      "enabled": true,
       "script": "dist/scripts/process-attendance-imports.js",
       "dryRun": false,
       "createdAt": "2026-06-25T00:00:00Z",
