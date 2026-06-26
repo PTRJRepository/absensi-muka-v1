@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getProcessedMatrix } from '../../modules/attendance/monthly-matrix.service';
 import { execute, query, sql } from '../../lib/db';
 import { route, validate } from '../router';
 import { sendError, sendEnvelope, sendJson } from '../response';
@@ -377,7 +378,22 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
     { name: 'pageSize', type: sql.Int, value: pageSize },
   ];
 
-  if (mode === 'database' && searchRaw.trim() !== '') {
+  // DATABASE mode: use attendance_imports directly (fast, no slow view).
+  // Bypasses the legacy vw_attendance_monthly_matrix query that hangs on large data.
+  if (mode === 'database') {
+    const result = await getProcessedMatrix({ year, month, division, machineCode, status, mapping, source, search: searchRaw, activeOnly, page, pageSize });
+    sendEnvelope(ctx.res, 200, result, {
+      page,
+      page_size: pageSize,
+      total: result.pagination.total,
+      source: 'final_attendance_matrix',
+      mode,
+      period: `${year}-${String(month).padStart(2, '0')}`,
+    });
+    return;
+  }
+
+  if ((mode as string) === 'database' && searchRaw.trim() !== '') {
     const searchCandidates = await query<{
       resolved_employee_code: string | null;
       current_emp_code: string | null;
