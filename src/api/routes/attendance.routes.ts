@@ -564,13 +564,13 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
         SELECT
           s.raw_device_user_id,
           s.parsed_employee_code,
-          ${resolvedEmployeeCodeSql()} AS employee_code,
+          COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS employee_code,
           NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
           s.machine_code,
           CAST(s.scan_date AS DATE) AS attendance_date,
           s.scan_time,
           s.mapping_status,
-          ${resolvedMappingReasonSql()} AS mapping_reason,
+          s.mapping_reason,
           LEN(LTRIM(RTRIM(CAST(s.raw_device_user_id AS NVARCHAR(50))))) AS raw_id_length
         FROM attendance_scan_logs s
         WHERE s.scan_date >= @startDate
@@ -581,7 +581,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
             OR s.raw_device_user_id = @searchRaw
             OR s.raw_device_user_id LIKE @search
             OR s.parsed_employee_code LIKE @search
-            OR ${resolvedEmployeeCodeSql()} LIKE @search
+            OR COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) LIKE @search
             OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search
           )
       ),
@@ -630,7 +630,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
         p.raw_device_user_id,
         p.employee_code,
         p.parsed_employee_code,
-        ${resolvedEmployeeNameSql('rd')} AS employee_name,
+        COALESCE(NULLIF(e.employee_name, ''), rd.zkteco_user_name, rd.raw_device_user_id) AS employee_name,
         COALESCE(d.division_code, p.machine_code) AS division_code,
         d.division_name,
         p.machine_code,

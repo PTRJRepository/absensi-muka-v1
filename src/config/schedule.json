@@ -12,8 +12,8 @@
       "script": "dist/scripts/process-attendance-imports.js",
       "dryRun": false,
       "createdAt": "2026-06-25T00:00:00Z",
-      "nextRun": "2026-06-26T05:22:05.987Z",
-      "lastRun": "2026-06-26T04:22:38.073Z"
+      "nextRun": "2026-06-26T05:29:08.775Z",
+      "lastRun": "2026-06-26T04:29:41.500Z"
     },
     {
       "id": "hr_snapshot_sync",
@@ -27,8 +27,8 @@
       },
       "dryRun": false,
       "createdAt": "2026-06-23T00:00:00Z",
-      "nextRun": "2026-06-27T04:22:06.000Z",
-      "lastRun": "2026-06-26T04:22:26.003Z"
+      "nextRun": "2026-06-27T04:29:08.790Z",
+      "lastRun": "2026-06-26T04:29:29.109Z"
     }
   ]
 }
