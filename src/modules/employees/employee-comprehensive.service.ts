@@ -156,13 +156,13 @@ async function queryDataMesinMode(filters: EmployeeComprehensiveFilters): Promis
         e.employee_code AS db_employee_code,
         e.employee_name,
         e.nik,
-        e.division_code,
-        e.gang_code,
+        d.division_code,
+        NULL AS gang_code,
         e.current_emp_code,
         e.zkteco_user_name AS emp_zkteco_name,
         e.mapping_status AS emp_mapping_status,
         e.machine_codes,
-        e.machine_count,
+        NULL AS machine_count,
         e.batch_import,
         CASE
           WHEN ${resolvedEmployeeCodeSql('ru')} IS NOT NULL THEN 'MAPPED'
@@ -188,7 +188,8 @@ async function queryDataMesinMode(filters: EmployeeComprehensiveFilters): Promis
         COUNT(*) OVER () AS total_count
       FROM raw_users ru
       LEFT JOIN employees e ON e.employee_code = ${resolvedEmployeeCodeSql('ru')}
-      WHERE (@divisionCode IS NULL OR e.division_code = @divisionCode)
+      LEFT JOIN divisions d ON d.id = e.division_id
+      WHERE (@divisionCode IS NULL OR d.division_code = @divisionCode)
         AND (
           @mappingStatus = 'ALL'
           OR (@mappingStatus = 'MAPPED' AND ${resolvedEmployeeCodeSql('ru')} IS NOT NULL)
@@ -250,8 +251,8 @@ async function queryDatabaseMode(filters: EmployeeComprehensiveFilters): Promise
         e.employee_code,
         e.employee_name,
         e.nik,
-        e.division_code,
-        e.gang_code,
+        d.division_code,
+        NULL AS gang_code,
         e.is_active,
         e.current_emp_code,
         e.zkteco_user_name,
@@ -259,7 +260,7 @@ async function queryDatabaseMode(filters: EmployeeComprehensiveFilters): Promise
         e.parsed_employee_code,
         e.mapping_status AS emp_mapping_status,
         e.machine_codes,
-        e.machine_count,
+        NULL AS machine_count,
         e.batch_import,
         ROW_NUMBER() OVER (
           ORDER BY
@@ -273,7 +274,8 @@ async function queryDatabaseMode(filters: EmployeeComprehensiveFilters): Promise
         ) AS rn,
         COUNT(*) OVER () AS total_count
       FROM employees e
-      WHERE (@divisionCode IS NULL OR e.division_code = @divisionCode)
+      LEFT JOIN divisions d ON d.id = e.division_id
+      WHERE (@divisionCode IS NULL OR d.division_code = @divisionCode)
         AND (@search = '' OR e.employee_code LIKE @search
           OR e.employee_name LIKE @search
           OR e.nik LIKE @search
@@ -412,13 +414,13 @@ export async function getEmployeeDetail(
       e.zkteco_user_name,
       e.employee_name,
       COALESCE(e.machine_codes, '') AS machine_codes,
-      e.division_code,
+      d.division_code,
       d.division_name,
-      e.gang_code,
+      NULL AS gang_code,
       e.nik,
       e.current_emp_code,
       e.batch_import,
-      e.machine_count,
+      NULL AS machine_count,
       CASE
         WHEN e.current_emp_code IS NOT NULL THEN 'MAPPED'
         WHEN e.parsed_employee_code IS NOT NULL THEN 'MAPPED'

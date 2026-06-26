@@ -13,12 +13,12 @@ The `api-attendance-import.service.ts` file is DEPRECATED and must not be used.
 
 ## ⚠️ EMERGENCY RECOVERY STATUS: COMPLETE (2026-06-26)
 
-Recovery + orphan rescue completed. Current production state:
-- `attendance_scan_logs`: 808,104 rows (WIB-corrected)
-- `attendance_imports`: **55,063 rows** (all 11 divisions enriched)
+Recovery + orphan rescue + full system audit completed. Current production state:
+- `attendance_scan_logs`: 808,093 rows (WIB-corrected, no corrupt dates)
+- `attendance_imports`: **55,051 rows** (all 11 divisions, 99.99% enriched)
 - `employees`: 8,005 rows — all 6,032 HR employees have correct `division_id`
 - Scheduler: **ENABLED** (`src/config/schedule.json` `enabled: true`)
-- `attendance_pipeline_sync`: **ENABLED** (was DISABLED — now runs every 60 min)
+- `attendance_pipeline_sync`: **ENABLED** (runs every 60 min)
 - Backend port: **8004** (`APP_PORT=8004`)
 
 **Key fixes applied (2026-06-25 to 2026-06-26):**
@@ -26,10 +26,11 @@ Recovery + orphan rescue completed. Current production state:
 | Fix | Detail |
 |-----|--------|
 | `division_id` backfill | 5,420 employees fixed via `hr_loc_code → divisions.division_code` |
-| `attendance_imports.division_code` | All rows fixed via `employees → divisions` JOIN |
+| `attendance_imports.division_code` | All 45,348 rows fixed via `employees → divisions` JOIN |
 | `hr-employee-sync.service.ts` | Fixed `division_id` lookup: uses `hr_loc_code` (P1A) as key |
-| `attendance-process-import.service.ts` | Added direct employee_code lookup fallback for PGE/MILL/APE numeric badge IDs |
-| `migrations/074` | **NEW** — Converted 10,022 MANUAL_REVIEW orphans to enriched employee records |
+| `attendance-process-import.service.ts` | Added direct `raw_device_user_id → employee_code` fallback (Step 1) + comprehensive comments |
+| `zkteco-employee-code-parser.ts` | 6-digit IDs → NONE → NEED_REVIEW (new hires not yet in HR) |
+| `migrations/074` | Rescued 10,022 MANUAL_REVIEW orphans → enriched employee records |
 | `schedule.json` | `attendance_pipeline_sync` **ENABLED** (60 min interval) |
 
 **⚠️ DEPRECATED migrations — do NOT re-run:**
@@ -37,10 +38,12 @@ Recovery + orphan rescue completed. Current production state:
 - `migrations/023_live_attendance_compat.sql` — references `zkteco_hr_employee_map` (DROPPED 2026-06-24)
 
 **Known remaining issues:**
-- **P2A/P2B: ~69 records** — machines on PGE estate network unreachable
-- **AB1/ARC_01/ARC_02: port forwarding needed** on 103.144.208.154 router (~17K records inaccessible)
-- **2 true orphan records** — MANUAL_REVIEW with date=2000-01-01 and empty `raw_device_user_id` (AB1, MILL)
-- J division NIK_NOT_FOUND: J0127 employees have no NIK in DB_PTRJ
+- Port forwarding APE estate: ARC_01/02, AB1 need forwarding on 103.144.208.154 router
+- P2A/P2B: Machines on PGE estate network unreachable (~69 records)
+- 6-digit orphan IDs (G0628, A0979, H0572-575): New hires enrolled on machine but not in HR → routed to NEED_REVIEW → MANUAL_REVIEW via direct lookup fallback
+- Batch tracking unreliable: `records_total` includes pre-dedup counts. Use `attendance_imports` actual row count as source of truth.
+
+**Full audit report:** `docs/FULL_SYSTEM_AUDIT_2026-06-26.md`
 
 ## Tech Stack
 

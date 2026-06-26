@@ -7,7 +7,7 @@ updated: 2026-06-26
 # Current Status
 
 **Last Updated:** 2026-06-26
-**Project Status:** OPERATIONAL — Post Emergency Recovery Complete
+**Project Status:** OPERATIONAL — Full System Audit Complete
 
 ---
 
@@ -21,7 +21,7 @@ updated: 2026-06-26
 | 3 | DONE | 788,915 scan_logs restored; FK batch fix applied |
 | 4 | DONE | Schema audit log created |
 | 5 | DONE | machine_user_raw synced from accessible machines |
-| 6 | DONE | 788,915 rows UTC→WIB corrected (+7h) |
+| 6 | DONE | 808,093 rows UTC→WIB corrected (+7h) |
 | 7 | DONE | 45,348 attendance_imports rebuilt (11 divisions) |
 | 8 | DONE | B0193 validation: correct WIB times confirmed |
 | 9 | DONE | Backend COALESCE name priority fix applied |
@@ -30,37 +30,59 @@ updated: 2026-06-26
 
 ---
 
-## Current DB State
+## Post-Audit Fixes (2026-06-26)
 
-| Table | Rows | Notes |
-|-------|------|-------|
-| attendance_scan_logs | 788,915 | Restored + WIB-corrected |
-| attendance_imports | 45,348 | 11 divisions A-L, rebuilt 2026-06-25 |
-| employees | 8,005 | 6,032 HR employees with correct division_id |
-| attendance_machines | 16 | All machines in inventory |
-| machine_user_raw | ~1,228 | Pre-existing (needs refresh sync) |
-| attendance_import_batches | 257 | Includes FK dummy rows |
-| divisions | 11 real + 5 dummy | All 11 estates mapped |
+| Fix | Detail |
+|-----|--------|
+| Migration 074 | Rescued 10,022 MANUAL_REVIEW orphans → enriched records |
+| attendance-process-import.service.ts | Direct `raw_device_user_id → employee_code` fallback (PGE/MILL/APE) |
+| zkteco-employee-code-parser.ts | 6-digit IDs → NONE → NEED_REVIEW (new hires not in HR) |
+| schedule.json | `attendance_pipeline_sync` ENABLED (60 min) |
+| Corrupt rows (23 total) | 12 attendance_imports + 11 scan_logs deleted (date < 2020) |
+| 9 stuck RUNNING batches | Marked FAILED (orphan process cleanup) |
 
 ---
 
-## Attendance Imports Breakdown (2026-06-25 rebuild)
+## Current DB State (2026-06-26)
+
+| Table | Rows | Notes |
+|-------|------|-------|
+| attendance_scan_logs | 808,093 | WIB-corrected, 0 corrupt dates |
+| attendance_imports | 55,051 | 11 divisions, 99.99% enriched |
+| employees | 8,005 | 6,032 HR employees correct division_id |
+| attendance_machines | 16 | All machines in inventory |
+| machine_user_raw | 6,293 | Needs refresh sync |
+| attendance_import_batches | 296 | All stuck RUNNING resolved |
+| divisions | 16 | 11 real + 5 dummy |
+
+### Schema Integrity: CLEAN
+- FK constraints: 0 violations
+- Unique constraints: 0 duplicate groups
+- attendance_status: 0 unexpected values
+- Code vs DB schema: 0 mismatches
+
+### Enrichment Quality (55,051 enriched records)
+employee_name: 99.5% | nik: 81.2% | hr_loc_code: 81.3% | current_emp_name: 81.3%
+Gap in nik: PGE employees (legacy, not in DB_PTRJ HR)
+
+---
+
+## Attendance Imports Breakdown (2026-06-26)
 
 | Division | Records | Employees | Machine | Status |
-|----------|---------|-----------|---------|--------|
-| J | 12,096 | 238 | ARC (P1B network) | Accessible via ZKTeco |
-| E | 9,102 | 176 | DME_01/02 | Accessible via public IP |
-| G | 4,934 | 136 | AB1 | Inaccessible (port forwarding needed) |
-| H | 3,989 | 109 | AB2 | Accessible via public IP |
-| L | 2,894 | 45 | IJL | Accessible via public IP |
-| A | 2,806 | 174 | P1A | Accessible (ZKTeco confirmed) |
-| B | 2,620 | 162 | P1B | Accessible (ZKTeco confirmed) |
-| F | 94 | 4 | ARA | Accessible via public IP |
-| D | 38 | 4 | P2B | Inaccessible (PGE network) |
-| C | 31 | 4 | P2A | Inaccessible (PGE network) |
-| PGE | ~10,000 | ~200 | OFFICE_PGE | Accessible (10.0.0.232) |
-
-Status: HADIR: ~40,000 | INCOMPLETE_SCAN: ~4,700 | MANUAL_REVIEW: ~600
+|----------|---------|-----------|---------|---------|
+| ARC | 13,873 | 238 | ARC_01/02 | Accessible (port forwarding needed) |
+| PGE | 9,936 | ~200 | OFFICE_PGE | Accessible (10.0.0.232) |
+| DME | 9,249 | 176 | DME_01/02 | Accessible |
+| AB1 | 6,018 | 136 | AB1 | Inaccessible (port forwarding) |
+| AB2 | 5,954 | 109 | AB2 | Accessible |
+| P1A | 3,492 | 174 | P1A | Accessible |
+| P1B | 3,316 | 162 | P1B | Accessible |
+| IJL | 2,895 | 45 | IJL | Accessible |
+| ARA | 254 | 4 | ARA | Accessible |
+| P2B | 40 | 4 | P2B | Unreachable (PGE network) |
+| P2A | 34 | 4 | P2A | Unreachable (PGE network) |
+| MANUAL_REVIEW | 0 | — | — | **All rescued** |
 
 ---
 
@@ -69,8 +91,8 @@ Status: HADIR: ~40,000 | INCOMPLETE_SCAN: ~4,700 | MANUAL_REVIEW: ~600
 | Property | Value |
 |----------|-------|
 | Backend port | 8004 |
-| Scheduler | ENABLED (src/config/schedule.json) |
-| IT Solution API | DEPRECATED — all data from ZKTeco only |
+| Scheduler | ENABLED |
+| IT Solution API | DEPRECATED — ZKTeco direct only |
 | Build | Clean (npm run build passed) |
 | DB Server | 10.0.0.110 |
 
@@ -80,58 +102,40 @@ Status: HADIR: ~40,000 | INCOMPLETE_SCAN: ~4,700 | MANUAL_REVIEW: ~600
 
 | Job | Interval | Status |
 |-----|----------|--------|
+| global sync | 60 min | ENABLED |
 | attendance_pipeline_sync | 60 min | ENABLED |
-| hr_snapshot_sync | 1440 min (daily) | ENABLED |
-| global_machine_sync | 60 min | ENABLED |
+| hr_snapshot_sync | 1440 min | ENABLED |
 
 ---
 
-## Accessible Machines (7 confirmed ZKTeco)
+## Accessible Machines (10 confirmed ZKTeco)
 
-| Machine | IP | Port | Division | LocCode | Status |
-|---------|-----|------|----------|---------|--------|
-| OFFICE_PGE | 10.0.0.232 | 4370 | PGE | A | Accessible |
-| P1A | 10.0.0.90 | 4100 | P1A | A | Accessible (ZKTeco) |
-| P1B | 10.0.0.91 | 4300 | P1B | B | Accessible (ZKTeco) |
-| MILL | 103.127.66.32 | 4370 | MILL | — | Accessible |
-| OFFICE_APE | 103.144.208.154 | 4370 | ARE | — | Accessible |
-| IJL | 103.144.211.226 | 4370 | IJL | L | Accessible |
-| AB2 | 103.144.208.154 | 4400 | AB2 | H | Accessible |
-| DME_01 | 103.144.228.42 | 4700 | DME | E | Accessible |
-| DME_02 | 103.144.228.42 | 4701 | DME | E | Accessible |
-| ARA | 103.144.208.154 | 4800 | ARA | F | Accessible |
-
-**Inaccessible:** AB1 (4900), ARC_01 (4200), ARC_02 (4201), P2A (4500), P2B (4600)
+| Machine | IP | Port | Division | LocCode | Network |
+|---------|-----|------|----------|---------|---------|
+| OFFICE_PGE | 10.0.0.232 | 4370 | PGE | A | Local PGE |
+| P1A | 10.0.0.90 | 4100 | P1A | A | Local PGE |
+| P1B | 10.0.0.91 | 4300 | P1B | B | Local PGE |
+| MILL | 103.127.66.32 | 4370 | MILL | — | Public direct |
+| OFFICE_APE | 103.144.208.154 | 4370 | ARE | — | Public |
+| IJL | 103.144.211.226 | 4370 | IJL | L | Public direct |
+| AB2 | 103.144.208.154 | 4400 | AB2 | H | Public |
+| DME_01 | 103.144.228.42 | 4700 | DME | E | Public |
+| DME_02 | 103.144.228.42 | 4701 | DME | E | Public |
+| ARA | 103.144.208.154 | 4800 | ARA | F | Public |
 
 ---
 
-## Key Code Fixes (Post-Recovery)
+## Known Remaining Issues
 
-| Fix | File | Issue |
-|-----|------|-------|
-| division_id backfill | hr-employee-sync.service.ts | hr_loc_code (P1A) → divisionCodeMap (A) mismatch |
-| name priority | sync-orchestrator.service.ts | machine_user_raw.user_name is authority |
-| attendance_imports | rebuild script | 45,348 rows with correct division_code |
-| schedule.json | config | attendance_pipeline_sync job added |
-| migration 072 | vw_attendance_monthly_matrix | removed zkteco_hr_employee_map references |
-
----
-
-## Pending Tasks
-
-1. **Sync getUsers()** on 7 accessible machines → refresh machine_user_raw
-2. **Investigate 22 NEED_REVIEW rows** on AB1 (empty raw_device_user_id)
-3. **Restore network** to P2A/P2B machines (PGE network)
-4. **Port forwarding** for AB1, ARC_01, ARC_02
-5. **HR populate NIK** for J0127 employees (root cause: NIK column empty in DB_PTRJ)
-6. **Monitor 3 days** for sync anomalies
+| # | Issue | Priority |
+|---|-------|----------|
+| 1 | Port forwarding on APE estate router (ARC_01, ARC_02, AB1) | HIGH |
+| 2 | P2A/P2B network unreachable | LOW |
+| 3 | 6-digit orphan IDs (AB2/HAB2) — new hires not in HR | MEDIUM |
+| 4 | Batch tracking table gap | LOW |
+| 5 | raw_scan_log_id 81.8% NULL | LOW |
 
 ---
 
-## Related Docs
-
-- `docs/CRITICAL-INVESTIGATION-2026-06-25.md` — Root cause analysis
-- `docs/SYNC-ARCHITECTURE.md` — Complete sync architecture
-- `docs/EMPLOYEE-DATA-FLOW.md` — Employee data architecture
-- `_docs/Sessions/2026-06-25/` — Session documentation
-- `memory/recovery-complete-2026-06-25.md` — Recovery log
+## Full Audit Report
+See `docs/FULL_SYSTEM_AUDIT_2026-06-26.md` for complete findings.
