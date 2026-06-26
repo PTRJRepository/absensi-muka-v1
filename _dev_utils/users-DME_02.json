@@ -1,0 +1,1818 @@
+[
+  {
+    "uid": 1,
+    "role": 0,
+    "password": "",
+    "name": "SADIANTO(ASMA)",
+    "cardno": 0,
+    "userId": "50055"
+  },
+  {
+    "uid": 2,
+    "role": 0,
+    "password": "",
+    "name": "M. HUSNUL M(SITI MARYAM)",
+    "cardno": 0,
+    "userId": "50056"
+  },
+  {
+    "uid": 3,
+    "role": 0,
+    "password": "",
+    "name": "MASWANDI(SALNIA)",
+    "cardno": 0,
+    "userId": "50058"
+  },
+  {
+    "uid": 4,
+    "role": 0,
+    "password": "",
+    "name": "PINDRA(Zuraida)",
+    "cardno": 0,
+    "userId": "50059"
+  },
+  {
+    "uid": 5,
+    "role": 0,
+    "password": "",
+    "name": "AMRAN(ANIK)",
+    "cardno": 0,
+    "userId": "50060"
+  },
+  {
+    "uid": 6,
+    "role": 0,
+    "password": "",
+    "name": "ROBIN ( RUMIATI )",
+    "cardno": 0,
+    "userId": "50061"
+  },
+  {
+    "uid": 7,
+    "role": 0,
+    "password": "",
+    "name": "NANDAR(Nuraini)",
+    "cardno": 0,
+    "userId": "50062"
+  },
+  {
+    "uid": 8,
+    "role": 0,
+    "password": "",
+    "name": "ROZI PANZI(SOPIANTI)",
+    "cardno": 0,
+    "userId": "50063"
+  },
+  {
+    "uid": 9,
+    "role": 0,
+    "password": "",
+    "name": "BOBI(ASMA)",
+    "cardno": 0,
+    "userId": "50064"
+  },
+  {
+    "uid": 10,
+    "role": 0,
+    "password": "",
+    "name": "KAHARUDIN O W(NURMAH)",
+    "cardno": 0,
+    "userId": "50065"
+  },
+  {
+    "uid": 11,
+    "role": 0,
+    "password": "",
+    "name": "BENY INDRAWAN(MARSUNI)",
+    "cardno": 0,
+    "userId": "50066"
+  },
+  {
+    "uid": 12,
+    "role": 0,
+    "password": "",
+    "name": "TONI(SUSILAWATI)",
+    "cardno": 0,
+    "userId": "50067"
+  },
+  {
+    "uid": 13,
+    "role": 0,
+    "password": "",
+    "name": "SUPRIADI(SUSILAWATI)",
+    "cardno": 0,
+    "userId": "50068"
+  },
+  {
+    "uid": 14,
+    "role": 0,
+    "password": "",
+    "name": "RIDWAN APRIYANTO(MARLINA",
+    "cardno": 0,
+    "userId": "50069"
+  },
+  {
+    "uid": 15,
+    "role": 0,
+    "password": "",
+    "name": "ABDULLAH SYUKRON(Soliha)",
+    "cardno": 0,
+    "userId": "50070"
+  },
+  {
+    "uid": 16,
+    "role": 0,
+    "password": "",
+    "name": "MISNAH(HATIBA)",
+    "cardno": 0,
+    "userId": "7000001"
+  },
+  {
+    "uid": 17,
+    "role": 0,
+    "password": "",
+    "name": "SAHADI(JAHANA)",
+    "cardno": 0,
+    "userId": "7000003"
+  },
+  {
+    "uid": 18,
+    "role": 0,
+    "password": "",
+    "name": "HERAWAN(HAMERA)",
+    "cardno": 0,
+    "userId": "7000004"
+  },
+  {
+    "uid": 19,
+    "role": 0,
+    "password": "",
+    "name": "HARYADI ( ZUBAIDA )",
+    "cardno": 0,
+    "userId": "7000005"
+  },
+  {
+    "uid": 20,
+    "role": 0,
+    "password": "",
+    "name": "MARSIDI ( Jiha )",
+    "cardno": 0,
+    "userId": "7000006"
+  },
+  {
+    "uid": 21,
+    "role": 0,
+    "password": "",
+    "name": "SUNAIDI ( ZALIA )",
+    "cardno": 0,
+    "userId": "7000007"
+  },
+  {
+    "uid": 22,
+    "role": 0,
+    "password": "",
+    "name": "HARNELI ( HARIJA )",
+    "cardno": 0,
+    "userId": "7000010"
+  },
+  {
+    "uid": 23,
+    "role": 0,
+    "password": "",
+    "name": "SARMAN ( RAHILAN )",
+    "cardno": 0,
+    "userId": "7000011"
+  },
+  {
+    "uid": 24,
+    "role": 0,
+    "password": "",
+    "name": "OMROH ( RUMIA )",
+    "cardno": 0,
+    "userId": "7000012"
+  },
+  {
+    "uid": 25,
+    "role": 0,
+    "password": "",
+    "name": "HENDRA ( SAINUN )",
+    "cardno": 0,
+    "userId": "7000016"
+  },
+  {
+    "uid": 26,
+    "role": 0,
+    "password": "",
+    "name": "BUDI ( SOPIA )",
+    "cardno": 0,
+    "userId": "7000019"
+  },
+  {
+    "uid": 27,
+    "role": 0,
+    "password": "",
+    "name": "SAMSON ( MUSNA )",
+    "cardno": 0,
+    "userId": "7000020"
+  },
+  {
+    "uid": 28,
+    "role": 0,
+    "password": "",
+    "name": "KUSMAYADI ( UNI )",
+    "cardno": 0,
+    "userId": "7000021"
+  },
+  {
+    "uid": 29,
+    "role": 0,
+    "password": "",
+    "name": "MASWANDI ( SALNIA )",
+    "cardno": 0,
+    "userId": "7000022"
+  },
+  {
+    "uid": 30,
+    "role": 0,
+    "password": "",
+    "name": "SADIANTO ( ASMA )",
+    "cardno": 0,
+    "userId": "7000023"
+  },
+  {
+    "uid": 31,
+    "role": 0,
+    "password": "",
+    "name": "SUMARTO ( HATIJAH )",
+    "cardno": 0,
+    "userId": "7000024"
+  },
+  {
+    "uid": 32,
+    "role": 0,
+    "password": "",
+    "name": "ALDI KRISTIANZA ( EVA S",
+    "cardno": 0,
+    "userId": "7000026"
+  },
+  {
+    "uid": 33,
+    "role": 0,
+    "password": "",
+    "name": "AMRAN ( ANIK )",
+    "cardno": 0,
+    "userId": "7000036"
+  },
+  {
+    "uid": 34,
+    "role": 0,
+    "password": "",
+    "name": "PANJI ADITIA ROSA ( ROB",
+    "cardno": 0,
+    "userId": "7000040"
+  },
+  {
+    "uid": 35,
+    "role": 0,
+    "password": "",
+    "name": "SATIANA ( KEMA )",
+    "cardno": 0,
+    "userId": "7000041"
+  },
+  {
+    "uid": 36,
+    "role": 0,
+    "password": "",
+    "name": "HARTINI ( YANA)",
+    "cardno": 0,
+    "userId": "7000042"
+  },
+  {
+    "uid": 37,
+    "role": 0,
+    "password": "",
+    "name": "ELINA ( SOPINA )",
+    "cardno": 0,
+    "userId": "7000043"
+  },
+  {
+    "uid": 38,
+    "role": 0,
+    "password": "",
+    "name": "SUSANTI. N ( HAMINAH )",
+    "cardno": 0,
+    "userId": "7000044"
+  },
+  {
+    "uid": 39,
+    "role": 0,
+    "password": "",
+    "name": "SULASMI ( ZALINA )",
+    "cardno": 0,
+    "userId": "7000045"
+  },
+  {
+    "uid": 40,
+    "role": 0,
+    "password": "",
+    "name": "JASNI ( JAHUYA )",
+    "cardno": 0,
+    "userId": "7000046"
+  },
+  {
+    "uid": 41,
+    "role": 0,
+    "password": "",
+    "name": "YUNI ( MASRIA )",
+    "cardno": 0,
+    "userId": "7000049"
+  },
+  {
+    "uid": 42,
+    "role": 0,
+    "password": "",
+    "name": "ZURAIDA ( SIDA )",
+    "cardno": 0,
+    "userId": "7000050"
+  },
+  {
+    "uid": 43,
+    "role": 0,
+    "password": "",
+    "name": "USWITA ( JUSMA )",
+    "cardno": 0,
+    "userId": "7000051"
+  },
+  {
+    "uid": 44,
+    "role": 0,
+    "password": "",
+    "name": "MARTUTI ( MARYAMA )",
+    "cardno": 0,
+    "userId": "7000052"
+  },
+  {
+    "uid": 45,
+    "role": 0,
+    "password": "",
+    "name": "NENGSI ( HANA )",
+    "cardno": 0,
+    "userId": "7000053"
+  },
+  {
+    "uid": 46,
+    "role": 0,
+    "password": "",
+    "name": "RITA ( JEMANIM )",
+    "cardno": 0,
+    "userId": "7000055"
+  },
+  {
+    "uid": 47,
+    "role": 0,
+    "password": "",
+    "name": "KUSNIATI ( ASMAH )",
+    "cardno": 0,
+    "userId": "7000056"
+  },
+  {
+    "uid": 48,
+    "role": 0,
+    "password": "",
+    "name": "SUSANTI.S ( SARTINI )",
+    "cardno": 0,
+    "userId": "7000059"
+  },
+  {
+    "uid": 49,
+    "role": 0,
+    "password": "",
+    "name": "ARDI SAPUTRA ( YUNAN )",
+    "cardno": 0,
+    "userId": "7000064"
+  },
+  {
+    "uid": 50,
+    "role": 0,
+    "password": "",
+    "name": "SURADI ( MUNA )",
+    "cardno": 0,
+    "userId": "7000066"
+  },
+  {
+    "uid": 51,
+    "role": 0,
+    "password": "",
+    "name": "JONI ARTANTO ( ROSNANI ",
+    "cardno": 0,
+    "userId": "7000067"
+  },
+  {
+    "uid": 52,
+    "role": 0,
+    "password": "",
+    "name": "MUHAMMAD ( MARYATI )",
+    "cardno": 0,
+    "userId": "7000068"
+  },
+  {
+    "uid": 53,
+    "role": 0,
+    "password": "",
+    "name": "YURDANI ( MAITINA )",
+    "cardno": 0,
+    "userId": "7000069"
+  },
+  {
+    "uid": 54,
+    "role": 0,
+    "password": "",
+    "name": "WILANTARA ( DIARTI )",
+    "cardno": 0,
+    "userId": "7000070"
+  },
+  {
+    "uid": 55,
+    "role": 0,
+    "password": "",
+    "name": "MASADI ( HAMA )",
+    "cardno": 0,
+    "userId": "7000073"
+  },
+  {
+    "uid": 56,
+    "role": 0,
+    "password": "",
+    "name": "SAMSIR ( MORHAMA )",
+    "cardno": 0,
+    "userId": "7000074"
+  },
+  {
+    "uid": 57,
+    "role": 0,
+    "password": "",
+    "name": "M. HUSNUL MUBAROK ( SITI",
+    "cardno": 0,
+    "userId": "7000075"
+  },
+  {
+    "uid": 58,
+    "role": 0,
+    "password": "",
+    "name": "JEFRI ( ANITA )",
+    "cardno": 0,
+    "userId": "7000076"
+  },
+  {
+    "uid": 59,
+    "role": 0,
+    "password": "",
+    "name": "MASDIANTO ( REMINA )",
+    "cardno": 0,
+    "userId": "7000077"
+  },
+  {
+    "uid": 60,
+    "role": 0,
+    "password": "",
+    "name": "MULYADIN ( SITI KHOLIJA",
+    "cardno": 0,
+    "userId": "7000079"
+  },
+  {
+    "uid": 61,
+    "role": 0,
+    "password": "",
+    "name": "SUSYANTI ( REMIJA )",
+    "cardno": 0,
+    "userId": "7000080"
+  },
+  {
+    "uid": 62,
+    "role": 0,
+    "password": "",
+    "name": "HIDAYAT ( MUSNA )",
+    "cardno": 0,
+    "userId": "7000085"
+  },
+  {
+    "uid": 63,
+    "role": 0,
+    "password": "",
+    "name": "IRWAN PURWANTO ( NURAIN",
+    "cardno": 0,
+    "userId": "7000086"
+  },
+  {
+    "uid": 64,
+    "role": 0,
+    "password": "",
+    "name": "SUHAIRI ( ROSTINI )",
+    "cardno": 0,
+    "userId": "7000088"
+  },
+  {
+    "uid": 65,
+    "role": 0,
+    "password": "",
+    "name": "APRIANSYAH ( RENA )",
+    "cardno": 0,
+    "userId": "7000089"
+  },
+  {
+    "uid": 66,
+    "role": 0,
+    "password": "",
+    "name": "AGUSTIAWAN ( HAJIA )",
+    "cardno": 0,
+    "userId": "7000091"
+  },
+  {
+    "uid": 67,
+    "role": 0,
+    "password": "",
+    "name": "SYAFRI ( SITI HODIJAH )",
+    "cardno": 0,
+    "userId": "7000094"
+  },
+  {
+    "uid": 68,
+    "role": 0,
+    "password": "",
+    "name": "ANDRIANTO ( HAMISAH )",
+    "cardno": 0,
+    "userId": "7000095"
+  },
+  {
+    "uid": 69,
+    "role": 0,
+    "password": "",
+    "name": "HARMAN ( ZUBAIDA )",
+    "cardno": 0,
+    "userId": "7000096"
+  },
+  {
+    "uid": 70,
+    "role": 0,
+    "password": "",
+    "name": "MARTAWI ( HAMISA )",
+    "cardno": 0,
+    "userId": "7000097"
+  },
+  {
+    "uid": 71,
+    "role": 0,
+    "password": "",
+    "name": "GUSTIAN ( MARYANA )",
+    "cardno": 0,
+    "userId": "7000098"
+  },
+  {
+    "uid": 72,
+    "role": 0,
+    "password": "",
+    "name": "PARDINATA ( RATNA )",
+    "cardno": 0,
+    "userId": "7000100"
+  },
+  {
+    "uid": 73,
+    "role": 0,
+    "password": "",
+    "name": "DEDI KURNIAWAN ( MARYAN",
+    "cardno": 0,
+    "userId": "7000102"
+  },
+  {
+    "uid": 74,
+    "role": 0,
+    "password": "",
+    "name": "AGUS KRISTIANZA ( RINI ",
+    "cardno": 0,
+    "userId": "7000105"
+  },
+  {
+    "uid": 75,
+    "role": 0,
+    "password": "",
+    "name": "MIGI PERMANA PUTRA ( MA",
+    "cardno": 0,
+    "userId": "7000107"
+  },
+  {
+    "uid": 76,
+    "role": 0,
+    "password": "",
+    "name": "SUSANTO ( ANIA )",
+    "cardno": 0,
+    "userId": "7000108"
+  },
+  {
+    "uid": 77,
+    "role": 0,
+    "password": "",
+    "name": "ERWANDI ( NURJANA )",
+    "cardno": 0,
+    "userId": "7000110"
+  },
+  {
+    "uid": 78,
+    "role": 0,
+    "password": "",
+    "name": "SUPARDI ( ROBAYA )",
+    "cardno": 0,
+    "userId": "7000111"
+  },
+  {
+    "uid": 79,
+    "role": 0,
+    "password": "",
+    "name": "ARDIAN ( ASIA )",
+    "cardno": 0,
+    "userId": "7000112"
+  },
+  {
+    "uid": 80,
+    "role": 0,
+    "password": "",
+    "name": "HARWATI ( SAKDIA )",
+    "cardno": 0,
+    "userId": "7000116"
+  },
+  {
+    "uid": 81,
+    "role": 0,
+    "password": "",
+    "name": "SUMIATI. H ( RAHIMA )",
+    "cardno": 0,
+    "userId": "7000117"
+  },
+  {
+    "uid": 82,
+    "role": 0,
+    "password": "",
+    "name": "HARNIATI ( HAMELA )",
+    "cardno": 0,
+    "userId": "7000118"
+  },
+  {
+    "uid": 83,
+    "role": 0,
+    "password": "",
+    "name": "MAYANI ( HAMISA )",
+    "cardno": 0,
+    "userId": "7000120"
+  },
+  {
+    "uid": 84,
+    "role": 0,
+    "password": "",
+    "name": "YULIANA ( YANCIK )",
+    "cardno": 0,
+    "userId": "7000122"
+  },
+  {
+    "uid": 85,
+    "role": 0,
+    "password": "",
+    "name": "MARSITA ( MARYAMA )",
+    "cardno": 0,
+    "userId": "7000123"
+  },
+  {
+    "uid": 86,
+    "role": 0,
+    "password": "",
+    "name": "ANIA ( REJEMA )",
+    "cardno": 0,
+    "userId": "7000124"
+  },
+  {
+    "uid": 87,
+    "role": 0,
+    "password": "",
+    "name": "YULI ( SUYANA )",
+    "cardno": 0,
+    "userId": "7000125"
+  },
+  {
+    "uid": 88,
+    "role": 0,
+    "password": "",
+    "name": "HERAWATI ( Maisina )",
+    "cardno": 0,
+    "userId": "7000127"
+  },
+  {
+    "uid": 89,
+    "role": 0,
+    "password": "",
+    "name": "YULINDA ( MARDIA )",
+    "cardno": 0,
+    "userId": "7000129"
+  },
+  {
+    "uid": 90,
+    "role": 0,
+    "password": "",
+    "name": "ENI MARYATI ( NORSANI )",
+    "cardno": 0,
+    "userId": "7000130"
+  },
+  {
+    "uid": 91,
+    "role": 0,
+    "password": "",
+    "name": "ERNI ( SAINA )",
+    "cardno": 0,
+    "userId": "7000132"
+  },
+  {
+    "uid": 92,
+    "role": 0,
+    "password": "",
+    "name": "SENIA ( HALIJA )",
+    "cardno": 0,
+    "userId": "7000133"
+  },
+  {
+    "uid": 93,
+    "role": 0,
+    "password": "",
+    "name": "HELNI SAUPIKA ( HADIAH ",
+    "cardno": 0,
+    "userId": "7000134"
+  },
+  {
+    "uid": 94,
+    "role": 0,
+    "password": "",
+    "name": "SOPINA ( JAHIYA )",
+    "cardno": 0,
+    "userId": "7000135"
+  },
+  {
+    "uid": 95,
+    "role": 0,
+    "password": "",
+    "name": "HARYANTO ( SUMARNI )",
+    "cardno": 0,
+    "userId": "7000137"
+  },
+  {
+    "uid": 96,
+    "role": 0,
+    "password": "",
+    "name": "BOBI ( ASMA )",
+    "cardno": 0,
+    "userId": "7000138"
+  },
+  {
+    "uid": 97,
+    "role": 0,
+    "password": "",
+    "name": "MARSUANDA ( HAYATI )",
+    "cardno": 0,
+    "userId": "7000148"
+  },
+  {
+    "uid": 98,
+    "role": 0,
+    "password": "",
+    "name": "ROBIN ( RUMIATI )",
+    "cardno": 0,
+    "userId": "7000150"
+  },
+  {
+    "uid": 99,
+    "role": 0,
+    "password": "",
+    "name": "HELDI ARIES PRATAMA ( A",
+    "cardno": 0,
+    "userId": "7000153"
+  },
+  {
+    "uid": 100,
+    "role": 0,
+    "password": "",
+    "name": "LIWONO ( AMNA )",
+    "cardno": 0,
+    "userId": "7000164"
+  },
+  {
+    "uid": 101,
+    "role": 0,
+    "password": "",
+    "name": "YANTO SAPTU ( MURNI )",
+    "cardno": 0,
+    "userId": "7000166"
+  },
+  {
+    "uid": 102,
+    "role": 0,
+    "password": "",
+    "name": "ISWADI ( ROSNI )",
+    "cardno": 0,
+    "userId": "7000167"
+  },
+  {
+    "uid": 103,
+    "role": 0,
+    "password": "",
+    "name": "TOMI INDRA SUKMA ( HARY",
+    "cardno": 0,
+    "userId": "7000168"
+  },
+  {
+    "uid": 104,
+    "role": 0,
+    "password": "",
+    "name": "RALI SUTRISNO ( JAYARIA",
+    "cardno": 0,
+    "userId": "7000170"
+  },
+  {
+    "uid": 105,
+    "role": 0,
+    "password": "",
+    "name": "MUSDIAN ( SERIA )",
+    "cardno": 0,
+    "userId": "7000171"
+  },
+  {
+    "uid": 106,
+    "role": 0,
+    "password": "",
+    "name": "NIKI ( MISNA )",
+    "cardno": 0,
+    "userId": "7000172"
+  },
+  {
+    "uid": 107,
+    "role": 0,
+    "password": "",
+    "name": "SUTRISNO ( SURTINI )",
+    "cardno": 0,
+    "userId": "7000176"
+  },
+  {
+    "uid": 108,
+    "role": 0,
+    "password": "",
+    "name": "HARTONO ( RISNAITI )",
+    "cardno": 0,
+    "userId": "7000177"
+  },
+  {
+    "uid": 109,
+    "role": 0,
+    "password": "",
+    "name": "OZI SAPUTRA ( YANGMA )",
+    "cardno": 0,
+    "userId": "7000181"
+  },
+  {
+    "uid": 110,
+    "role": 0,
+    "password": "",
+    "name": "KAHARUDIN ONGKO WIJAYA (",
+    "cardno": 0,
+    "userId": "7000183"
+  },
+  {
+    "uid": 111,
+    "role": 0,
+    "password": "",
+    "name": "TONI ( SUSILAWATI )",
+    "cardno": 0,
+    "userId": "7000193"
+  },
+  {
+    "uid": 112,
+    "role": 0,
+    "password": "",
+    "name": "KRISTO VOLORIAN S",
+    "cardno": 0,
+    "userId": "7000194"
+  },
+  {
+    "uid": 113,
+    "role": 0,
+    "password": "",
+    "name": "ROSMALA ( MASRIA )",
+    "cardno": 0,
+    "userId": "7000195"
+  },
+  {
+    "uid": 114,
+    "role": 0,
+    "password": "",
+    "name": "DONI ( SUNIYATI )",
+    "cardno": 0,
+    "userId": "7000196"
+  },
+  {
+    "uid": 115,
+    "role": 0,
+    "password": "",
+    "name": "DEVI NOVITA ( SULASTRI ",
+    "cardno": 0,
+    "userId": "7000199"
+  },
+  {
+    "uid": 116,
+    "role": 0,
+    "password": "",
+    "name": "JULITA ( JAINOT )",
+    "cardno": 0,
+    "userId": "7000200"
+  },
+  {
+    "uid": 117,
+    "role": 0,
+    "password": "",
+    "name": "AGUSTI SRI.W ( ERMAWATI",
+    "cardno": 0,
+    "userId": "7000201"
+  },
+  {
+    "uid": 118,
+    "role": 0,
+    "password": "",
+    "name": "NELLY KURNIASIH ( ISA )",
+    "cardno": 0,
+    "userId": "7000203"
+  },
+  {
+    "uid": 119,
+    "role": 0,
+    "password": "",
+    "name": "EMY ( JENA )",
+    "cardno": 0,
+    "userId": "7000204"
+  },
+  {
+    "uid": 120,
+    "role": 0,
+    "password": "",
+    "name": "BASTIA ( JASIMA )",
+    "cardno": 0,
+    "userId": "7000205"
+  },
+  {
+    "uid": 121,
+    "role": 0,
+    "password": "",
+    "name": "MARSIATI ( HAMSUNA )",
+    "cardno": 0,
+    "userId": "7000207"
+  },
+  {
+    "uid": 122,
+    "role": 0,
+    "password": "",
+    "name": "DEWI SARTIKA ( HAMINA )",
+    "cardno": 0,
+    "userId": "7000208"
+  },
+  {
+    "uid": 123,
+    "role": 0,
+    "password": "",
+    "name": "MAINA ( HAZA )",
+    "cardno": 0,
+    "userId": "7000209"
+  },
+  {
+    "uid": 124,
+    "role": 0,
+    "password": "",
+    "name": "PATMAWATI ( SAMSUNA )",
+    "cardno": 0,
+    "userId": "7000210"
+  },
+  {
+    "uid": 125,
+    "role": 0,
+    "password": "",
+    "name": "SUHINDRIYANA ( ZAINUN )",
+    "cardno": 0,
+    "userId": "7000211"
+  },
+  {
+    "uid": 126,
+    "role": 0,
+    "password": "",
+    "name": "ROHANI ( REKIA )",
+    "cardno": 0,
+    "userId": "7000212"
+  },
+  {
+    "uid": 127,
+    "role": 0,
+    "password": "",
+    "name": "SUMIATI ( SAMSINA )",
+    "cardno": 0,
+    "userId": "7000213"
+  },
+  {
+    "uid": 128,
+    "role": 0,
+    "password": "",
+    "name": "INDRAYANTI ( TASINA )",
+    "cardno": 0,
+    "userId": "7000214"
+  },
+  {
+    "uid": 129,
+    "role": 0,
+    "password": "",
+    "name": "HASENI ( SUHA)",
+    "cardno": 0,
+    "userId": "7000216"
+  },
+  {
+    "uid": 130,
+    "role": 0,
+    "password": "",
+    "name": "ROSTINI ( JAHIA )",
+    "cardno": 0,
+    "userId": "7000217"
+  },
+  {
+    "uid": 131,
+    "role": 0,
+    "password": "",
+    "name": "SUHANA ( RESIMA )",
+    "cardno": 0,
+    "userId": "7000218"
+  },
+  {
+    "uid": 132,
+    "role": 0,
+    "password": "",
+    "name": "SUPRIADI ( SUSILAWATI )",
+    "cardno": 0,
+    "userId": "7000221"
+  },
+  {
+    "uid": 133,
+    "role": 0,
+    "password": "",
+    "name": "EDI PUTRA ( SUNARTI AMI",
+    "cardno": 0,
+    "userId": "7000226"
+  },
+  {
+    "uid": 134,
+    "role": 0,
+    "password": "",
+    "name": "FERA ( MISNA )",
+    "cardno": 0,
+    "userId": "7000227"
+  },
+  {
+    "uid": 135,
+    "role": 0,
+    "password": "",
+    "name": "RUSDIANTO ( SAIDATI SAI",
+    "cardno": 0,
+    "userId": "7000229"
+  },
+  {
+    "uid": 136,
+    "role": 0,
+    "password": "",
+    "name": "BENY INDRAWAN ( MARSUNI ",
+    "cardno": 0,
+    "userId": "7000231"
+  },
+  {
+    "uid": 137,
+    "role": 0,
+    "password": "",
+    "name": "SOPIAN ( ASNAH )",
+    "cardno": 0,
+    "userId": "7000234"
+  },
+  {
+    "uid": 138,
+    "role": 0,
+    "password": "",
+    "name": "CITRA LILY ARTICA (AGUST",
+    "cardno": 0,
+    "userId": "7000236"
+  },
+  {
+    "uid": 139,
+    "role": 0,
+    "password": "",
+    "name": "HERU DINATA ( SARMINI )",
+    "cardno": 0,
+    "userId": "7000268"
+  },
+  {
+    "uid": 140,
+    "role": 0,
+    "password": "",
+    "name": "RAHMAT HIDAYAT ( LIDART",
+    "cardno": 0,
+    "userId": "7000276"
+  },
+  {
+    "uid": 141,
+    "role": 0,
+    "password": "",
+    "name": "REDI FEBRIANSA ( MAINA ",
+    "cardno": 0,
+    "userId": "7000280"
+  },
+  {
+    "uid": 142,
+    "role": 0,
+    "password": "",
+    "name": "DIKA SAPIRA ( SAMINA )",
+    "cardno": 0,
+    "userId": "7000281"
+  },
+  {
+    "uid": 143,
+    "role": 0,
+    "password": "",
+    "name": "ANANDA DIKI PALINTONI (",
+    "cardno": 0,
+    "userId": "7000287"
+  },
+  {
+    "uid": 144,
+    "role": 0,
+    "password": "",
+    "name": "DAMAN HURI ( WARSITI )",
+    "cardno": 0,
+    "userId": "7000316"
+  },
+  {
+    "uid": 145,
+    "role": 0,
+    "password": "",
+    "name": "SAMAZISOKHI NDURU",
+    "cardno": 0,
+    "userId": "7000373"
+  },
+  {
+    "uid": 146,
+    "role": 0,
+    "password": "",
+    "name": "MUHDIN (Sani)",
+    "cardno": 0,
+    "userId": "7000393"
+  },
+  {
+    "uid": 147,
+    "role": 0,
+    "password": "",
+    "name": "RAMDANI (Marhama)",
+    "cardno": 0,
+    "userId": "7000401"
+  },
+  {
+    "uid": 148,
+    "role": 0,
+    "password": "",
+    "name": "MUHAMMAD MAULANA",
+    "cardno": 0,
+    "userId": "7000405"
+  },
+  {
+    "uid": 149,
+    "role": 0,
+    "password": "",
+    "name": "SUNARIYO (Susi)",
+    "cardno": 0,
+    "userId": "7000407"
+  },
+  {
+    "uid": 150,
+    "role": 0,
+    "password": "",
+    "name": "ANTON (Sumarni)",
+    "cardno": 0,
+    "userId": "7000408"
+  },
+  {
+    "uid": 151,
+    "role": 0,
+    "password": "",
+    "name": "RADIUS FRANZANIUS (Elsi",
+    "cardno": 0,
+    "userId": "7000409"
+  },
+  {
+    "uid": 152,
+    "role": 0,
+    "password": "",
+    "name": "PRADILO (Sunarni)",
+    "cardno": 0,
+    "userId": "7000412"
+  },
+  {
+    "uid": 153,
+    "role": 0,
+    "password": "",
+    "name": "RANDA (Mai)",
+    "cardno": 0,
+    "userId": "7000414"
+  },
+  {
+    "uid": 154,
+    "role": 0,
+    "password": "",
+    "name": "PINDRA (Zuraida)",
+    "cardno": 0,
+    "userId": "7000415"
+  },
+  {
+    "uid": 155,
+    "role": 0,
+    "password": "",
+    "name": "SUNIL (Maryati M)",
+    "cardno": 0,
+    "userId": "7000418"
+  },
+  {
+    "uid": 156,
+    "role": 0,
+    "password": "",
+    "name": "PRIANTO (Risnaiti)",
+    "cardno": 0,
+    "userId": "7000424"
+  },
+  {
+    "uid": 157,
+    "role": 0,
+    "password": "",
+    "name": "SUPITRO (Suhani)",
+    "cardno": 0,
+    "userId": "7000426"
+  },
+  {
+    "uid": 158,
+    "role": 0,
+    "password": "",
+    "name": "DARMAN (Misna)",
+    "cardno": 0,
+    "userId": "7000431"
+  },
+  {
+    "uid": 159,
+    "role": 0,
+    "password": "",
+    "name": "HENDRA LESMANA (Sundari",
+    "cardno": 0,
+    "userId": "7000432"
+  },
+  {
+    "uid": 160,
+    "role": 0,
+    "password": "",
+    "name": "IMAM MUHAMMAD",
+    "cardno": 0,
+    "userId": "7000437"
+  },
+  {
+    "uid": 161,
+    "role": 0,
+    "password": "",
+    "name": "BUDI YANTI (HERNAWATI)",
+    "cardno": 0,
+    "userId": "7000446"
+  },
+  {
+    "uid": 162,
+    "role": 0,
+    "password": "",
+    "name": "MUHAMMAD SUAEB (Patimah",
+    "cardno": 0,
+    "userId": "7000458"
+  },
+  {
+    "uid": 163,
+    "role": 0,
+    "password": "",
+    "name": "ARIANSYAH (Sa'diah)",
+    "cardno": 0,
+    "userId": "7000464"
+  },
+  {
+    "uid": 164,
+    "role": 0,
+    "password": "",
+    "name": "AJIY PRIANZA (Eva Suzan",
+    "cardno": 0,
+    "userId": "7000465"
+  },
+  {
+    "uid": 165,
+    "role": 0,
+    "password": "",
+    "name": "MUHAMAD DAHMAN (ICAH)",
+    "cardno": 0,
+    "userId": "7000469"
+  },
+  {
+    "uid": 166,
+    "role": 0,
+    "password": "",
+    "name": "MASRI (Inaq Kemi)",
+    "cardno": 0,
+    "userId": "7000476"
+  },
+  {
+    "uid": 167,
+    "role": 0,
+    "password": "",
+    "name": "ARAMAPENDI ZEBUA (Budin",
+    "cardno": 0,
+    "userId": "7000478"
+  },
+  {
+    "uid": 168,
+    "role": 0,
+    "password": "",
+    "name": "RENDI WAHYU PRAYUDI",
+    "cardno": 0,
+    "userId": "7000487"
+  },
+  {
+    "uid": 169,
+    "role": 0,
+    "password": "",
+    "name": "ROZIPANZI ( SOPIATI )",
+    "cardno": 0,
+    "userId": "7000488"
+  },
+  {
+    "uid": 170,
+    "role": 0,
+    "password": "",
+    "name": "DONNY SUPANA DALIMUNTHE",
+    "cardno": 0,
+    "userId": "7000492"
+  },
+  {
+    "uid": 171,
+    "role": 0,
+    "password": "",
+    "name": "ABDULLAH SYUKRON (Soliha",
+    "cardno": 0,
+    "userId": "7000493"
+  },
+  {
+    "uid": 172,
+    "role": 0,
+    "password": "",
+    "name": "FATHURRAHMAN ( AISAH )",
+    "cardno": 0,
+    "userId": "7000507"
+  },
+  {
+    "uid": 173,
+    "role": 0,
+    "password": "",
+    "name": "NANDAR (Nuraini)",
+    "cardno": 0,
+    "userId": "7000513"
+  },
+  {
+    "uid": 174,
+    "role": 0,
+    "password": "",
+    "name": "PEBI ( Yuhana )",
+    "cardno": 0,
+    "userId": "7000516"
+  },
+  {
+    "uid": 175,
+    "role": 0,
+    "password": "",
+    "name": "MUHAMMAD IQBAL ( Suniati",
+    "cardno": 0,
+    "userId": "7000517"
+  },
+  {
+    "uid": 176,
+    "role": 0,
+    "password": "",
+    "name": "DEDI SANDRA ( Mortini )",
+    "cardno": 0,
+    "userId": "7000518"
+  },
+  {
+    "uid": 177,
+    "role": 0,
+    "password": "",
+    "name": "MUHAMMAD ZARIL GIFARI",
+    "cardno": 0,
+    "userId": "7000520"
+  },
+  {
+    "uid": 178,
+    "role": 0,
+    "password": "",
+    "name": "UNTUNG PURNOMO ( Yoani )",
+    "cardno": 0,
+    "userId": "7000521"
+  },
+  {
+    "uid": 179,
+    "role": 0,
+    "password": "",
+    "name": "DICKY SAPUTRA (SURYANI)",
+    "cardno": 0,
+    "userId": "7000524"
+  },
+  {
+    "uid": 180,
+    "role": 0,
+    "password": "",
+    "name": "EFAN (Rahasianti)",
+    "cardno": 0,
+    "userId": "7000526"
+  },
+  {
+    "uid": 181,
+    "role": 0,
+    "password": "",
+    "name": "YONAS VERLIKAL ( DARYATI",
+    "cardno": 0,
+    "userId": "7000528"
+  },
+  {
+    "uid": 182,
+    "role": 0,
+    "password": "",
+    "name": "JEMI (MARYUNI)",
+    "cardno": 0,
+    "userId": "7000532"
+  },
+  {
+    "uid": 183,
+    "role": 0,
+    "password": "",
+    "name": "BAYU (MARNI)",
+    "cardno": 0,
+    "userId": "7000533"
+  },
+  {
+    "uid": 184,
+    "role": 0,
+    "password": "",
+    "name": "TEDDI SAPUTRA (SUDIARTI",
+    "cardno": 0,
+    "userId": "7000534"
+  },
+  {
+    "uid": 185,
+    "role": 0,
+    "password": "",
+    "name": "JAYADI (SADIAH)",
+    "cardno": 0,
+    "userId": "7000536"
+  },
+  {
+    "uid": 186,
+    "role": 0,
+    "password": "",
+    "name": "LORI ADDRIYAN (LUKA)",
+    "cardno": 0,
+    "userId": "7000538"
+  },
+  {
+    "uid": 187,
+    "role": 0,
+    "password": "",
+    "name": "YONDE LHESMONO",
+    "cardno": 0,
+    "userId": "7000544"
+  },
+  {
+    "uid": 188,
+    "role": 0,
+    "password": "",
+    "name": "IRWIN DIARTA AZ",
+    "cardno": 0,
+    "userId": "7000546"
+  },
+  {
+    "uid": 189,
+    "role": 0,
+    "password": "",
+    "name": "NANO KASINO (SENIBA)",
+    "cardno": 0,
+    "userId": "7000550"
+  },
+  {
+    "uid": 190,
+    "role": 0,
+    "password": "",
+    "name": "ANTONIUS",
+    "cardno": 0,
+    "userId": "7000551"
+  },
+  {
+    "uid": 191,
+    "role": 0,
+    "password": "",
+    "name": "SURYADI (JAMILA)",
+    "cardno": 0,
+    "userId": "7000552"
+  },
+  {
+    "uid": 192,
+    "role": 0,
+    "password": "",
+    "name": "TRI OKTAFIANDI ( Noryat",
+    "cardno": 0,
+    "userId": "7000557"
+  },
+  {
+    "uid": 193,
+    "role": 0,
+    "password": "",
+    "name": "KHUSNUDIN (NIA)",
+    "cardno": 0,
+    "userId": "7000570"
+  },
+  {
+    "uid": 194,
+    "role": 0,
+    "password": "",
+    "name": "USMAN (TUJATAH)",
+    "cardno": 0,
+    "userId": "7000573"
+  },
+  {
+    "uid": 195,
+    "role": 0,
+    "password": "",
+    "name": "MIZAN ASRORI (RUKYAH)",
+    "cardno": 0,
+    "userId": "7000575"
+  },
+  {
+    "uid": 196,
+    "role": 0,
+    "password": "",
+    "name": "WAHIDAN (Linah)",
+    "cardno": 0,
+    "userId": "7000578"
+  },
+  {
+    "uid": 197,
+    "role": 0,
+    "password": "",
+    "name": "DENI HIJRAL MUHAIMI",
+    "cardno": 0,
+    "userId": "7000580"
+  },
+  {
+    "uid": 198,
+    "role": 0,
+    "password": "",
+    "name": "MARTINUS LAIA (Rami Ati",
+    "cardno": 0,
+    "userId": "7000581"
+  },
+  {
+    "uid": 199,
+    "role": 0,
+    "password": "",
+    "name": "THOMAS NEVRI BELINGGA (N",
+    "cardno": 0,
+    "userId": "7000585"
+  },
+  {
+    "uid": 200,
+    "role": 0,
+    "password": "",
+    "name": "MUHALIM ( INAQ INUN )",
+    "cardno": 0,
+    "userId": "7000587"
+  },
+  {
+    "uid": 201,
+    "role": 0,
+    "password": "",
+    "name": "HENDAR ( KISAH )",
+    "cardno": 0,
+    "userId": "7000589"
+  },
+  {
+    "uid": 202,
+    "role": 0,
+    "password": "",
+    "name": "AYUP ( UMASA )",
+    "cardno": 0,
+    "userId": "7000590"
+  },
+  {
+    "uid": 203,
+    "role": 0,
+    "password": "",
+    "name": "SUDARMAN ( INAQ MAHYUN ",
+    "cardno": 0,
+    "userId": "7000593"
+  },
+  {
+    "uid": 204,
+    "role": 0,
+    "password": "",
+    "name": "SUPARLAN ( RINAH )",
+    "cardno": 0,
+    "userId": "7000595"
+  },
+  {
+    "uid": 205,
+    "role": 0,
+    "password": "",
+    "name": "SURIYADI ( INAQ MUHAR )",
+    "cardno": 0,
+    "userId": "7000598"
+  },
+  {
+    "uid": 206,
+    "role": 0,
+    "password": "",
+    "name": "MARUF ( NIAH )",
+    "cardno": 0,
+    "userId": "7000600"
+  },
+  {
+    "uid": 207,
+    "role": 0,
+    "password": "",
+    "name": "HARIADI ( INAQ MUKSIN )",
+    "cardno": 0,
+    "userId": "7000602"
+  },
+  {
+    "uid": 208,
+    "role": 0,
+    "password": "",
+    "name": "RIDWAN APRIYANTO ( MARLI",
+    "cardno": 0,
+    "userId": "7000603"
+  },
+  {
+    "uid": 209,
+    "role": 0,
+    "password": "",
+    "name": "RIDO FEBRIAN ( HELITASA",
+    "cardno": 0,
+    "userId": "7000604"
+  },
+  {
+    "uid": 210,
+    "role": 0,
+    "password": "",
+    "name": "SUHERMAN ( WASIAH )",
+    "cardno": 0,
+    "userId": "7000605"
+  },
+  {
+    "uid": 211,
+    "role": 0,
+    "password": "",
+    "name": "ANDRE SUPIANTO ( MURNI ",
+    "cardno": 0,
+    "userId": "7000606"
+  },
+  {
+    "uid": 212,
+    "role": 0,
+    "password": "",
+    "name": "SATPAM",
+    "cardno": 0,
+    "userId": "7000608"
+  },
+  {
+    "uid": 213,
+    "role": 0,
+    "password": "",
+    "name": "SAHRUN NADI ( MINARAH )",
+    "cardno": 0,
+    "userId": "7000609"
+  },
+  {
+    "uid": 214,
+    "role": 0,
+    "password": "",
+    "name": "T RAFLI NAUFAL FAKHAR",
+    "cardno": 0,
+    "userId": "7000610"
+  },
+  {
+    "uid": 215,
+    "role": 0,
+    "password": "",
+    "name": "BASTIANTO",
+    "cardno": 0,
+    "userId": "7000612"
+  },
+  {
+    "uid": 216,
+    "role": 0,
+    "password": "",
+    "name": "MUHKODAM ( JINEM )",
+    "cardno": 0,
+    "userId": "7000613"
+  },
+  {
+    "uid": 217,
+    "role": 0,
+    "password": "",
+    "name": "SURYADI ( SURYANI )",
+    "cardno": 0,
+    "userId": "7000614"
+  },
+  {
+    "uid": 218,
+    "role": 0,
+    "password": "",
+    "name": "PRADANI AKBAR ( NENGSIH ",
+    "cardno": 0,
+    "userId": "7000615"
+  },
+  {
+    "uid": 219,
+    "role": 0,
+    "password": "",
+    "name": "EDI MARYANTO ( ARYANI )",
+    "cardno": 0,
+    "userId": "7000616"
+  },
+  {
+    "uid": 220,
+    "role": 2,
+    "password": "",
+    "name": "GIURI DUMITA",
+    "cardno": 0,
+    "userId": "10044"
+  },
+  {
+    "uid": 221,
+    "role": 0,
+    "password": "",
+    "name": "SUMARDI",
+    "cardno": 0,
+    "userId": "7000621"
+  },
+  {
+    "uid": 222,
+    "role": 0,
+    "password": "",
+    "name": "ISWANDI",
+    "cardno": 0,
+    "userId": "7000622"
+  },
+  {
+    "uid": 223,
+    "role": 0,
+    "password": "",
+    "name": "ALDI DWINATA",
+    "cardno": 0,
+    "userId": "7000623"
+  },
+  {
+    "uid": 224,
+    "role": 0,
+    "password": "",
+    "name": "RINDI PRIANTO",
+    "cardno": 0,
+    "userId": "7000624"
+  },
+  {
+    "uid": 225,
+    "role": 0,
+    "password": "",
+    "name": "AHMAD RAMDAN AMIN SALEH",
+    "cardno": 0,
+    "userId": "7000625"
+  },
+  {
+    "uid": 226,
+    "role": 14,
+    "password": "",
+    "name": "Yen Cun",
+    "cardno": 0,
+    "userId": "1"
+  },
+  {
+    "uid": 227,
+    "role": 0,
+    "password": "",
+    "name": "MULYANA",
+    "cardno": 0,
+    "userId": "69"
+  }
+]

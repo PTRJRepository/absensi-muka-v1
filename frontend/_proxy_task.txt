@@ -1,0 +1,71 @@
+# Absensi Muka — Fix Vite Proxy + Attendance Data Display
+
+## SITUATION
+Frontend: http://localhost:3001 (Vite dev server)
+Backend: http://localhost:8004 (Express)
+Proxy in vite.config.ts sends /api → localhost:8004
+
+## THE BUGS
+
+### Bug 1: API_BASE uses absolute URL (FIXED)
+src/lib/api.ts had `http://localhost:8004` hardcoded — bypasses Vite proxy.
+Fixed to: `''` (empty string = relative path, uses proxy).
+
+### Bug 2: Vite proxy returns HTML for /api/attendance/* paths
+When browsing http://localhost:3001/absensi, the attendance data shows 0.
+
+Vite proxy WORKS for /api/dashboard/stats (returns JSON) but FAILS for
+/api/attendance/daily?date=2026-06-18 (returns HTML).
+
+Your job: diagnose and fix this.
+
+## EXPLORATION STEPS
+
+1. Read vite.config.ts to check proxy config
+2. Read src/lib/api.ts current state
+3. Check if Vite is serving in SPA mode (all non-file routes return index.html)
+4. Test: curl -v "http://localhost:3001/api/attendance/daily?date=2026-06-18" 
+   Look at the actual HTTP response headers and body
+5. Test: curl -v "http://localhost:8004/api/attendance/daily?date=2026-06-18"
+   Compare headers and body
+6. Check if there are multiple Vite processes running causing port conflicts
+7. Read src/main.tsx and src/App.tsx to check React Router setup
+
+## ROOT CAUSE DIAGNOSIS
+
+Possible causes:
+- Vite proxy config is wrong (maybe needs http: true or changeOrigin: true)
+- Vite is running in SPA mode and returning index.html for /api routes
+- Two Vite processes fighting for port 3001
+- vite.config.ts proxy has a rewrite rule that doesn't match /api/attendance
+
+## FIX PLAN
+
+Write findings to: D:/Gawean Rebinmas/Absensi_Muka/frontend/PROXY_FIX_PLAN.md
+
+Include:
+- Root cause (confirmed)
+- Exact fix needed in vite.config.ts OR api.ts
+- Before/after code
+- Verification command: curl must return JSON from /api/attendance/daily
+
+## EXECUTE
+
+After writing the plan, apply the fix using Write/Edit tools.
+
+## VERIFICATION
+
+After fixing:
+1. Kill all node.exe processes on port 3001
+2. Start fresh: cd D:/Gawean Rebinmas/Absensi_Muka/frontend && npx vite --port 3001
+3. Wait 5 seconds
+4. Test: curl -s "http://localhost:3001/api/attendance/daily?date=2026-06-18" 
+   Must return JSON (starts with { or [)
+5. Run: npx vite build -- must succeed
+6. Navigate browser to http://localhost:3001/absensi and verify data shows
+
+## FILES TO READ
+- D:/Gawean Rebinmas/Absensi_Muka/frontend/vite.config.ts
+- D:/Gawean Rebinmas/Absensi_Muka/frontend/src/lib/api.ts
+- D:/Gawean Rebinmas/Absensi_Muka/frontend/src/main.tsx
+- D:/Gawean Rebinmas/Absensi_Muka/frontend/src/App.tsx

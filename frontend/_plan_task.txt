@@ -1,0 +1,81 @@
+
+# FRONTEND REFACTOR PLANNING — Absensi Muka
+
+## Context
+- Project: D:/Gawean Rebinmas/Absensi_Muka/frontend
+- Framework: React 19 + Vite + TypeScript
+- Backend API: localhost:8004 (Express/TypeScript)
+- Corporate colors: Dark navy #071426 + green #167A3A
+- Language: Bahasa Indonesia
+- Design: Windows tile/modern enterprise dashboard style
+
+## Current State (read these files first)
+1. frontend/src/main.tsx
+2. frontend/src/App.tsx (if exists)
+3. frontend/src/components/*.tsx (all 5 components)
+4. frontend/src/lib/api.ts
+5. frontend/src/styles.css
+6. frontend/package.json
+7. frontend/index.html
+
+## Planning Task
+You are Chord — senior frontend architect. Produce a comprehensive refactor plan.
+
+### Required Sections in Plan:
+
+1. **Color & Theme Migration**
+   - Replace all blue (#1e40af, #3b82f6, etc.) with dark navy #071426
+   - Replace all green (#059669, #10b981) with #167A3A
+   - Replace accent/hover colors appropriately
+   - Define CSS variables for all corporate colors
+
+2. **UI Language Migration (English → Bahasa Indonesia)**
+   - Dashboard → Dasbor
+   - Machine Status → Status Mesin
+   - Attendance → Absensi
+   - Employees → Karyawan
+   - Schedule → Jadwal
+   - Sync Status → Status Sinkronisasi
+   - Quality Report → Laporan Kualitas
+   - All labels, headers, buttons, placeholders, tooltips
+
+3. **Component Architecture Redesign**
+   - Split Dashboard.tsx into smaller focused components
+   - Add: Header.tsx, Sidebar.tsx, StatCard.tsx, TileGrid.tsx
+   - Convert single-page to multi-page routing with react-router-dom
+   - Pages: /dasbor, /mesin, /absensi, /laporan, /pengaturan
+
+4. **Windows Tile Design System**
+   - Grid-based tile layout (like Windows 11 Start Menu)
+   - Card components with subtle shadows, rounded corners (8px)
+   - Status indicators with colored dots (green=online, red=offline, yellow=syncing)
+   - Consistent spacing: 16px base unit, 24px gaps
+   - Responsive: 1-4 columns based on viewport
+
+5. **Data Visualization Upgrade**
+   - Replace basic tables with sortable/paginated TanStack Table
+   - Add recharts: bar chart for daily attendance, pie for division distribution
+   - Live data refresh with React Query (keep existing)
+
+6. **Modernization Checklist**
+   - Add react-router-dom v6 for routing
+   - Add lucide-react or react-icons for consistent iconography
+   - CSS Modules or styled approach (recommend CSS Modules per component)
+   - Error boundaries for graceful failure
+   - Loading skeletons instead of spinners
+
+7. **File Structure Recommendation**
+   - Proposed new src/ structure (show tree)
+   - Which files to CREATE, which to MODIFY, which to DELETE
+
+## Output
+Write your COMPLETE plan to: D:/Gawean Rebinmas/Absensi_Muka/frontend/FRONTEND_REFACTOR_PLAN.md
+
+The plan must be:
+- Detailed enough that another developer can execute it without asking questions
+- Include exact file paths for every change
+- Include code snippets for key components
+- Prioritized: P0 (critical), P1 (important), P2 (nice-to-have)
+- In Bahasa Indonesia for UI labels section
+
+Return: "PLAN_WRITTEN" when done.

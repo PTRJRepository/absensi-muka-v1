@@ -1,0 +1,92 @@
+{
+  "id": "IMPL-007",
+  "title": "Create sync-hr-current-snapshot.ts script",
+  "scope": "src/scripts/sync-hr-current-snapshot.ts",
+  "action": "Create",
+  "description": "Create CLI script to sync hr_employee_current_snapshot from db_ptrj.HR_EMPLOYEE with ROW_NUMBER() ranking",
+  "files": [
+    {
+      "path": "src/scripts/sync-hr-current-snapshot.ts",
+      "action": "create",
+      "target": "new script",
+      "change": "Create script to refresh HR current snapshot table"
+    }
+  ],
+  "implementation": [
+    "Create TypeScript script with proper imports from lib/db.ts",
+    "Connect to db_ptrj.HR_EMPLOYEE using linked server or direct connection",
+    "Execute ROW_NUMBER() query partitioned by NIK",
+    "Insert/update hr_employee_current_snapshot table",
+    "Log progress with row counts",
+    "Handle errors gracefully with proper exit codes",
+    "Support --dry-run flag for testing",
+    "Support --verbose flag for detailed logging"
+  ],
+  "reference": {
+    "pattern": "Follow existing script patterns",
+    "files": [
+      "src/scripts/sync-employees-from-hr.ts",
+      "src/scripts/sync-zkteco-hr-mapping.ts"
+    ],
+    "examples": "Use query/execute from lib/db.ts pattern"
+  },
+  "convergence": {
+    "criteria": [
+      "Script compiles without errors: npx tsc src/scripts/sync-hr-current-snapshot.ts",
+      "Script runs and updates snapshot table",
+      "Output shows row count of updated/inserted records",
+      "NIK 1906041207910002 maps to A0966 after sync"
+    ]
+  },
+  "depends_on": ["IMPL-003", "IMPL-004"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-007",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 2,
+  "code_skeleton": {
+    "interfaces": [
+      {
+        "name": "HREmployeeRow",
+        "definition": "{ nik: string, empCode: string, empName: string, locCode: string, hrStatus: string, updateDate: Date, createDate: Date }",
+        "purpose": "Row from db_ptrj.HR_EMPLOYEE"
+      },
+      {
+        "name": "SnapshotRow",
+        "definition": "{ nik: string, currentEmpCode: string, currentEmpName: string, currentLocCode: string, currentHrStatus: string, activeCount: number, totalRowCount: number, isAmbiguous: boolean }",
+        "purpose": "Row for hr_employee_current_snapshot"
+      }
+    ],
+    "functions": [
+      {
+        "signature": "async function fetchHRData(): Promise<HREmployeeRow[]>",
+        "purpose": "Fetch all employee rows from db_ptrj.HR_EMPLOYEE",
+        "returns": "HREmployeeRow[]"
+      },
+      {
+        "signature": "function computeCurrentSnapshot(rows: HREmployeeRow[]): SnapshotRow[]",
+        "purpose": "Compute ROW_NUMBER() ranking and filter current=1",
+        "returns": "SnapshotRow[]"
+      },
+      {
+        "signature": "async function syncSnapshot(snapshots: SnapshotRow[]): Promise<{ inserted: number, updated: number }>",
+        "purpose": "Merge data into hr_employee_current_snapshot",
+        "returns": "{ inserted: number, updated: number }"
+      }
+    ]
+  },
+  "test": {
+    "manual_checks": [
+      "Run script with --dry-run flag",
+      "Verify output row counts match expected"
+    ],
+    "success_metrics": [
+      "Script completes in < 5 minutes for 5000 employees",
+      "All NIKs with Status='1' have is_current=1"
+    ],
+    "unit": [
+      "test_compute_current_snapshot_with_multiple_niks"
+    ],
+    "integration": []
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "id": "IMPL-018",
+  "title": "Update DashboardPage for currentEmpCode statistics",
+  "scope": "frontend/src/components/features/dashboard/DashboardPage.tsx",
+  "action": "Update",
+  "description": "Update DashboardPage to include currentEmpCode statistics in KPI cards",
+  "files": [
+    {
+      "path": "frontend/src/components/features/dashboard/DashboardPage.tsx",
+      "action": "modify",
+      "target": "DashboardPage",
+      "change": "Add currentEmpCode statistics to dashboard KPIs"
+    }
+  ],
+  "implementation": [
+    "Add KPI card for MAPPED_CURRENT vs PARSED_ONLY ratio",
+    "Add KPI for NIK_NOT_FOUND count (needs review)",
+    "Query API for current mapping status statistics",
+    "Update chart data if applicable",
+    "Handle loading and error states"
+  ],
+  "reference": {
+    "pattern": "Follow existing dashboard patterns",
+    "files": [
+      "frontend/src/components/features/dashboard/DashboardPage.tsx",
+      "frontend/src/components/features/dashboard/components/KpiCard.tsx"
+    ],
+    "examples": "Use existing KPI card component"
+  },
+  "convergence": {
+    "criteria": [
+      "Dashboard shows new currentEmpCode KPIs",
+      "KPI values update correctly",
+      "Loading state shown during data fetch"
+    ]
+  },
+  "depends_on": ["IMPL-011"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-018",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 6,
+  "test": {
+    "manual_checks": [
+      "Verify KPIs display correctly"
+    ],
+    "success_metrics": [
+      "npm run frontend:build passes"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

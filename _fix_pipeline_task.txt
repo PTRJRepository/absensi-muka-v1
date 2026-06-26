@@ -1,0 +1,37 @@
+# Task: Fix attendance_imports Pipeline + Handle Unmapped
+
+## CONTEXT
+- attendance_imports table = EMPTY (0 records)
+- 186,232 scan logs exist in attendance_scan_logs
+- 16,762 mapped (9%), 1,045 unmapped
+- All unmapped have pattern 9000xxx from machines AB1, ARE, OFFICE_APE
+- Division dashboards show NOTHING because attendance_imports is empty
+
+## USER REQUIREMENT
+"pisahkan ke divisi sendiri, yang belum lengkap untuk dilengkapi nanti"
+- Unmapped/Need Review → special division "MANUAL_REVIEW" with flag needs_manual_review=true
+- All identifiable records should flow into attendance_imports
+- Division dashboard must show data NOW
+
+## YOUR TASK
+1. Read current sync-orchestrator.service.ts and attendance-process-import.service.ts
+2. Read attendance-process.routes.ts to see existing endpoints
+3. Check current HTML pages: machines.html, machine-compare.html, division-analysis.html
+4. Identify what prevents attendance_imports from being populated
+5. Modify processScanLogsForBatch to:
+   a. Include ALL mapped records (remove e.id IS NOT NULL filter if blocking)
+   b. Add needs_manual_review flag for unmapped/need_review records
+   c. For unmapped records, create employee_code = 'MANUAL_' + raw_device_user_id
+   d. Set division_code = 'MANUAL_REVIEW'
+6. Ensure sync pipeline auto-calls processScanLogsForBatch after inserting scan logs
+7. Test the fix by calling POST /api/attendance/process-all-scan-logs
+8. Verify attendance_imports now has data
+9. Take screenshots of the HTML pages showing data
+
+## CONSTRAINT
+- Don't break existing working features
+- Focus on getting attendance_imports populated
+- Keep unmapped records accessible for manual HR review
+
+## OUTPUT
+Write a brief plan (max 500 words) of what you found and what needs to change.

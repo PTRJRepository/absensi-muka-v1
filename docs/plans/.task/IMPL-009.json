@@ -1,0 +1,56 @@
+{
+  "id": "IMPL-009",
+  "title": "Update sync-orchestrator.service.ts to populate currentEmpCode columns",
+  "scope": "src/modules/import/sync-orchestrator.service.ts",
+  "action": "Update",
+  "description": "Update sync orchestrator to load HR snapshot, resolve currentEmpCode during sync, and populate current_* columns in scan logs",
+  "files": [
+    {
+      "path": "src/modules/import/sync-orchestrator.service.ts",
+      "action": "modify",
+      "target": "SyncOrchestrator class",
+      "change": "Add HR snapshot loading and currentEmpCode resolution during sync"
+    }
+  ],
+  "implementation": [
+    "Inject EmployeeMappingService to use new currentEmpCode methods",
+    "Add loadHREmployeeSnapshot() call at syncViaZkteco start",
+    "Update attendance scan log insertion to include resolved_nik, current_emp_code, current_mapping_status, current_mapping_reason, current_resolved_at",
+    "Update machine_user_raw insertion if applicable",
+    "Log current resolution stats: MAPPED_CURRENT count, PARSED_ONLY count, etc"
+  ],
+  "reference": {
+    "pattern": "Follow existing sync-orchestrator patterns",
+    "files": [
+      "src/modules/import/sync-orchestrator.service.ts"
+    ],
+    "examples": "Existing employeeCodes/Names loading pattern"
+  },
+  "convergence": {
+    "criteria": [
+      "Sync completes with current_* columns populated",
+      "NIK 1906041207910002 from rawDeviceUserId J0786 resolves to currentEmpCode A0966",
+      "Check: SELECT raw_device_user_id, resolved_nik, current_emp_code FROM attendance_scan_logs WHERE current_emp_code IS NOT NULL"
+    ]
+  },
+  "depends_on": ["IMPL-008"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-009",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 3,
+  "test": {
+    "manual_checks": [
+      "Run sync on accessible machine",
+      "Verify current_* columns populated in scan logs"
+    ],
+    "success_metrics": [
+      "Sync completes without errors",
+      "> 90% of mapped records have current_mapping_status='MAPPED_CURRENT'"
+    ],
+    "unit": [],
+    "integration": [
+      "test_sync_with_current_empcode_resolution"
+    ]
+  }
+}

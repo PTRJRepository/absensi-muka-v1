@@ -1,0 +1,65 @@
+# Explore & Plan: Fix Absensi Muka Frontend Data Display
+
+## CONTEXT
+- Frontend: D:/Gawean Rebinmas/Absensi_Muka/frontend (React 19 + Vite + TanStack Query)
+- Backend: D:/Gawean Rebinmas/Absensi_Muka (Express, port 8004)
+- Frontend runs on: http://localhost:3001
+- Corporate colors: #071426 (navy) + #167A3A (green), Bahasa Indonesia
+
+## PROBLEM
+The attendance page (http://localhost:3001/absensi) shows "Loading" then "0" records even though:
+- Backend `/api/attendance/daily?date=2026-06-18` returns data (verified with curl)
+- The API client was updated to handle both wrapped and unwrapped responses
+- The dashboard stats work fine
+
+## YOUR TASK (PHASE 1: EXPLORE)
+
+1. Read these frontend files to understand current state:
+   - `src/lib/api.ts` — current API client implementation
+   - `src/components/features/attendance/AttendancePage.tsx` — attendance page
+   - `src/components/features/dashboard/DashboardPage.tsx` — dashboard (works)
+   - `src/components/features/realtime/RealtimePage.tsx` — realtime page
+   - `src/types/index.ts` — TypeScript types
+
+2. Test API responses directly from the server using Bash:
+   ```bash
+   curl -s "http://localhost:8004/api/attendance/daily?date=2026-06-18" | head -c 500
+   curl -s "http://localhost:8004/api/dashboard/stats" | head -c 500
+   curl -s "http://localhost:8004/api/machines" | head -c 500
+   ```
+   Compare the JSON structure of each response.
+
+3. Test the frontend API client behavior:
+   ```bash
+   curl -s "http://localhost:3001/api/attendance/daily?date=2026-06-18"
+   ```
+   Check if the dev server proxies to port 8004 or not.
+
+4. Check vite.config.ts for any proxy configuration that might be missing.
+
+5. Check what endpoint the attendance page is ACTUALLY calling by looking at the network tab logic.
+
+6. Verify the TanStack Query setup in main.tsx vs AttendancePage.tsx.
+
+## YOUR TASK (PHASE 2: WRITE PLAN)
+
+After exploration, write a detailed fix plan to:
+`D:/Gawean Rebinmas/Absensi_Muka/frontend/ATTENDANCE_FIX_PLAN.md`
+
+The plan must include:
+- Root cause of why attendance data shows 0
+- All files that need modification
+- Exact code changes needed (show before/after)
+- Verification steps
+
+## YOUR TASK (PHASE 3: EXECUTE)
+
+Only after writing the plan, execute the fixes using Write/Edit tools.
+
+## IMPORTANT
+- Use Bash for network tests
+- Read files before modifying them
+- If you need to write files, use the Write tool
+- If you need to edit, use the Edit tool
+- After fixing, run `npx vite build` to verify no build errors
+- Test by navigating to http://localhost:3001/absensi in the browser

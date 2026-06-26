@@ -1,0 +1,84 @@
+{
+  "id": "IMPL-001",
+  "title": "Create migration 042: Add currentEmpCode columns to attendance_scan_logs",
+  "scope": "migrations/042_add_current_empcode_columns.sql",
+  "action": "Create",
+  "description": "Add columns for currentEmpCode resolution to attendance_scan_logs table: resolved_nik, current_emp_code, current_employee_id, current_mapping_status, current_mapping_reason, current_resolved_at",
+  "files": [
+    {
+      "path": "migrations/042_add_current_empcode_columns.sql",
+      "action": "create",
+      "target": "new migration file",
+      "change": "Add currentEmpCode tracking columns to attendance_scan_logs"
+    }
+  ],
+  "implementation": [
+    "Create migration file with IF NOT EXISTS checks for each column",
+    "Add resolved_nik NVARCHAR(30) NULL for NIK from HR_EMPLOYEE lookup",
+    "Add current_emp_code NVARCHAR(30) NULL for resolved current employee code",
+    "Add current_employee_id INT NULL for FK to employees table",
+    "Add current_mapping_status NVARCHAR(30) NULL for MAPPED_CURRENT/PARSED_ONLY/NIK_NOT_FOUND/etc",
+    "Add current_mapping_reason NVARCHAR(500) NULL for resolution explanation",
+    "Add current_resolved_at DATETIME2 NULL for resolution timestamp",
+    "Create index IX_scan_logs_resolved_nik ON attendance_scan_logs(resolved_nik) WHERE resolved_nik IS NOT NULL",
+    "Create index IX_scan_logs_current_emp_code ON attendance_scan_logs(current_emp_code) WHERE current_emp_code IS NOT NULL"
+  ],
+  "reference": {
+    "pattern": "Follow existing migration patterns from migrations/042_add_nik_and_employee_master_quality.sql",
+    "files": [
+      "migrations/042_add_nik_and_employee_master_quality.sql",
+      "migrations/019_add_zkteco_user_id.sql"
+    ],
+    "examples": "Use IF NOT EXISTS pattern, backup tables before schema changes, print row counts"
+  },
+  "convergence": {
+    "criteria": [
+      "Migration runs successfully without errors",
+      "6 new columns added to attendance_scan_logs table",
+      "2 new indexes created for performance",
+      "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='attendance_scan_logs' AND COLUMN_NAME IN ('resolved_nik','current_emp_code','current_employee_id','current_mapping_status','current_mapping_reason','current_resolved_at') returns 6"
+    ]
+  },
+  "depends_on": [],
+  "cli_execution_id": "plan-2026-06-23-IMPL-001",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 1,
+  "rationale": {
+    "chosen_approach": "Direct column addition with indexes for query performance",
+    "alternatives_considered": [
+      "Separate tracking table - rejected due to join complexity",
+      "Computed columns - rejected due to performance overhead"
+    ],
+    "decision_factors": [
+      "Query performance for real-time sync",
+      "Backward compatibility",
+      "Audit trail requirements"
+    ],
+    "tradeoffs": "Additional storage per row but enables complete tracking"
+  },
+  "test": {
+    "manual_checks": [
+      "Verify all 6 columns exist after migration",
+      "Verify indexes exist in sys.indexes"
+    ],
+    "success_metrics": [
+      "Migration completes in < 60 seconds",
+      "Zero rows affected for existing data modification"
+    ],
+    "unit": [
+      "test_migration_042_columns_exist"
+    ],
+    "integration": []
+  },
+  "risks": [
+    {
+      "description": "Large table scan_logs may cause migration timeout",
+      "probability": "Medium",
+      "impact": "Medium",
+      "mitigation": "Run during off-peak hours; set migration timeout to 5 minutes",
+      "fallback": "Split into batched approach with row-by-row updates"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "IMPL-005",
+  "title": "Create migration 046: Add currentEmpCode columns to zkteco_absensi_user_registry",
+  "scope": "migrations/046_add_current_empcode_registry.sql",
+  "action": "Create",
+  "description": "Add currentEmpCode resolution columns to zkteco_absensi_user_registry: resolved_nik, current_emp_code, current_emp_name, current_hr_status, current_hr_loc_code, current_resolution_status, current_resolution_method, current_resolution_reason, current_resolved_at",
+  "files": [
+    {
+      "path": "migrations/046_add_current_empcode_registry.sql",
+      "action": "create",
+      "target": "zkteco_absensi_user_registry",
+      "change": "Add currentEmpCode resolution tracking columns"
+    }
+  ],
+  "implementation": [
+    "Add resolved_nik NVARCHAR(30) NULL",
+    "Add current_emp_code NVARCHAR(30) NULL",
+    "Add current_emp_name NVARCHAR(100) NULL",
+    "Add current_hr_status NVARCHAR(20) NULL",
+    "Add current_hr_loc_code NVARCHAR(20) NULL",
+    "Add current_resolution_status NVARCHAR(30) NULL",
+    "Add current_resolution_method NVARCHAR(30) NULL",
+    "Add current_resolution_reason NVARCHAR(500) NULL",
+    "Add current_resolved_at DATETIME2 NULL",
+    "Create indexes for performance"
+  ],
+  "reference": {
+    "pattern": "Follow existing migration patterns",
+    "files": [
+      "migrations/041_sanitize_long_absensi_user_registry.sql"
+    ],
+    "examples": "Use IF NOT EXISTS pattern for columns"
+  },
+  "convergence": {
+    "criteria": [
+      "All 9 columns added successfully",
+      "Indexes created for lookup columns"
+    ]
+  },
+  "depends_on": [],
+  "cli_execution_id": "plan-2026-06-23-IMPL-005",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 1,
+  "test": {
+    "manual_checks": [
+      "Verify all 9 columns exist"
+    ],
+    "success_metrics": [
+      "Migration completes without errors"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

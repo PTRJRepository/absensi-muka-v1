@@ -1,0 +1,56 @@
+{
+  "id": "IMPL-002",
+  "title": "Create migration 043: Add currentEmpCode columns to attendance_imports",
+  "scope": "migrations/043_add_current_empcode_columns_imports.sql",
+  "action": "Create",
+  "description": "Add columns for currentEmpCode to attendance_imports table: parsed_employee_code, resolved_nik, current_emp_code, current_employee_id, mapping_version",
+  "files": [
+    {
+      "path": "migrations/043_add_current_empcode_columns_imports.sql",
+      "action": "create",
+      "target": "new migration file",
+      "change": "Add currentEmpCode and mapping_version columns to attendance_imports"
+    }
+  ],
+  "implementation": [
+    "Create migration file with IF NOT EXISTS checks",
+    "Add parsed_employee_code NVARCHAR(30) NULL to preserve original parsed code",
+    "Add resolved_nik NVARCHAR(30) NULL for NIK lookup",
+    "Add current_emp_code NVARCHAR(30) NULL for final resolved code",
+    "Add current_employee_id INT NULL for FK",
+    "Add mapping_version INT NOT NULL DEFAULT 1 for version tracking",
+    "Create index IX_imports_current_emp_code ON attendance_imports(current_emp_code) WHERE current_emp_code IS NOT NULL"
+  ],
+  "reference": {
+    "pattern": "Follow existing migration patterns",
+    "files": [
+      "migrations/007_insert_imports_from_mapped.sql",
+      "migrations/042_add_nik_and_employee_master_quality.sql"
+    ],
+    "examples": "Use IF NOT EXISTS pattern for columns and indexes"
+  },
+  "convergence": {
+    "criteria": [
+      "Migration runs successfully",
+      "5 new columns added to attendance_imports",
+      "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='attendance_imports' AND COLUMN_NAME IN ('parsed_employee_code','resolved_nik','current_emp_code','current_employee_id','mapping_version') returns 5"
+    ]
+  },
+  "depends_on": ["IMPL-001"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-002",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 1,
+  "test": {
+    "manual_checks": [
+      "Verify all 5 columns exist",
+      "Verify mapping_version default is 1"
+    ],
+    "success_metrics": [
+      "Migration completes without errors"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

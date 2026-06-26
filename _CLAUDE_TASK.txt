@@ -1,0 +1,113 @@
+# TASK: Refactor & Fix Absensi_Muka Application
+
+## Context
+
+You are exploring and fixing a biometric attendance monitoring application for PT Rebinmas Jaya (palm oil plantation company).
+
+### Project Location
+`D:/Gawean Rebinmas/Absensi_Muka`
+
+### Tech Stack
+- **Backend**: Node.js/TypeScript, raw `http` module (NOT Express/Fastify), compiled with `tsc`
+- **Database**: Microsoft SQL Server (MSSQL) on `10.0.0.110:1433`, database: `rebinmas_absensi_monitoring`
+- **Auth**: Connection string in `.env` file (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`)
+- **Build**: `npm run build` → `tsc` → output `dist/`
+- **Entry**: `node dist/server.js` (NOT `dist/index.js`)
+- **Port**: `8004`
+
+### Database Tables (real schema)
+- `attendance_scan_logs` — raw scan logs from ZKTeco machines
+- `attendance_imports` — aggregated daily attendance records
+- `attendance_machines` — machine/device registry
+- `employees` — employee master data
+- `divisions` — division master data (columns: `id`, `division_code`, `division_name`, `is_active`, `created_at`)
+- `shifts`, `holidays`, `gangs`, `loc_codes`, `scanner_codes`, `roles`, `users`, etc.
+
+### Known Working Endpoints (verified)
+- `GET /api/employees` ✅
+- `GET /api/machines` ✅
+- `GET /api/divisions` ✅
+- `GET /api/attendance/summary` ✅
+- `GET /api/attendance/daily` ✅ (needs date param)
+- `GET /api/attendance/employee/:code` ✅
+- `GET /api/dashboard/stats` ✅
+- `GET /api/reports/daily` ✅
+
+### Known BROKEN Endpoints
+- `GET /api/divisions/:code/attendance` — uses `description` column (doesn't exist)
+- `GET /api/dashboard/summary` — references `vw_attendance_final` (doesn't exist)
+- `GET /api/dashboard/division-summary` — references `vw_attendance_daily_summary` (doesn't exist)
+- `GET /api/dashboard/sync-status` — references `vw_sync_latest_status` (doesn't exist)
+- Any endpoint referencing `mst_machine`, `mst_employee`, `attendance_raw_log`, `machine_user_map`, `import_batch` — wrong table names
+- `GET /api/attendance/imports` — NOT FOUND (no route registered)
+
+### Employee Code Mapping Rules (already implemented in `src/modules/mapping/employee-code-mapper.ts`)
+- Division letter prefix → `locCode` mapping: `AB1=G`, `AB2=H`, `ARA=A`, `ARC=A`
+- 4-digit numeric: prepend `locCode` → e.g. `0001` + `G` = `G0001`
+- 5-digit numeric: strip leading digit, check 4-digit → then check 6-digit fallback
+- 6-digit numeric: direct lookup
+- 7-digit numeric with prefix: direct lookup (e.g. `4000001` exists as employee_code `4000001`)
+- Non-numeric: NEED_REVIEW
+- 9xxxxxx: direct lookup
+
+### Attendance Data Status
+- `attendance_scan_logs`: 564,864 total records (ALL MAPPED)
+- `attendance_imports`: 40,855 aggregated records (estate workers only)
+- Unique employees in imports: 960
+- Date range: 1999-12-31 to 2026-06-18
+- MILL/PGE staff marked as `MAPPED` with `parsed_employee_code = 'MILL_xxx'` (excluded from imports)
+
+---
+
+## YOUR TASKS (IN ORDER)
+
+### PHASE 1: EXPLORE & AUDIT
+1. Read ALL route files in `src/api/routes/` to find every endpoint
+2. Check which endpoints reference non-existent tables/views/columns
+3. List every broken endpoint with its specific error
+4. Check `attendance_imports` table schema — what columns does it have?
+5. Check `attendance_scan_logs` table schema — what columns does it have?
+6. Check `attendance_machines` table schema
+7. Check if `shifts`, `holidays`, `gangs` tables have data
+8. Test ALL endpoints systematically with curl to get full status
+
+### PHASE 2: CREATE PLAN.md
+Write a detailed fix plan to `D:/Gawean Rebinmas/Absensi_Muka/PLAN.md` covering:
+1. List of all broken endpoints and what needs to be fixed
+2. New endpoint to add: `GET /api/attendance/imports` (list attendance_imports with pagination)
+3. New endpoint to add: `GET /api/attendance/latest` (recent attendance records)
+4. Table/view reference fixes needed
+5. Any missing joins or data transformation needed
+6. Order of fixes (prioritize working endpoints first)
+
+### PHASE 3: FIX IT
+Fix ALL broken endpoints. Key rules:
+- Replace references to non-existent tables with real table names
+- Replace references to non-existent views with real table queries
+- Remove `description` column from divisions queries
+- Fix `created_at` → correct column names (check actual schema)
+- Add missing route for `/api/attendance/imports`
+- For attendance queries, use `attendance_imports` table with `parsed_employee_code` → JOIN to `employees` table for names
+- Use `attendance_machines` (NOT `machines`)
+
+### PHASE 4: REBUILD & VERIFY
+1. Run `npm run build`
+2. Kill old server process, start new one
+3. Test ALL endpoints with curl
+4. Report final status
+
+---
+
+## Critical Notes
+- The app uses a raw `http` router in `src/api/router.ts` — routes must be registered there
+- Every route file imports `route`, `sendJson`, `sendError` from api modules
+- Database queries use `query<T>()` from `src/lib/db.ts` with parameterized queries
+- Pre-existing lint errors in `node_modules` and `src/lib/db.ts` are IGNORED — they don't block the build
+- Server must run as `node dist/server.js` from `D:/Gawean Rebinmas/Absensi_Muka`
+- After ANY file change, rebuild (`npm run build`) before restarting server
+
+## Output Format
+- Phase 1: List ALL broken endpoints with specific errors
+- Phase 2: Write `PLAN.md`
+- Phase 3: Fix files, report what was changed
+- Phase 4: Final test results (table of all endpoints with ✅/❌)

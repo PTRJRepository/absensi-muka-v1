@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riwayat Import - PTRJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#071426;--green:#167A3A;--green-light:#1a9a4a;--bg:#F1F5F9;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--danger:#dc2626;--success:#16a34a}
+body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--navy);color:#fff;flex-shrink:0;position:fixed;height:100vh;overflow-y:auto}
+.sidebar .logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar .logo h1{font-size:15px;font-weight:700}
+.sidebar .logo span{display:block;font-size:11px;font-weight:400;opacity:.6;margin-top:2px}
+.sidebar nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff;border-left-color:var(--green)}
+.nav-item i{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.4}
+.main{flex:1;margin-left:240px}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar h2{font-size:18px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:var(--green-light)}
+.content{padding:28px}
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:24px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-title{font-size:15px;font-weight:600}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#f8fafc;cursor:pointer}
+.badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#dcfce7;color:#166534}.badge-red{background:#fee2e2;color:#991b1b}
+.badge-yellow{background:#fef9c3;color:#854d0e}.badge-gray{background:#f1f5f9;color:#475569}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+.loading::after{content:" ";display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:1000;display:none;border-left:4px solid var(--green)}
+.toast.show{display:block}
+.text-green{color:var(--green)}.text-red{color:var(--danger)}.text-muted{color:var(--muted)}
+.filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+select,input{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text)}
+select:focus,input:focus{outline:none;border-color:var(--green)}
+.pagination{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.pagination-info{font-size:12px;color:var(--muted)}
+.pagination-btns{display:flex;gap:6px}
+.page-btn{padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer;background:var(--card)}
+.page-btn:hover{background:var(--bg)}.page-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:900px;max-height:85vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2)}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:16px;font-weight:600}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1}
+.info-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;font-size:13px;color:#166534;margin-bottom:16px;display:flex;align-items:flex-start;gap:8px}
+.action-btn{padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:4px}
+.action-btn:hover{background:var(--bg)}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><h1>PTRJ Absensi<span>Monitoring System</span></h1></div>
+  <nav>
+    <a href="/dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+    <a href="/machines.html" class="nav-item"><i data-lucide="scan"></i>Mesin Absensi</a>
+    <a href="/import-history.html" class="nav-item active"><i data-lucide="upload"></i>Riwayat Import</a>
+    <a href="/scheduler.html" class="nav-item"><i data-lucide="clock"></i>Penjadwalan</a>
+    <a href="/data-quality.html" class="nav-item"><i data-lucide="bar-chart-2"></i>Kualitas Data</a>
+  </nav>
+  <div class="sidebar-footer">PTRJ Absensi v2.0</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2>Riwayat Import</h2>
+    <button class="btn btn-green" onclick="exportCSV()"><i data-lucide="download" style="width:16px;height:16px"></i> Export CSV</button>
+  </div>
+  <div class="content">
+    <div class="filter-bar">
+      <select id="filterMachine"><option value="">Semua Mesin</option></select>
+      <select id="filterStatus">
+        <option value="">Semua Status</option>
+        <option value="RUNNING">Running</option>
+        <option value="SUCCESS">Success</option>
+        <option value="FAILED">Failed</option>
+      </select>
+      <input type="date" id="filterDateFrom"><span class="text-muted" style="font-size:12px">s/d</span>
+      <input type="date" id="filterDateTo">
+      <button class="action-btn" onclick="loadBatches(1)"><i data-lucide="search"></i>Filter</button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Batch Code</th><th>Mesin</th><th>IP</th><th>Status</th>
+            <th>Total</th><th>Success</th><th>Failed</th><th>Started</th><th>Finished</th><th>Error</th>
+          </tr></thead>
+          <tbody id="batchTableBody"><tr><td colspan="10" class="loading">Memuat...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <div class="pagination-info" id="paginationInfo">Menampilkan 0 dari 0</div>
+        <div class="pagination-btns" id="paginationBtns"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Batch Detail Modal -->
+<div class="modal-overlay" id="batchModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Detail Batch</h3>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-green" id="modalRetryBtn" onclick="retryBatch()"><i data-lucide="rotate-ccw" style="width:14px;height:14px"></i> Retry Failed</button>
+      <button class="action-btn" onclick="closeModal()">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = (url, opts={}) => {
+  return fetch(url, {...opts,headers:{...opts.headers,'Content-Type':'application/json'},
+    body:opts.body && !(opts.body instanceof FormData)?JSON.stringify(opts.body):opts.body
+  }).then(r=>r.json()).catch(e=>{showToast(e.message,'error');throw e;});
+};
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(()=>t.className='toast',4000);}
+let currentBatchId=null, currentPage=1;
+
+async function loadBatches(page=1) {
+  currentPage = page;
+  const machine = document.getElementById('filterMachine').value;
+  const status = document.getElementById('filterStatus').value;
+  const url = `/api/monitoring/batches?page=${page}&limit=20` +
+    (machine ? `&machine=${machine}` : '') + (status ? `&status=${status}` : '');
+  const data = await API(url);
+  renderTable(data.batches, data.pagination);
+  renderPagination(data.pagination);
+}
+
+function renderTable(batches, pagination) {
+  const tbody = document.getElementById('batchTableBody');
+  if (!batches.length) { tbody.innerHTML='<tr><td colspan="10" class="empty-state"><p>Tidak ada data</p></td></tr>'; return; }
+  tbody.innerHTML = batches.map(b=>{
+    const badge = b.status === 'SUCCESS' ? 'badge-green' : b.status === 'FAILED' ? 'badge-red' : 'badge-yellow';
+    const err = b.error_message || '';
+    return `<tr onclick="openBatchDetail(${b.id})">
+      <td style="font-family:monospace;font-size:12px;font-weight:600">${b.batch_code}</td>
+      <td><div style="font-weight:500">${b.machine_code||'-'}</div><div style="font-size:11px;color:var(--muted)">${b.machine_name||''}</div></td>
+      <td style="font-family:monospace;font-size:11px">${b.ip_address||''}</td>
+      <td><span class="badge ${badge}">${b.status}</span></td>
+      <td>${b.records_total??0}</td>
+      <td class="text-green">${b.records_success??0}</td>
+      <td class="${(b.records_failed??0)>0?'text-red':''}">${b.records_failed??0}</td>
+      <td style="font-size:12px">${b.started_at?new Date(b.started_at).toLocaleString('id-ID'):'-'}</td>
+      <td style="font-size:12px">${b.finished_at?new Date(b.finished_at).toLocaleString('id-ID'):'-'}</td>
+      <td style="font-size:11px;color:var(--danger);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${err}">${err||'-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPagination(p) {
+  const info = document.getElementById('paginationInfo');
+  info.textContent = `Menampilkan ${p.page} dari ${p.totalPages} (${p.total} total)`;
+  const btns = document.getElementById('paginationBtns');
+  let html = '';
+  for (let i=1; i<=Math.min(p.totalPages,5); i++) {
+    html += `<button class="page-btn ${i===p.page?'active':''}" onclick="loadBatches(${i})">${i}</button>`;
+  }
+  btns.innerHTML = html;
+}
+
+async function openBatchDetail(id) {
+  currentBatchId = id;
+  const data = await API('/api/monitoring/batch/'+id);
+  const b = data.batch;
+  document.getElementById('modalTitle').textContent = 'Batch: ' + (b.batch_code||id);
+  document.getElementById('modalBody').innerHTML = `
+    <div class="info-box"><i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:2px"></i>
+      <div><strong>${b.machine_code||'-'}</strong> &middot; ${b.status} &middot; ${b.records_total??0} records &middot;
+        ${b.started_at?new Date(b.started_at).toLocaleString('id-ID'):''}</div>
+    </div>
+    ${(data.sampleLogs||[]).length?`<div class="card-title" style="margin-bottom:12px">Sample Raw Logs (${data.sampleLogs.length})</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Raw ID</th><th>Parsed Employee</th><th>Division</th><th>Scan Time</th><th>Status</th><th>Event</th><th>Verify</th></tr></thead>
+      <tbody>${data.sampleLogs.map(l=>`<tr>
+        <td style="font-size:11px;font-family:monospace">${l.raw_device_user_id}</td>
+        <td><strong>${l.parsed_employee_code||'<span class="text-muted">-</span>'}</strong></td>
+        <td style="font-size:12px">${l.parsed_division_code||'-'}</td>
+        <td style="font-size:12px">${l.scan_time?new Date(l.scan_time).toLocaleString('id-ID'):'-'}</td>
+        <td><span class="badge ${l.mapping_status==='MAPPED'?'badge-green':l.mapping_status==='UNMAPPED'?'badge-red':'badge-yellow'}">${l.mapping_status}</span></td>
+        <td style="font-size:12px">${l.event_type||'-'}</td>
+        <td style="font-size:12px">${l.verify_type||'-'}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:'<p class="text-muted">Tidak ada raw logs</p>'}
+  `;
+  document.getElementById('batchModal').classList.add('show');
+  lucide.createIcons();
+}
+function closeModal(){document.getElementById('batchModal').classList.remove('show');}
+
+async function retryBatch() {
+  if (!currentBatchId) return;
+  const res = await API('/api/import/batch/'+currentBatchId+'/retry',{method:'POST'});
+  showToast(res.message||'Retry started');
+  closeModal();
+}
+
+async function exportCSV() {
+  showToast('Export dalam pengembangan...');
+}
+
+// Init
+loadBatches(1);
+// Populate machine filter
+API('/api/monitoring/machines').then(ms=>{
+  const sel = document.getElementById('filterMachine');
+  ms.forEach(m=>{ const o=document.createElement('option'); o.value=m.machine_code; o.textContent=m.machine_code; sel.appendChild(o); });
+});
+</script>
+</body>
+</html>

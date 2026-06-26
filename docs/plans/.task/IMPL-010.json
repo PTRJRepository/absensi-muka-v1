@@ -1,0 +1,58 @@
+{
+  "id": "IMPL-010",
+  "title": "Update attendance-process-import.service.ts with currentEmpCode",
+  "scope": "src/modules/attendance/attendance-process-import.service.ts",
+  "action": "Update",
+  "description": "Update attendance_process_import to populate parsed_employee_code, resolved_nik, current_emp_code, current_employee_id in attendance_imports",
+  "files": [
+    {
+      "path": "src/modules/attendance/attendance-process-import.service.ts",
+      "action": "modify",
+      "target": "AttendanceProcessService class",
+      "change": "Add currentEmpCode population in processScanLogsForBatch and processAllUnprocessed"
+    }
+  ],
+  "implementation": [
+    "Update INSERT statements to include new columns from scan_logs",
+    "Map: attendance_imports.parsed_employee_code = scan_logs.parsed_employee_code",
+    "Map: attendance_imports.resolved_nik = scan_logs.resolved_nik",
+    "Map: attendance_imports.current_emp_code = scan_logs.current_emp_code",
+    "Map: attendance_imports.current_employee_id = scan_logs.current_employee_id",
+    "Increment mapping_version for updated records",
+    "Handle null values appropriately"
+  ],
+  "reference": {
+    "pattern": "Follow existing attendance_process_import patterns",
+    "files": [
+      "src/modules/attendance/attendance-process-import.service.ts"
+    ],
+    "examples": "Existing INSERT pattern with COALESCE for null handling"
+  },
+  "convergence": {
+    "criteria": [
+      "processScanLogsForBatch populates all new columns",
+      "processAllUnprocessed populates all new columns",
+      "SELECT COUNT(*) FROM attendance_imports WHERE current_emp_code IS NOT NULL > 0 after processing"
+    ]
+  },
+  "depends_on": ["IMPL-002", "IMPL-009"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-010",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 3,
+  "test": {
+    "manual_checks": [
+      "Run batch processing",
+      "Verify attendance_imports has current_emp_code values"
+    ],
+    "success_metrics": [
+      "All existing tests pass",
+      "No null violations in required columns"
+    ],
+    "unit": [
+      "test_process_imports_populates_current_empcode"
+    ],
+    "integration": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "enabled": true,
+  "intervalMinutes": 60,
+  "machines": [],
+  "jobs": [
+    {
+      "id": "attendance_pipeline_sync",
+      "name": "Attendance Pipeline Sync",
+      "machines": [],
+      "intervalMinutes": 60,
+      "enabled": false,
+      "script": "dist/scripts/process-attendance-imports.js",
+      "dryRun": false,
+      "createdAt": "2026-06-25T00:00:00Z",
+      "nextRun": "2026-06-25T16:18:05.390Z",
+      "lastRun": "2026-06-25T15:18:33.225Z"
+    },
+    {
+      "id": "hr_snapshot_sync",
+      "name": "HR Snapshot Sync",
+      "machines": [],
+      "intervalMinutes": 1440,
+      "enabled": true,
+      "script": "dist/scripts/sync-hr-current-snapshot.js",
+      "env": {
+        "HR_DB_SERVER": "10.0.0.110"
+      },
+      "dryRun": false,
+      "createdAt": "2026-06-23T00:00:00Z",
+      "nextRun": "2026-06-26T15:35:50.336Z",
+      "lastRun": "2026-06-25T15:36:07.767Z"
+    }
+  ]
+}

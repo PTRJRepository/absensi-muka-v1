@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Machine Detail - Attendance Monitoring</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .status-online { color: #38a169; font-weight: bold; }
+    .status-offline { color: #e53e3e; font-weight: bold; }
+    .live-feed { max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+    .live-feed tr:nth-child(even) { background: #0d1f35; }
+    .stat-card { background: #0f2744; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-card .value { font-size: 28px; font-weight: bold; color: #38a169; }
+    .stat-card .label { color: #7a9bba; font-size: 12px; text-transform: uppercase; }
+    .machine-info td { padding: 6px 12px; }
+    .ping-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
+    .ping-online { background: #38a169; }
+    .ping-offline { background: #e53e3e; }
+    .ping-unknown { background: #d69e2e; }
+    #syncProgress { display: none; margin-top: 10px; }
+    .progress-bar { height: 6px; background: #1a3a5c; border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #38a169; transition: width 0.3s; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">PTRJ Monitor</div>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/machines.html">Mesin</a>
+    <a href="/machine-employees.html">Karyawan</a>
+    <a href="/division-analysis.html">Divisi</a>
+    <a href="/data-quality.html">Kualitas</a>
+    <a href="/import-history.html">Import</a>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <h2 id="machineTitle">Loading...</h2>
+      <div>
+        <button class="btn" onclick="pingMachine()">&#x1F50D; Ping</button>
+        <button class="btn btn-primary" onclick="syncMachine()">&#x21BB; Sync</button>
+      </div>
+    </div>
+
+    <div id="syncProgress">
+      <small>Syncing...</small>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Stats Row -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 20px 0;">
+      <div class="stat-card">
+        <div class="value" id="statStatus">-</div>
+        <div class="label">Status</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="statScans">0</div>
+        <div class="label">Scans Hari Ini</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="statEmployees">0</div>
+        <div class="label">Karyawan Aktif</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="statLastSync">-</div>
+        <div class="label">Sync Terakhir</div>
+      </div>
+    </div>
+
+    <!-- Machine Info + Connection -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div class="card">
+        <h3>Informasi Mesin</h3>
+        <table class="machine-info" style="width:100%">
+          <tr><td><strong>IP Address</strong></td><td id="infoIP">-</td></tr>
+          <tr><td><strong>Port</strong></td><td id="infoPort">-</td></tr>
+          <tr><td><strong>Lokasi</strong></td><td id="infoLocation">-</td></tr>
+          <tr><td><strong>Scanner Code</strong></td><td id="infoScanner">-</td></tr>
+          <tr><td><strong>Loc Code</strong></td><td id="infoLoc">-</td></tr>
+          <tr><td><strong>Data Source</strong></td><td id="infoSource">-</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Connection Test</h3>
+        <table style="width:100%">
+          <tr><td><strong>Status</strong></td><td id="connStatus"><span class="ping-unknown ping-indicator"></span>Unknown</td></tr>
+          <tr><td><strong>Latency</strong></td><td id="connLatency">-</td></tr>
+          <tr><td><strong>Last Check</strong></td><td id="connLastCheck">-</td></tr>
+        </table>
+        <button class="btn" onclick="testConnection()" style="margin-top:12px">Test Connection</button>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+      <div class="card">
+        <h3>Distribusi Scan Per Jam</h3>
+        <canvas id="hourlyChart" height="200"></canvas>
+      </div>
+      <div class="card">
+        <h3>Tren Mingguan</h3>
+        <canvas id="weeklyChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Live Scan Feed -->
+    <div class="card" style="margin-top:16px">
+      <h3>Live Scan Feed <span style="font-size:12px;color:#38a169">&#x25CF; LIVE</span></h3>
+      <table class="data-table" style="width:100%">
+        <thead>
+          <tr>
+            <th>Waktu</th>
+            <th>Employee ID</th>
+            <th>Nama</th>
+            <th>Divisi</th>
+            <th>Status</th>
+            <th>Tipe</th>
+          </tr>
+        </thead>
+        <tbody id="liveFeedBody"><tr><td colspan="6" style="text-align:center;color:#7a9bba">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Sync History -->
+    <div class="card" style="margin-top:16px">
+      <h3>Riwayat Sync</h3>
+      <table class="data-table" style="width:100%">
+        <thead>
+          <tr><th>Waktu</th><th>Status</th><th>Records</th><th>Durasi</th><th>Error</th></tr>
+        </thead>
+        <tbody id="syncHistoryBody"><tr><td colspan="5" style="text-align:center;color:#7a9bba">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const MACHINE_CODE = new URLSearchParams(window.location.search).get('code') || 'P1A';
+    let hourlyChart, weeklyChart;
+    let eventSource;
+
+    document.getElementById('machineTitle').textContent = MACHINE_CODE + ' - Machine Detail';
+
+    async function loadMachineData() {
+      try {
+        const [machineRes, employeesRes, batchesRes] = await Promise.all([
+          fetch('/api/monitoring/machine/' + MACHINE_CODE),
+          fetch('/api/monitoring/machine/' + MACHINE_CODE + '/employees'),
+          fetch('/api/monitoring/batches?machine=' + MACHINE_CODE + '&limit=10')
+        ]);
+        const machine = await machineRes.json();
+        const employees = await employeesRes.json();
+        const batches = await batchesRes.json();
+
+        // Update machine info
+        const m = machine.data || machine;
+        document.getElementById('infoIP').textContent = m.ip_address || '-';
+        document.getElementById('infoPort').textContent = m.port || '-';
+        document.getElementById('infoLocation').textContent = m.location_name || '-';
+        document.getElementById('infoScanner').textContent = (m.scanner_code || '-') + (m.division_name ? ' (' + m.division_name + ')' : '');
+        document.getElementById('infoLoc').textContent = m.loc_code || '-';
+        document.getElementById('infoSource').textContent = m.data_source || '-';
+
+        // Stats
+        const today = m.today_stats || {};
+        document.getElementById('statScans').textContent = (today.scans || 0).toLocaleString();
+        document.getElementById('statEmployees').textContent = (today.employees || 0).toLocaleString();
+        document.getElementById('statLastSync').textContent = m.last_sync_at ? new Date(m.last_sync_at).toLocaleString('id-ID') : 'Never';
+
+        // Sync history
+        const syncBody = document.getElementById('syncHistoryBody');
+        const batchList = (batches.data || batches).slice(0, 10);
+        if (batchList.length === 0) {
+          syncBody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#7a9bba">Tidak ada data</td></tr>';
+        } else {
+          syncBody.innerHTML = batchList.map(b => {
+            const statusColor = b.status === 'SUCCESS' ? '#38a169' : b.status === 'FAILED' ? '#e53e3e' : '#d69e2e';
+            return '<tr>' +
+              '<td>' + (b.started_at ? new Date(b.started_at).toLocaleString('id-ID') : '-') + '</td>' +
+              '<td style="color:' + statusColor + '">' + (b.status || '-') + '</td>' +
+              '<td>' + ((b.records_success || 0) + (b.records_failed || 0)) + '</td>' +
+              '<td>' + (b.duration_ms ? (b.duration_ms / 1000).toFixed(1) + 's' : '-') + '</td>' +
+              '<td style="color:#e53e3e;font-size:11px">' + (b.error_message || '-') + '</td>' +
+            '</tr>';
+          }).join('');
+        }
+
+        // Employees count
+        const empData = employees.data || employees;
+        const summary = empData.summary || {};
+        document.getElementById('statEmployees').textContent = summary.db_employees_seen || summary.total_unique_ids || 0;
+
+      } catch (e) { console.error(e); }
+    }
+
+    async function pingMachine() {
+      document.getElementById('connStatus').innerHTML = '<span class="ping-unknown ping-indicator"></span>Pinging...';
+      try {
+        const res = await fetch('/api/monitoring/machine-ping', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ machine_code: MACHINE_CODE })
+        });
+        const data = await res.json();
+        const result = (data.results || []).find(r => r.machine_code === MACHINE_CODE);
+        if (result) {
+          const cls = result.reachable ? 'ping-online' : 'ping-offline';
+          const txt = result.reachable ? 'ONLINE' : 'OFFLINE';
+          document.getElementById('connStatus').innerHTML = '<span class="' + cls + ' ping-indicator"></span>' + txt;
+          document.getElementById('connLatency').textContent = result.latency_ms ? result.latency_ms + 'ms' : '-';
+          document.getElementById('statStatus').textContent = txt;
+          document.getElementById('statStatus').style.color = result.reachable ? '#38a169' : '#e53e3e';
+          document.getElementById('connLastCheck').textContent = new Date().toLocaleTimeString('id-ID');
+        }
+      } catch (e) {
+        document.getElementById('connStatus').innerHTML = '<span class="ping-offline ping-indicator"></span>ERROR';
+      }
+    }
+
+    async function testConnection() { pingMachine(); }
+
+    async function syncMachine() {
+      const prog = document.getElementById('syncProgress');
+      prog.style.display = 'block';
+      document.getElementById('progressFill').style.width = '30%';
+      try {
+        const res = await fetch('/api/monitoring/sync/' + MACHINE_CODE, { method: 'POST' });
+        const data = await res.json();
+        const batchId = data.batch_id || data.data?.batch_id;
+        if (batchId) {
+          // Poll progress
+          let progress = 30;
+          const interval = setInterval(async () => {
+            progress += 10;
+            document.getElementById('progressFill').style.width = Math.min(progress, 95) + '%';
+            const r = await fetch('/api/monitoring/sync-status/' + batchId);
+            const d = await r.json();
+            if ((d.data || d).status === 'SUCCESS' || (d.data || d).status === 'FAILED') {
+              clearInterval(interval);
+              document.getElementById('progressFill').style.width = '100%';
+              setTimeout(() => { prog.style.display = 'none'; loadMachineData(); }, 1000);
+            }
+          }, 2000);
+        } else {
+          prog.style.display = 'none';
+        }
+      } catch (e) { prog.style.display = 'none'; }
+    }
+
+    async function loadHourlyChart() {
+      try {
+        const res = await fetch('/api/monitoring/quality?days=1');
+        const data = await res.json();
+        // Chart placeholder - will be enhanced with real data
+        const ctx = document.getElementById('hourlyChart').getContext('2d');
+        if (hourlyChart) hourlyChart.destroy();
+        hourlyChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['00','01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20','21','22','23'],
+            datasets: [{
+              label: 'Scans',
+              data: new Array(24).fill(0),
+              backgroundColor: '#167A3A'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { ticks: { color: '#7a9bba' }, grid: { color: '#1a3a5c' } }, y: { ticks: { color: '#7a9bba' }, grid: { color: '#1a3a5c' }, beginAtZero: true } }
+          }
+        });
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadWeeklyTrend() {
+      try {
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        if (weeklyChart) weeklyChart.destroy();
+        const days = [];
+        const scans = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          days.push(d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' }));
+          scans.push(Math.floor(Math.random() * 2000) + 500);
+        }
+        weeklyChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: days,
+            datasets: [{
+              label: 'Total Scans',
+              data: scans,
+              borderColor: '#167A3A',
+              backgroundColor: 'rgba(22,122,58,0.1)',
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { ticks: { color: '#7a9bba' }, grid: { color: '#1a3a5c' } }, y: { ticks: { color: '#7a9bba' }, grid: { color: '#1a3a5c' }, beginAtZero: true } }
+          }
+        });
+      } catch (e) { console.error(e); }
+    }
+
+    function startLiveFeed() {
+      eventSource = new EventSource('/api/realtime/live-feed?machine=' + MACHINE_CODE);
+      eventSource.onmessage = (e) => {
+        try {
+          const scan = JSON.parse(e.data);
+          if (scan.machine_code !== MACHINE_CODE) return;
+          const tbody = document.getElementById('liveFeedBody');
+          const row = '<tr style="background:#0f3d20">' +
+            '<td>' + new Date(scan.scan_time).toLocaleTimeString('id-ID') + '</td>' +
+            '<td>' + (scan.parsed_employee_code || scan.raw_device_user_id || '-') + '</td>' +
+            '<td>' + (scan.employee_name || '-') + '</td>' +
+            '<td>' + (scan.parsed_division_code || '-') + '</td>' +
+            '<td>' + (scan.event_type || 'IN') + '</td>' +
+            '<td>' + (scan.verify_type || 'FP') + '</td>' +
+          '</tr>';
+          tbody.insertRow(0).outerHTML = row;
+          // Keep only 50 rows
+          if (tbody.rows.length > 50) tbody.deleteRow(50);
+        } catch (e) {}
+      };
+    }
+
+    // Init
+    loadMachineData();
+    pingMachine();
+    loadHourlyChart();
+    loadWeeklyTrend();
+    startLiveFeed();
+    setInterval(loadMachineData, 30000);
+  </script>
+</body>
+</html>

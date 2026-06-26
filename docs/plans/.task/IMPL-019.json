@@ -1,0 +1,71 @@
+{
+  "id": "IMPL-019",
+  "title": "Run comprehensive integration testing",
+  "scope": "Test Suite",
+  "action": "Test",
+  "description": "Run comprehensive integration tests to verify currentEmpCode feature end-to-end",
+  "files": [],
+  "implementation": [
+    "Run all existing unit tests: npm test",
+    "Run TypeScript compilation: npx tsc --noEmit",
+    "Run frontend build: npm run frontend:build",
+    "Test sync workflow: node dist/scripts/sync-machines.js on accessible machine",
+    "Verify scan logs have current_emp_code populated",
+    "Verify imports have current_emp_code populated",
+    "Test API endpoints return correct data",
+    "Test frontend displays correctly"
+  ],
+  "reference": {
+    "pattern": "Follow existing testing patterns",
+    "files": [],
+    "examples": "Use existing test infrastructure"
+  },
+  "convergence": {
+    "criteria": [
+      "npm run build passes without errors",
+      "npm run frontend:build passes without errors",
+      "All existing tests pass",
+      "Sync completes successfully on accessible machine",
+      "Check: SELECT COUNT(*) FROM attendance_scan_logs WHERE current_emp_code IS NOT NULL > 0",
+      "Check: SELECT COUNT(*) FROM attendance_imports WHERE current_emp_code IS NOT NULL > 0",
+      "Check: NIK 1906041207910002 has current_emp_code A0966"
+    ]
+  },
+  "depends_on": [
+    "IMPL-009",
+    "IMPL-010",
+    "IMPL-011",
+    "IMPL-012",
+    "IMPL-013",
+    "IMPL-014",
+    "IMPL-015",
+    "IMPL-016",
+    "IMPL-017",
+    "IMPL-018"
+  ],
+  "cli_execution_id": "plan-2026-06-23-IMPL-019",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 7,
+  "test": {
+    "manual_checks": [
+      "Run sync on P1A machine",
+      "Check scan logs for current_emp_code",
+      "Check API response for new fields",
+      "Check frontend display"
+    ],
+    "success_metrics": [
+      "100% of MAPPED scan logs have current_emp_code",
+      "100% of mapped imports have current_emp_code",
+      "Zero TypeScript errors",
+      "Zero frontend build errors"
+    ],
+    "unit": [],
+    "integration": [
+      "test_full_sync_workflow_with_current_empcode",
+      "test_api_attendance_monthly_matrix_current_empcode",
+      "test_frontend_attendance_display"
+    ]
+  }
+}

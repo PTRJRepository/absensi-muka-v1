@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - PTRJ Absensi</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#071426;--green:#167A3A;--green-light:#1a9a4a;--bg:#F1F5F9;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--danger:#dc2626;--warning:#d97706;--success:#16a34a}
+body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--navy);color:#fff;flex-shrink:0;position:fixed;height:100vh;overflow-y:auto}
+.sidebar .logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar .logo h1{font-size:15px;font-weight:700}
+.sidebar .logo span{display:block;font-size:11px;font-weight:400;opacity:.6;margin-top:2px}
+.sidebar nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff;border-left-color:var(--green)}
+.nav-item i{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.4}
+.main{flex:1;margin-left:240px}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar h2{font-size:18px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:var(--green-light)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{background:#f8fafc}
+.content{padding:28px}
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:24px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-title{font-size:15px;font-weight:600}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:20px;border-left:4px solid var(--green)}
+.stat-card.red{border-left-color:var(--danger)}
+.stat-card.yellow{border-left-color:var(--warning)}
+.stat-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-value{font-size:32px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-yellow{background:#fef9c3;color:#854d0e}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.text-green{color:var(--green)}
+.text-red{color:var(--danger)}
+.text-muted{color:var(--muted)}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+.loading::after{content:" ";display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:1000;display:none;border-left:4px solid var(--green)}
+.toast.show{display:block}
+.chart-container{position:relative;height:260px;margin-top:16px}
+.machine-status{display:inline-flex;align-items:center;gap:6px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status-dot.online{background:var(--success);box-shadow:0 0 6px rgba(22,163,74,.4)}
+.status-dot.offline{background:var(--danger)}
+.status-dot.warning{background:var(--warning)}
+.action-btn{padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:4px;color:var(--text)}
+.action-btn:hover{background:var(--bg)}
+.action-btn i{width:14px;height:14px}
+.action-btn.syncing{color:var(--green);border-color:var(--green);background:#f0fdf4}
+.time-ago{font-size:11px;color:var(--muted)}
+.flex-row{display:flex;align-items:center;gap:16px;margin-top:12px}
+.flex-col{display:flex;flex-direction:column;gap:4px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo">
+    <h1>PTRJ Absensi<span>Monitoring System</span></h1>
+  </div>
+  <nav>
+    <a href="/dashboard.html" class="nav-item active"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+    <a href="/machines.html" class="nav-item"><i data-lucide="scan"></i>Mesin Absensi</a>
+    <a href="/import-history.html" class="nav-item"><i data-lucide="upload"></i>Riwayat Import</a>
+    <a href="/scheduler.html" class="nav-item"><i data-lucide="clock"></i>Penjadwalan</a>
+    <a href="/data-quality.html" class="nav-item"><i data-lucide="bar-chart-2"></i>Kualitas Data</a>
+  </nav>
+  <div class="sidebar-footer">PTRJ Absensi v2.0</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2>Dashboard Monitoring</h2>
+    <button class="btn btn-green" onclick="syncAll()" id="syncAllBtn">
+      <i data-lucide="refresh-cw" style="width:16px;height:16px"></i> Sync Semua Mesin
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- Summary Stats -->
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card"><div class="stat-label">Total Mesin</div><div class="stat-value" id="statTotal">-</div><div class="stat-sub">mesin aktif</div></div>
+      <div class="stat-card" style="border-left-color:var(--success)"><div class="stat-label">Online / Accessible</div><div class="stat-value text-green" id="statOnline">-</div><div class="stat-sub">mesin bisa diakses</div></div>
+      <div class="stat-card red"><div class="stat-label">Offline</div><div class="stat-value text-red" id="statOffline">-</div><div class="stat-sub">mesin tidak bisa diakses</div></div>
+      <div class="stat-card" style="border-left-color:#0ea5e9"><div class="stat-label">Absensi Hari Ini</div><div class="stat-value" id="statToday">-</div><div class="stat-sub">karyawan hadir</div></div>
+      <div class="stat-card yellow"><div class="stat-label">Sync Pending</div><div class="stat-value" id="statPending">-</div><div class="stat-sub">batch berjalan</div></div>
+    </div>
+
+    <!-- Last Sync Info -->
+    <div class="card" id="lastSyncCard" style="display:none">
+      <div class="card-header">
+        <div class="card-title">Sync Terakhir</div>
+        <span class="badge" id="lastSyncBadge"></span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px">
+        <div><div class="stat-label">Batch</div><div style="font-size:13px;font-weight:500" id="lastBatchCode">-</div></div>
+        <div><div class="stat-label">Total Records</div><div style="font-size:13px;font-weight:500" id="lastBatchTotal">-</div></div>
+        <div><div class="stat-label">Success</div><div style="font-size:13px;font-weight:500;text-green" id="lastBatchSuccess">-</div></div>
+        <div><div class="stat-label">Failed</div><div style="font-size:13px;font-weight:500;text-red" id="lastBatchFailed">-</div></div>
+        <div><div class="stat-label">Waktu</div><div style="font-size:13px;font-weight:500" id="lastBatchTime">-</div></div>
+      </div>
+      <div id="lastSyncError" class="warn-box" style="display:none;margin-top:12px"><i data-lucide="alert-circle" style="width:16px;height:16px"></i><span></span></div>
+    </div>
+
+    <!-- Machine Status Table -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Status Mesin Absensi</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="filterStatus" onchange="loadMachines()" style="padding:6px 10px;font-size:12px">
+            <option value="">Semua Status</option>
+            <option value="ACCESSIBLE">Accessible</option>
+            <option value="NETWORK_UNREACHABLE">Offline</option>
+          </select>
+          <button class="action-btn" onclick="loadMachines()"><i data-lucide="refresh-cw"></i>Refresh</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Mesin</th>
+              <th>IP Address</th>
+              <th>Lokasi</th>
+              <th>Data Source</th>
+              <th>Records Hari Ini</th>
+              <th>Terakhir Sync</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="machineTableBody">
+            <tr><td colspan="8" class="loading">Memuat data mesin...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Chart Row -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Trend Absensi 7 Hari Terakhir</div></div>
+        <canvas id="trendChart" class="chart-container"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Records per Divisi</div></div>
+        <canvas id="divisionChart" class="chart-container"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = (url, opts={}) => {
+  const token = localStorage.getItem('token') || '';
+  return fetch(url, {
+    ...opts,
+    headers: {...opts.headers, 'Content-Type':'application/json', 'Authorization':`Bearer ${token}`},
+    body: opts.body && !(opts.body instanceof FormData) ? JSON.stringify(opts.body) : opts.body
+  }).then(r=>r.json()).catch(e=>{ showToast('Error: '+e.message, 'error'); throw e; });
+};
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + type;
+  setTimeout(()=>t.classList.remove('show'), 4000);
+}
+
+let trendChart, divisionChart;
+
+async function loadDashboard() {
+  try {
+    const [dash, machines] = await Promise.all([
+      API('/api/monitoring/dashboard'),
+      API('/api/monitoring/machines')
+    ]);
+
+    // Stats
+    document.getElementById('statTotal').textContent = dash.totalMachines ?? 0;
+    document.getElementById('statOnline').textContent = dash.accessibleMachines ?? 0;
+    document.getElementById('statOffline').textContent = dash.offlineMachines ?? 0;
+    document.getElementById('statToday').textContent = dash.todayUniqueEmployees ?? 0;
+    document.getElementById('statPending').textContent = dash.pendingBatches ?? 0;
+
+    // Last sync
+    if (dash.lastBatch) {
+      const b = dash.lastBatch;
+      document.getElementById('lastSyncCard').style.display = 'block';
+      document.getElementById('lastBatchCode').textContent = b.batchCode || '-';
+      document.getElementById('lastBatchTotal').textContent = b.recordsTotal ?? 0;
+      document.getElementById('lastBatchSuccess').textContent = b.recordsSuccess ?? 0;
+      document.getElementById('lastBatchFailed').textContent = b.recordsFailed ?? 0;
+      document.getElementById('lastBatchTime').textContent = b.startedAt ? new Date(b.startedAt).toLocaleString('id-ID') : '-';
+      const badge = document.getElementById('lastSyncBadge');
+      badge.textContent = b.status;
+      badge.className = 'badge ' + (b.status === 'SUCCESS' ? 'badge-green' : b.status === 'FAILED' ? 'badge-red' : 'badge-yellow');
+      if (b.errorMessage) {
+        const err = document.getElementById('lastSyncError');
+        err.style.display = 'flex';
+        err.querySelector('span').textContent = b.errorMessage;
+      }
+    }
+
+    // Machines table
+    renderMachineTable(machines);
+    renderCharts();
+  } catch(e) { console.error(e); }
+}
+
+function renderMachineTable(machines) {
+  const filter = document.getElementById('filterStatus').value;
+  const filtered = filter ? machines.filter(m => m.access_status === filter) : machines;
+  const tbody = document.getElementById('machineTableBody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><p>Tidak ada mesin</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(m => {
+    const isOnline = m.access_status === 'ACCESSIBLE';
+    const lastSync = m.last_sync_at ? timeAgo(m.last_sync_at) : 'Belum pernah';
+    const recToday = m.records_today ?? 0;
+    return `<tr>
+      <td><div class="machine-status"><div class="status-dot ${isOnline ? 'online' : 'offline'}"></div><span>${m.access_status || '-'}</span></div></td>
+      <td><div style="font-weight:600">${m.machine_code}</div><div style="font-size:11px;color:var(--muted)">${m.machine_name || '-'}</div></td>
+      <td style="font-family:monospace;font-size:12px">${m.ip_address}:${m.port}</td>
+      <td style="font-size:12px">${m.loc_code || '-'}</td>
+      <td><span class="badge badge-green">${m.data_source || '-'}</span></td>
+      <td><div style="font-weight:600">${recToday}</div><div style="font-size:11px;color:var(--muted)">records</div></td>
+      <td><div class="time-ago">${lastSync}</div>${m.last_sync_status ? `<div style="font-size:11px" class="${m.last_sync_status==='SUCCESS'?'text-green':'text-red'}">${m.last_sync_status}</div>` : ''}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="action-btn" onclick="testConnection('${m.machine_code}')" title="Test Connection"><i data-lucide="wifi"></i></button>
+          <button class="action-btn syncing" onclick="syncMachine('${m.machine_code}')" id="btn-${m.machine_code}" title="Sync Sekarang"><i data-lucide="refresh-cw"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+async function renderCharts() {
+  const quality = await API('/api/monitoring/quality?days=7').catch(()=>({dailyTrend:[],recordsPerDivision:[]}));
+  
+  // Trend chart
+  const trendCtx = document.getElementById('trendChart');
+  if (trendChart) trendChart.destroy();
+  const labels = (quality.dailyTrend||[]).map(d => new Date(d.date).toLocaleDateString('id-ID',{day:'2-digit',month:'short'}));
+  const data = (quality.dailyTrend||[]).map(d => d.record_count);
+  trendChart = new Chart(trendCtx, {
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'Total Records',
+        data,
+        borderColor:'#167A3A',
+        backgroundColor:'rgba(22,122,58,0.1)',
+        fill:true,
+        tension:0.4,
+        pointBackgroundColor:'#167A3A',
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}}
+  });
+
+  // Division chart
+  const divCtx = document.getElementById('divisionChart');
+  if (divisionChart) divisionChart.destroy();
+  const divData = (quality.recordsPerDivision||[]).slice(0,8);
+  divisionChart = new Chart(divCtx, {
+    type:'doughnut',
+    data:{
+      labels: divData.map(d=>d.division),
+      datasets:[{data:divData.map(d=>d.record_count),backgroundObject:['#167A3A','#0ea5e9','#8b5cf6','#f59e0b','#ef4444','#10b981','#6366f1','#ec4899']}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}
+  });
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'Belum pernah';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const m = Math.floor(diff/60000);
+  if (m < 1) return 'Baru saja';
+  if (m < 60) return `${m}m lalu`;
+  const h = Math.floor(m/60);
+  if (h < 24) return `${h}h lalu`;
+  return `${Math.floor(h/24)}d lalu`;
+}
+
+async function syncAll() {
+  const btn = document.getElementById('syncAllBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="loading" style="padding:0">Memulai sync...</span>';
+  try {
+    const res = await API('/api/scheduler/sync-all', {method:'POST'});
+    showToast(`Sync started: ${res.message}`);
+    setTimeout(loadDashboard, 3000);
+  } finally {
+    setTimeout(()=>{btn.disabled=false;btn.innerHTML='<i data-lucide="refresh-cw" style="width:16px;height:16px"></i> Sync Semua Mesin';lucide.createIcons();}, 5000);
+  }
+}
+
+async function syncMachine(code) {
+  const btn = document.getElementById('btn-'+code);
+  btn.disabled = true;
+  try {
+    const res = await API('/api/scheduler/sync/'+code, {method:'POST'});
+    showToast(`Sync ${code} started`);
+    setTimeout(loadDashboard, 3000);
+  } catch(e) {
+    btn.disabled = false;
+  }
+}
+
+async function testConnection(code) {
+  try {
+    showToast(`Testing ${code}...`);
+    const res = await API('/api/machines/'+code+'/test-connection', {method:'POST'});
+    showToast(code + ': ' + (res.success ? 'Connected!' : res.error || 'Failed'));
+  } catch(e) { showToast('Connection test failed', 'error'); }
+}
+
+// Auto-refresh every 30s
+loadDashboard();
+setInterval(loadDashboard, 30000);
+</script>
+</body>
+</html>

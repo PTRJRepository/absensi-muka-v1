@@ -1,0 +1,92 @@
+{
+  "id": "IMPL-008",
+  "title": "Update employee-mapping.service.ts with currentEmpCode resolution",
+  "scope": "src/modules/employees/employee-mapping.service.ts",
+  "action": "Update",
+  "description": "Add methods to resolve currentEmpCode from NIK lookup, add status cascade for current_mapping_status",
+  "files": [
+    {
+      "path": "src/modules/employees/employee-mapping.service.ts",
+      "action": "modify",
+      "target": "EmployeeMappingService class",
+      "change": "Add currentEmpCode resolution methods and status cascade"
+    }
+  ],
+  "implementation": [
+    "Add loadHREmployeeSnapshot() method to cache hr_employee_current_snapshot in memory",
+    "Add resolveCurrentEmpCode(nik: string): Promise<CurrentEmpCodeResult | null>",
+    "Add resolveFromParsedCode(parsedCode: string, nik: string | null): Promise<ResolutionResult>",
+    "Implement status cascade: MAPPED_CURRENT > PARSED_ONLY > PARSED_CODE_NOT_FOUND_IN_HR > NIK_NOT_FOUND > CURRENT_EMP_NOT_FOUND > NIK_DUPLICATE_AMBIGUOUS > NEED_REVIEW_CURRENT",
+    "Add type CurrentEmpCodeResult: { empCode: string, empName: string, status: string, method: string, reason: string }",
+    "Update convertDeviceUserIdToEmpCodeWithLookup to include current resolution"
+  ],
+  "reference": {
+    "pattern": "Follow existing EmployeeMappingService patterns",
+    "files": [
+      "src/modules/employees/employee-mapping.service.ts",
+      "src/modules/mapping/zkteco-employee-code-parser.ts"
+    ],
+    "examples": "Existing loadAllEmployeeCodes() pattern for in-memory caching"
+  },
+  "convergence": {
+    "criteria": [
+      "New methods added with proper TypeScript types",
+      "Status cascade implemented correctly",
+      "NIK 1906041207910002 resolves to currentEmpCode A0966",
+      "TypeScript compilation passes: npx tsc --noEmit"
+    ]
+  },
+  "depends_on": ["IMPL-007"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-008",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 3,
+  "code_skeleton": {
+    "interfaces": [
+      {
+        "name": "CurrentEmpCodeResult",
+        "definition": "{ empCode: string, empName: string, status: MappingStatus, method: ResolutionMethod, reason: string }",
+        "purpose": "Result of currentEmpCode resolution"
+      },
+      {
+        "name": "MappingStatus",
+        "definition": "'MAPPED_CURRENT' | 'PARSED_ONLY' | 'PARSED_CODE_NOT_FOUND_IN_HR' | 'NIK_NOT_FOUND' | 'CURRENT_EMP_NOT_FOUND' | 'NIK_DUPLICATE_AMBIGUOUS' | 'NEED_REVIEW_CURRENT'",
+        "purpose": "Status cascade for current mapping"
+      },
+      {
+        "name": "ResolutionMethod",
+        "definition": "'SNAPSHOT_LOOKUP' | 'HR_DIRECT_QUERY' | 'HISTORY_LOOKUP' | 'MANUAL_OVERRIDE'",
+        "purpose": "How currentEmpCode was resolved"
+      }
+    ],
+    "functions": [
+      {
+        "signature": "async loadHREmployeeSnapshot(): Promise<Map<string, SnapshotRow>>",
+        "purpose": "Load hr_employee_current_snapshot into memory cache",
+        "returns": "Map<nik, SnapshotRow>"
+      },
+      {
+        "signature": "async resolveCurrentEmpCode(nik: string): Promise<CurrentEmpCodeResult | null>",
+        "purpose": "Resolve current employee code from NIK",
+        "returns": "CurrentEmpCodeResult or null"
+      }
+    ]
+  },
+  "test": {
+    "manual_checks": [
+      "Test NIK 1906041207910002 resolves to A0966",
+      "Test status cascade with various edge cases"
+    ],
+    "success_metrics": [
+      "All existing tests pass",
+      "New unit tests for currentEmpCode resolution"
+    ],
+    "unit": [
+      "test_resolve_current_emp_code_valid_nik",
+      "test_resolve_current_emp_code_nik_not_found",
+      "test_status_cascade_mapped_current"
+    ],
+    "integration": []
+  }
+}

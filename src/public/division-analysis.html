@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisis Divisi — PTRJ Absensi</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#071426;--card:#0d2137;--accent:#167A3A;--accent2:#219653;--text:#e0e8f0;--muted:#7a9bba;--border:#1a3a5c;--danger:#e53e3e;--warning:#d69e2e;--success:#38a169}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI",sans-serif;margin:0;padding:0}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:18px;font-weight:700;margin:0;color:var(--accent2);flex:1}
+.topbar a{display:inline-block;padding:6px 14px;border-radius:6px;background:var(--border);color:var(--text);text-decoration:none;font-size:13px;transition:background .2s}
+.topbar a:hover,.topbar a.active{background:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.card h5{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+select,input{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:background .2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--accent2)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#0a1f33;color:var(--muted);padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--border);position:sticky;top:0}
+td{padding:10px 12px;border-bottom:1px solid #0f2a40;vertical-align:middle}
+tr:hover{background:#0f2a40}
+.badge{background:#0d3a22;color:#4ade80;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-red{background:#3a0d0d;color:#fc8181;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-yellow{background:#3a2e0d;color:#f6e05e;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.summary-card{background:#0a1f33;border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.summary-card .num{font-size:26px;font-weight:700}
+.summary-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;margin-top:4px}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.chart-container{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.chart-container h6{font-size:13px;color:var(--muted);margin-bottom:12px}
+.rate-bar{height:8px;background:#1a3a5c;border-radius:4px;overflow:hidden;margin-top:4px}
+.rate-fill{height:100%;background:var(--accent2);transition:width 1s}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.year-nav{display:flex;align-items:center;gap:8px}
+.year-nav button{background:var(--border);border:none;color:var(--text);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:16px}
+.year-nav button:hover{background:var(--accent)}
+.year-nav span{font-size:18px;font-weight:700;min-width:60px;text-align:center}
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:8px;font-size:13px;z-index:9999;color:#fff;animation:slideIn .3s}
+.toast-err{background:#3a0d0d}
+.toast-ok{background:#0d3a22}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <i class="bi bi-bar-chart-fill" style="font-size:20px;color:var(--accent2)"></i>
+  <h1>Analisis Kehadiran per Divisi</h1>
+  <nav>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/machines.html">Mesin</a>
+    <a href="/machine-compare.html">Comparator</a>
+    <a href="/division-analysis.html" class="active">Divisi</a>
+    <a href="/import-history.html">Import</a>
+    <a href="/scheduler.html">Jadwal</a>
+  </nav>
+</div>
+
+<div style="padding:20px">
+  <!-- Year/Month selector -->
+  <div class="card">
+    <h5><i class="bi bi-calendar3"></i> Periode</h5>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div class="year-nav">
+        <button onclick="changeYear(-1)">&#8249;</button>
+        <span id="yearLabel">2026</span>
+        <button onclick="changeYear(1)">&#8250;</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <select id="monthSelect" onchange="loadData()" style="width:120px">
+          <option value="01">Januari</option>
+          <option value="02">Februari</option>
+          <option value="03">Maret</option>
+          <option value="04">April</option>
+          <option value="05">Mei</option>
+          <option value="06" selected>Juni</option>
+          <option value="07">Juli</option>
+          <option value="08">Agustus</option>
+          <option value="09">September</option>
+          <option value="10">Oktober</option>
+          <option value="11">November</option>
+          <option value="12">Desember</option>
+        </select>
+        <button class="btn" onclick="loadData()"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        <button class="btn" onclick="exportTable()" style="background:transparent;border:1px solid var(--accent2)"><i class="bi bi-download"></i> Export CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="summary-row" id="summaryRow">
+    <div class="summary-card"><div class="num" style="color:var(--accent2)" id="statTotal">-</div><div class="label">Total Record</div></div>
+    <div class="summary-card"><div class="num" style="color:var(--success)" id="statHadir">-</div><div class="label">Hadir</div></div>
+    <div class="summary-card"><div class="num" style="color:var(--danger)" id="statAbsent">-</div><div class="label">Tidak Hadir</div></div>
+    <div class="summary-card"><div class="num" style="color:var(--warning)" id="statSick">-</div><div class="label">Sakit</div></div>
+    <div class="summary-card"><div class="num" style="color:#9f7aea" id="statLeave">-</div><div class="label">Cuti</div></div>
+    <div class="summary-card"><div class="num" style="color:#4299e1" id="statHoliday">-</div><div class="label">Libur</div></div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-grid">
+    <div class="chart-container">
+      <h6>Hadir vs Tidak Hadir per Divisi</h6>
+      <canvas id="barChart" height="200"></canvas>
+    </div>
+    <div class="chart-container">
+      <h6>Distribusi Status Kehadiran</h6>
+      <canvas id="pieChart" height="200"></canvas>
+    </div>
+  </div>
+
+  <!-- Data table -->
+  <div class="card">
+    <h5><i class="bi bi-table"></i> Detail per Divisi</h5>
+    <div style="max-height:400px;overflow:auto">
+      <table id="divTable">
+        <thead>
+          <tr>
+            <th>Kode Divisi</th>
+            <th>Total Record</th>
+            <th>Employee Aktif</th>
+            <th>Hadir</th>
+            <th>Tidak Hadir</th>
+            <th>Sakit</th>
+            <th>Cuti</th>
+            <th>Libur</th>
+            <th>Attendance Rate</th>
+          </tr>
+        </thead>
+        <tbody id="divBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toastBox"></div>
+
+<script>
+const API = (url, opts={}) => fetch(url, {
+  ...opts,
+  headers: {...opts.headers,'Content-Type':'application/json'},
+  body: opts.body ? (opts.body instanceof FormData ? opts.body : JSON.stringify(opts.body)) : undefined
+}).then(r=>r.json()).catch(e=>{showToast(e.message,'error');throw e;});
+
+let currentYear = 2026;
+let barChart = null, pieChart = null;
+let rawData = [];
+
+function changeYear(d) {
+  currentYear += d;
+  document.getElementById('yearLabel').textContent = currentYear;
+  loadData();
+}
+
+async function loadData() {
+  const month = document.getElementById('monthSelect').value;
+  showToast('Memuat data...', 'ok');
+  try {
+    const res = await API('/api/monitoring/division-summary?year=' + currentYear + '&month=' + month);
+    if (!res.success) { showToast(res.error.message, 'err'); return; }
+    rawData = res.data.divisions || [];
+    renderStats(rawData);
+    renderTable(rawData);
+    renderCharts(rawData);
+    showToast('Data dimuat', 'ok');
+  } catch(e) { showToast('Gagal memuat data', 'err'); }
+}
+
+function renderStats(divs) {
+  const t = d => divs.reduce((s,v) => s + (v[d]||0), 0);
+  document.getElementById('statTotal').textContent = fmtNum(t('total_records'));
+  document.getElementById('statHadir').textContent = fmtNum(t('hadir'));
+  document.getElementById('statAbsent').textContent = fmtNum(t('tidak_hadir'));
+  document.getElementById('statSick').textContent = fmtNum(t('sick'));
+  document.getElementById('statLeave').textContent = fmtNum(t('leave'));
+  document.getElementById('statHoliday').textContent = fmtNum(t('holiday'));
+}
+
+function renderTable(divs) {
+  if (!divs.length) {
+    document.getElementById('divBody').innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted)">Tidak ada data untuk periode ini</td></tr>';
+    return;
+  }
+  const html = divs.map(d => {
+    const rate = d.total_records > 0 ? ((d.hadir||0) / d.total_records * 100).toFixed(1) : '0.0';
+    const color = rate >= 80 ? 'var(--success)' : rate >= 60 ? 'var(--warning)' : 'var(--danger)';
+    return '<tr>'+
+      '<td><strong>'+(d.division_code||'-')+'</strong></td>'+
+      '<td>'+fmtNum(d.total_records)+'</td>'+
+      '<td>'+fmtNum(d.unique_employees)+'</td>'+
+      '<td style="color:var(--success)">'+fmtNum(d.hadir||0)+'</td>'+
+      '<td style="color:var(--danger)">'+fmtNum(d.tidak_hadir||0)+'</td>'+
+      '<td style="color:var(--warning)">'+fmtNum(d.sick||0)+'</td>'+
+      '<td style="color:#9f7aea">'+fmtNum(d.leave||0)+'</td>'+
+      '<td style="color:#4299e1">'+fmtNum(d.holiday||0)+'</td>'+
+      '<td><span style="color:'+color+';font-weight:700">'+rate+'%</span><div class=rate-bar><div class=rate-fill style="width:'+rate+'%;background:'+color+'"></div></div></td>'+
+    '</tr>';
+  }).join('');
+  document.getElementById('divBody').innerHTML = html;
+}
+
+function renderCharts(divs) {
+  if (barChart) barChart.destroy();
+  if (pieChart) pieChart.destroy();
+
+  const labels = divs.map(d => d.division_code || '-');
+  barChart = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Hadir', data: divs.map(d => d.hadir||0), backgroundColor: '#219653' },
+        { label: 'Tidak Hadir', data: divs.map(d => d.tidak_hadir||0), backgroundColor: '#e53e3e' },
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { labels: { color: '#e0e8f0' } } }, scales: { x: { ticks:{color:'#7a9bba'},grid:{color:'#1a3a5c'} }, y: { ticks:{color:'#7a9bba'},grid:{color:'#1a3a5c'} } } }
+  });
+
+  const t = d => divs.reduce((s,v) => s + (v[d]||0), 0);
+  pieChart = new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Hadir','Tidak Hadir','Sakit','Cuti','Libur'],
+      datasets: [{ data: [t('hadir'),t('tidak_hadir'),t('sick'),t('leave'),t('holiday')], backgroundColor: ['#219653','#e53e3e','#d69e2e','#9f7aea','#4299e1'], borderWidth: 0 }]
+    },
+    options: { responsive: true, plugins: { legend: { labels: { color: '#e0e8f0' } } } }
+  });
+}
+
+function exportTable() {
+  if (!rawData.length) { showToast('Tidak ada data', 'err'); return; }
+  const cols = ['division_code','total_records','unique_employees','hadir','tidak_hadir','sick','leave','holiday'];
+  let csv = cols.join(',') + '\n';
+  rawData.forEach(r => { csv += cols.map(c => '"'+(r[c]||0)+'"').join(',') + '\n'; });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'division_analysis_' + currentYear + '_' + document.getElementById('monthSelect').value + '.csv';
+  a.click();
+}
+
+function fmtNum(n) { return (n||0).toLocaleString('id-ID'); }
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  t.textContent = msg;
+  document.getElementById('toastBox').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+loadData();
+</script>
+</body>
+</html>

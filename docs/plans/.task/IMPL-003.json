@@ -1,0 +1,68 @@
+{
+  "id": "IMPL-003",
+  "title": "Create migration 044: Create hr_employee_current_snapshot table",
+  "scope": "migrations/044_create_hr_current_snapshot.sql",
+  "action": "Create",
+  "description": "Create hr_employee_current_snapshot table to store pre-computed current employee state per NIK using ROW_NUMBER() ranking",
+  "files": [
+    {
+      "path": "migrations/044_create_hr_current_snapshot.sql",
+      "action": "create",
+      "target": "new table",
+      "change": "Create hr_employee_current_snapshot table with NIK partitioning"
+    }
+  ],
+  "implementation": [
+    "Create table hr_employee_current_snapshot with columns: id, nik, current_emp_code, current_emp_name, current_loc_code, current_hr_status, active_count, total_row_count, is_ambiguous, created_at, updated_at",
+    "Create UNIQUE INDEX IX_snapshot_nik ON hr_employee_current_snapshot(nik)",
+    "Create INDEX IX_snapshot_is_ambiguous ON hr_employee_current_snapshot(is_ambiguous)",
+    "Insert initial data from db_ptrj.HR_EMPLOYEE using ROW_NUMBER() ranking",
+    "Rank by: Status='1' first, UpdateDate DESC, CreateDate DESC, EmpCode DESC",
+    "Only insert rows where current_rank = 1 (active/current employee)"
+  ],
+  "reference": {
+    "pattern": "Use ROW_NUMBER() OVER PARTITION BY pattern from PRD",
+    "files": [
+      "migrations/015_create_hr_mapping.sql",
+      "migrations/017_create_zkteco_hr_mapping.sql"
+    ],
+    "examples": "HR Resolution Rule: ROW_NUMBER() OVER (PARTITION BY LTRIM(RTRIM(NewICNo)) ORDER BY CASE WHEN Status='1' THEN 0 ELSE 1 END, UpdateDate DESC, CreateDate DESC, EmpCode DESC)"
+  },
+  "convergence": {
+    "criteria": [
+      "Table created with correct schema",
+      "Initial data loaded with NIK ranking",
+      "is_ambiguous flag set for NIKs with multiple rows",
+      "SELECT COUNT(*) FROM hr_employee_current_snapshot returns > 0"
+    ]
+  },
+  "depends_on": [],
+  "cli_execution_id": "plan-2026-06-23-IMPL-003",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 1,
+  "rationale": {
+    "chosen_approach": "Snapshot table for performance - compute ranking once, query many times",
+    "alternatives_considered": [
+      "On-the-fly ranking - rejected due to performance overhead on every sync"
+    ],
+    "decision_factors": [
+      "Sync performance requirements",
+      "Data freshness acceptable (daily refresh is sufficient)"
+    ],
+    "tradeoffs": "Requires periodic refresh but query performance is optimal"
+  },
+  "test": {
+    "manual_checks": [
+      "Verify table schema matches spec",
+      "Verify NIK 1906041207910002 maps to current_emp_code A0966"
+    ],
+    "success_metrics": [
+      "Snapshot populated with > 1000 rows",
+      "No NULL nik values in snapshot"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

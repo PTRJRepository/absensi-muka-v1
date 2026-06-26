@@ -1,0 +1,100 @@
+# Fix Absensi Muka Frontend — API Mismatch Fix
+
+## PROBLEM
+Frontend API client expects `{success: true, data: [...]}` wrapper, but the Absensi_Muka backend sends raw arrays `[{...}]` for most endpoints (NOT wrapped).
+
+## FILES TO FIX
+
+### 1. `D:/Gawean Rebinmas/Absensi_Muka/frontend/src/lib/api.ts`
+Replace the entire file content with:
+
+```typescript
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8004';
+
+export function getToken() { return localStorage.getItem('token'); }
+export function setToken(token: string) { localStorage.setItem('token', token); }
+export function clearToken() { localStorage.removeItem('token'); }
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  error?: { message?: string };
+}
+
+export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+      ...(options.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  const text = await response.text();
+  if (!text) return [] as unknown as T;
+
+  let payload: unknown;
+  try {
+    payload = JSON.parse(text);
+  } catch {
+    return [] as unknown as T;
+  }
+
+  // Handle wrapped responses: { success: true, data: [...] }
+  if (
+    typeof payload === 'object' &&
+    payload !== null &&
+    'success' in payload &&
+    'data' in payload
+  ) {
+    const p = payload as ApiResponse<T>;
+    if (!p.success) throw new Error(p.error?.message ?? 'API error');
+    return p.data;
+  }
+
+  // Handle raw array / object responses (no wrapper)
+  return payload as T;
+}
+```
+
+### 2. `D:/Gawean Rebinmas/Absensi_Muka/frontend/src/components/features/attendance/AttendancePage.tsx`
+
+The page queries `/api/attendance/daily?date=2026-06-19` and gets back records. Fix the date to use yesterday's data by default (today's data may not be available yet). Change this line:
+```typescript
+const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+```
+to:
+```typescript
+const [date, setDate] = useState(() => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1); // yesterday (today's data may not exist yet)
+  return d.toISOString().split('T')[0];
+});
+```
+
+Also add a date picker that allows picking any date (not just today) so the user can browse historical data.
+
+### 3. `D:/Gawean Rebinmas/Absensi_Muka/frontend/src/components/features/realtime/RealtimePage.tsx`
+
+The backend does NOT have `/api/attendance/realtime` endpoint. Use `/api/attendance/daily` instead with today's date. Replace the query with:
+```
+/api/attendance/daily?date=${new Date().toISOString().split('T')[0]}
+```
+
+## VERIFICATION
+After making changes:
+1. Run `cd D:/Gawean Rebinmas/Absensi_Muka/frontend && npx vite build` — must succeed
+2. Check that the dev server at localhost:3001 is running
+3. Navigate to http://localhost:3001/absensi — must show attendance data
+
+## NOTES
+- The backend runs on port 8004 (NOT 8000 or 3000)
+- Backend sends RAW arrays (no wrapper) for attendance endpoints
+- The dashboard stats endpoint `/api/dashboard/stats` uses the wrapped format — still needs the wrapper check
+- Use Python execute_code to test: `urllib.request.urlopen("http://localhost:8004/api/attendance/daily?date=2026-06-18")` returns a raw array (not wrapped)

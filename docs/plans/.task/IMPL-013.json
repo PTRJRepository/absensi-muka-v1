@@ -1,0 +1,58 @@
+{
+  "id": "IMPL-013",
+  "title": "Create backfill-current-empcode-scan-logs.ts script",
+  "scope": "src/scripts/backfill-current-empcode-scan-logs.ts",
+  "action": "Create",
+  "description": "Create backfill script to populate currentEmpCode columns in existing attendance_scan_logs",
+  "files": [
+    {
+      "path": "src/scripts/backfill-current-empcode-scan-logs.ts",
+      "action": "create",
+      "target": "new script",
+      "change": "Create backfill script for existing scan log data"
+    }
+  ],
+  "implementation": [
+    "Create TypeScript script with batch processing (TOP 1000 pattern)",
+    "Query attendance_scan_logs WHERE current_emp_code IS NULL AND mapping_status='MAPPED'",
+    "For each record: lookup by parsed_employee_code to get NIK, then resolve current_emp_code",
+    "Update record with resolved_nik, current_emp_code, current_employee_id, current_mapping_status, current_resolved_at",
+    "Log progress every 1000 records",
+    "Support --dry-run flag",
+    "Support --limit flag for testing",
+    "Track statistics: total processed, success count, failed count"
+  ],
+  "reference": {
+    "pattern": "Follow existing backfill script patterns",
+    "files": [
+      "src/scripts/sanitize-employee-master.ts",
+      "src/scripts/link-scan-logs.ts"
+    ],
+    "examples": "Existing batch processing pattern"
+  },
+  "convergence": {
+    "criteria": [
+      "Script runs without errors",
+      "Process existing scan logs and update current_emp_code",
+      "SELECT COUNT(*) FROM attendance_scan_logs WHERE current_emp_code IS NOT NULL returns expected count"
+    ]
+  },
+  "depends_on": ["IMPL-001", "IMPL-008"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-013",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 5,
+  "test": {
+    "manual_checks": [
+      "Run with --dry-run to verify affected rows",
+      "Run without --dry-run to apply changes"
+    ],
+    "success_metrics": [
+      "> 90% of MAPPED records get current_emp_code populated",
+      "Script completes in < 30 minutes for 100,000 records"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

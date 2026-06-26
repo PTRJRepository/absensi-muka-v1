@@ -1,0 +1,25 @@
+import './auth.routes';
+import './dashboard.routes';
+import './employees.routes';
+import './attendance.routes';
+import './sync.routes';
+import './machines.routes';
+import './mapping.routes';
+import './audit.routes';
+import './reports.routes';
+import './quality.routes';
+import './division.routes';
+import './realtime.routes';
+import './realtime-status.routes';
+import './scheduler.routes';
+import './import.routes';
+import './alert.routes';
+import './ops.routes';
+import './monitoring.routes';
+import './machine-employee.routes';
+import './import-control.routes';
+
+import './attendance-process.routes';
+import './cross-location.routes';
+import './employees-comprehensive.routes';
+import './hr-sync.routes';

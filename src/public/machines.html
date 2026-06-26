@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesin Absensi — PTRJ Monitoring</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#071426;--card:#0d2137;--accent:#167A3A;--accent2:#219653;--text:#e0e8f0;--muted:#7a9bba;--border:#1a3a5c;--danger:#e53e3e;--success:#38a169}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:"Segoe UI",sans-serif;margin:0;padding:0}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:20px;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:18px;font-weight:700;margin:0;color:var(--accent2);flex:1}
+.topbar a{display:inline-block;padding:6px 14px;border-radius:6px;background:var(--border);color:var(--text);text-decoration:none;font-size:13px;transition:background .2s}
+.topbar a:hover,.topbar a.active{background:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.card h5{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+select,input{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px}
+.btn{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:background .2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--accent2)}
+.btn-outline{background:transparent;border:1px solid var(--accent2);color:var(--accent2);padding:8px 18px;border-radius:8px;cursor:pointer;font-size:13px}
+.btn-outline:hover{background:var(--accent);color:#fff}
+.btn-danger{background:var(--danger);color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px}
+.btn-sm{padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;border:1px solid var(--border);background:transparent;color:var(--muted)}
+.btn-sm:hover{background:var(--card);color:var(--text)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#0a1f33;color:var(--muted);padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--border);position:sticky;top:0}
+td{padding:10px 12px;border-bottom:1px solid #0f2a40;vertical-align:middle}
+tr:hover{background:#0f2a40}
+.status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
+.dot-green{background:#38a169;box-shadow:0 0 6px #38a169}
+.dot-red{background:#e53e3e;box-shadow:0 0 6px #e53e3e}
+.dot-yellow{background:#d69e2e;box-shadow:0 0 6px #d69e2e}
+.badge{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-green{background:#0d3a22;color:#4ade80}
+.badge-red{background:#3a0d0d;color:#fc8181}
+.badge-yellow{background:#3a2e0d;color:#f6e05e}
+.badge-gray{background:#1a2d3d;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.machine-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;transition:all .2s}
+.machine-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.machine-card .mc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.machine-card .mc-code{font-size:15px;font-weight:700;color:var(--accent2)}
+.machine-card .mc-location{font-size:12px;color:var(--muted)}
+.machine-card .mc-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #0f2a40}
+.machine-card .mc-row:last-child{border:none}
+.machine-card .mc-label{color:var(--muted)}
+.machine-card .mc-value{font-weight:600}
+.machine-card .mc-actions{display:flex;gap:6px;margin-top:12px}
+.toggle-group{display:flex;gap:0;margin-bottom:20px}
+.toggle-group button{flex:1;padding:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:13px;transition:all .2s}
+.toggle-group button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.toggle-group button:hover:not(.active){background:#122840}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-container{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.chart-container h6{font-size:13px;color:var(--muted);margin-bottom:12px}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+.loading{text-align:center;padding:20px;color:var(--muted)}
+.toast{position:fixed;bottom:20px;right:20px;padding:10px 16px;border-radius:8px;font-size:13px;z-index:9999;color:#fff;animation:slideIn .3s}
+.toast-err{background:#3a0d0d}
+.toast-ok{background:#0d3a22}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.last-refresh{font-size:12px;color:var(--muted);text-align:right}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <i class="bi bi-pc" style="font-size:20px;color:var(--accent2)"></i>
+  <h1>Monitoring Mesin Absensi</h1>
+  <nav>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/machines.html" class="active">Mesin</a>
+    <a href="/machine-compare.html">Comparator</a>
+    <a href="/division-analysis.html">Divisi</a>
+    <a href="/import-history.html">Import</a>
+    <a href="/scheduler.html">Jadwal</a>
+  </nav>
+</div>
+
+<div style="padding:20px">
+  <!-- Controls -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="toggle-group" style="margin:0">
+          <button class="active" onclick="setView('grid')" id="btn-grid"><i class="bi bi-grid-3x3-gap"></i> Card</button>
+          <button onclick="setView('table')" id="btn-table"><i class="bi bi-list"></i> Tabel</button>
+        </div>
+        <div class="toggle-group" style="margin:0">
+          <button class="active" onclick="setViewMode('all')" id="btn-all">Semua</button>
+          <button onclick="setViewMode('online')" id="btn-online">Online</button>
+          <button onclick="setViewMode('offline')" id="btn-offline">Offline</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="last-refresh" id="lastRefresh">Belum di-refresh</div>
+        <button class="btn" onclick="pingAll()"><i class="bi bi-wifi"></i> Ping Semua</button>
+        <button class="btn" onclick="syncAll()"><i class="bi bi-arrow-repeat"></i> Sync Semua</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+    <div class="card" style="text-align:center;padding:14px">
+      <div style="font-size:28px;font-weight:700;color:var(--accent2)" id="statTotal">-</div>
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase">Total Mesin</div>
+    </div>
+    <div class="card" style="text-align:center;padding:14px">
+      <div style="font-size:28px;font-weight:700;color:#38a169" id="statOnline">-</div>
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase">Online</div>
+    </div>
+    <div class="card" style="text-align:center;padding:14px">
+      <div style="font-size:28px;font-weight:700;color:var(--danger)" id="statOffline">-</div>
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase">Offline</div>
+    </div>
+    <div class="card" style="text-align:center;padding:14px">
+      <div style="font-size:28px;font-weight:700;color:var(--warning)" id="statToday">-</div>
+      <div style="font-size:12px;color:var(--muted);text-transform:uppercase">Scan Hari Ini</div>
+    </div>
+  </div>
+
+  <!-- Grid view -->
+  <div id="gridView">
+    <div class="grid" id="machineGrid"></div>
+  </div>
+
+  <!-- Table view -->
+  <div id="tableView" style="display:none">
+    <div class="card">
+      <div style="max-height:500px;overflow:auto">
+        <table id="machineTable">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Mesin</th>
+              <th>Lokasi</th>
+              <th>IP</th>
+              <th>Port</th>
+              <th>Scanner</th>
+              <th>Scan Hari Ini</th>
+              <th>Employee Hari Ini</th>
+              <th>Last Sync</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="machineBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="chart-grid" style="margin-top:20px">
+    <div class="chart-container">
+      <h6><i class="bi bi-pie-chart"></i> Status Mesin</h6>
+      <canvas id="statusChart" height="180"></canvas>
+    </div>
+    <div class="chart-container">
+      <h6><i class="bi bi-bar-chart"></i> Scan per Mesin (Top 10)</h6>
+      <canvas id="scanChart" height="180"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="toastBox"></div>
+
+<script>
+const API = (url, opts={}) => fetch(url, {
+  ...opts,
+  headers: {...opts.headers,'Content-Type':'application/json'},
+  body: opts.body ? (opts.body instanceof FormData ? opts.body : JSON.stringify(opts.body)) : undefined
+}).then(r=>r.json()).catch(e=>{showToast(e.message,'error');throw e;});
+
+let machines = [];
+let view = 'grid';
+let viewMode = 'all';
+let statusChart = null, scanChart = null;
+let pingInterval = null;
+
+function setView(v) {
+  view = v;
+  document.getElementById('btn-grid').classList.toggle('active', v === 'grid');
+  document.getElementById('btn-table').classList.toggle('active', v === 'table');
+  document.getElementById('gridView').style.display = v === 'grid' ? 'block' : 'none';
+  document.getElementById('tableView').style.display = v === 'table' ? 'block' : 'none';
+}
+
+function setViewMode(mode) {
+  viewMode = mode;
+  ['all','online','offline'].forEach(m => document.getElementById('btn-'+m).classList.toggle('active', m === mode));
+  renderMachines();
+}
+
+async function loadMachines() {
+  const res = await API('/api/monitoring/machines');
+  if (!res.success) { showToast(res.error.message, 'err'); return; }
+  machines = res.data;
+  machines.forEach(m => m._status = m.access_status === 'ACCESSIBLE' ? 'online' : 'offline');
+  updateStats();
+  renderMachines();
+  renderCharts();
+  document.getElementById('lastRefresh').textContent = 'Di-refresh: ' + new Date().toLocaleTimeString('id-ID');
+}
+
+async function pingAll() {
+  showToast('Memulai ping ke semua mesin...', 'ok');
+  try {
+    const res = await API('/api/monitoring/machine-ping', { method: 'POST' });
+    if (!res.success) { showToast(res.error.message, 'err'); return; }
+    const pingMap = {};
+    res.data.forEach(p => { pingMap[p.machine_code] = p; });
+    machines.forEach(m => {
+      const p = pingMap[m.machine_code];
+      if (p) {
+        m._reachable = p.reachable;
+        m._latency = p.latency_ms;
+        m._pingStatus = p.status;
+      }
+    });
+    if (viewMode !== 'all') {
+      const online = machines.filter(m => m._reachable).length;
+      const offline = machines.filter(m => !m._reachable).length;
+      showToast('Ping selesai: ' + online + ' online, ' + offline + ' unreachable', 'ok');
+    } else {
+      showToast('Ping selesai', 'ok');
+    }
+    renderMachines();
+    updateStats();
+  } catch(e) { showToast('Ping gagal', 'err'); }
+}
+
+async function syncMachine(code) {
+  showToast('Men-trigger sync untuk ' + code + '...', 'ok');
+  try {
+    const res = await API('/api/monitoring/sync/' + code, { method: 'POST' });
+    if (!res.success) { showToast(res.error.message, 'err'); return; }
+    showToast('Sync dimulai untuk ' + code + ' (batch: ' + res.data.batch_id + ')', 'ok');
+    setTimeout(loadMachines, 3000);
+  } catch(e) { showToast('Sync trigger gagal', 'err'); }
+}
+
+async function syncAll() {
+  showToast('Men-trigger sync semua mesin...', 'ok');
+  try {
+    const res = await API('/api/monitoring/sync-all', { method: 'POST' });
+    if (!res.success) { showToast(res.error.message, 'err'); return; }
+    showToast('Sync dimulai untuk ' + res.data.triggered + ' mesin', 'ok');
+  } catch(e) { showToast('Sync all gagal', 'err'); }
+}
+
+function updateStats() {
+  const total = machines.length;
+  const online = machines.filter(m => m._reachable !== false).length;
+  const offline = machines.filter(m => !m._reachable).length;
+  const todayScans = machines.reduce((s, m) => s + (m.records_today || 0), 0);
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statOnline').textContent = online;
+  document.getElementById('statOffline').textContent = offline;
+  document.getElementById('statToday').textContent = todayScans.toLocaleString('id-ID');
+}
+
+function getFiltered() {
+  if (viewMode === 'online') return machines.filter(m => m._reachable);
+  if (viewMode === 'offline') return machines.filter(m => !m._reachable);
+  return machines;
+}
+
+function renderMachines() {
+  const filtered = getFiltered();
+  renderGrid(filtered);
+  renderTable(filtered);
+}
+
+function renderGrid(mc) {
+  if (!mc.length) {
+    document.getElementById('machineGrid').innerHTML = '<div class="empty" style="grid-column:1/-1">Tidak ada mesin</div>';
+    return;
+  }
+  const html = mc.map(m => {
+    const dotClass = !m._reachable ? 'dot-red' : m._pingStatus === 'TIMEOUT' ? 'dot-yellow' : 'dot-green';
+    const statusLabel = !m._reachable ? 'Offline' : m._pingStatus === 'TIMEOUT' ? 'Timeout' : 'Online';
+    const pingInfo = m._latency ? m._latency + 'ms' : '-';
+    const lastSync = m.last_sync_at ? new Date(m.last_sync_at).toLocaleString('id-ID') : 'Belum pernah';
+    return '<div class="machine-card">'+
+      '<div class="mc-header">'+
+        '<div><div class="mc-code">'+m.machine_code+'</div><div class="mc-location">'+m.location_name+'</div></div>'+
+        '<span class="'+dotClass+'"></span>'+
+      '</div>'+
+      '<div class="mc-row"><span class="mc-label">Status</span><span class="mc-value">'+statusLabel+'</span></div>'+
+      '<div class="mc-row"><span class="mc-label">IP</span><span class="mc-value"><code>'+m.ip_address+':'+m.port+'</code></span></div>'+
+      '<div class="mc-row"><span class="mc-label">Latency</span><span class="mc-value">'+pingInfo+'</span></div>'+
+      '<div class="mc-row"><span class="mc-label">Scan Hari Ini</span><span class="mc-value">'+(m.records_today||0).toLocaleString('id-ID')+'</span></div>'+
+      '<div class="mc-row"><span class="mc-label">Employee Hari Ini</span><span class="mc-value">'+(m.employees_today||0)+'</span></div>'+
+      '<div class="mc-row"><span class="mc-label">Last Sync</span><span class="mc-value" style="font-size:11px">'+lastSync+'</span></div>'+
+      '<div class="mc-actions">'+
+        '<button class="btn-sm" onclick="pingMachine(\''+m.machine_code+'\')"><i class="bi bi-wifi"></i> Ping</button>'+
+        '<button class="btn-sm" onclick="syncMachine(\''+m.machine_code+'\')"><i class="bi bi-arrow-repeat"></i> Sync</button>'+
+        '<a class="btn-sm" href="/machine-compare.html?machine='+m.machine_code+'"><i class="bi bi bi-arrow-left-right"></i> Compare</a>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+  document.getElementById('machineGrid').innerHTML = html;
+}
+
+function renderTable(mc) {
+  if (!mc.length) {
+    document.getElementById('machineBody').innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">Tidak ada mesin</td></tr>';
+    return;
+  }
+  const html = mc.map(m => {
+    const dotClass = !m._reachable ? 'dot-red' : m._pingStatus === 'TIMEOUT' ? 'dot-yellow' : 'dot-green';
+    const statusLabel = !m._reachable ? 'Offline' : m._pingStatus === 'TIMEOUT' ? 'Timeout' : 'Online';
+    return '<tr>'+
+      '<td><span class="'+dotClass+'"></span>'+statusLabel+'</td>'+
+      '<td><strong>'+m.machine_code+'</strong></td>'+
+      '<td>'+m.location_name+'</td>'+
+      '<td><code>'+m.ip_address+'</code></td>'+
+      '<td>'+m.port+'</td>'+
+      '<td>'+(m.scanner_code||'-')+'</td>'+
+      '<td>'+(m.records_today||0).toLocaleString('id-ID')+'</td>'+
+      '<td>'+(m.employees_today||0)+'</td>'+
+      '<td>'+(m.last_sync_at ? new Date(m.last_sync_at).toLocaleString('id-ID') : '-')+'</td>'+
+      '<td>'+
+        '<button class="btn-sm" onclick="pingMachine(\''+m.machine_code+'\')"><i class="bi bi-wifi"></i></button>'+
+        '<button class="btn-sm" onclick="syncMachine(\''+m.machine_code+'\')"><i class="bi bi-arrow-repeat"></i></button>'+
+      '</td>'+
+    '</tr>';
+  }).join('');
+  document.getElementById('machineBody').innerHTML = html;
+}
+
+function renderCharts() {
+  if (statusChart) statusChart.destroy();
+  if (scanChart) scanChart.destroy();
+
+  const online = machines.filter(m => m._reachable !== false).length;
+  const offline = machines.length - online;
+  statusChart = new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: { labels: ['Online','Offline/Unreachable'], datasets: [{ data: [online, offline], backgroundColor: ['#219653','#e53e3e'], borderWidth: 0 }] },
+    options: { responsive: true, plugins: { legend: { labels: { color: '#e0e8f0' } } } }
+  });
+
+  const top10 = [...machines].sort((a,b) => (b.records_today||0) - (a.records_today||0)).slice(0, 10);
+  scanChart = new Chart(document.getElementById('scanChart'), {
+    type: 'bar',
+    data: { labels: top10.map(m => m.machine_code), datasets: [{ label: 'Scan Hari Ini', data: top10.map(m => m.records_today||0), backgroundColor: '#167A3A' }] },
+    options: { responsive: true, indexAxis: 'y', plugins: { legend: { labels: { color: '#e0e8f0' } } }, scales: { x: { ticks:{color:'#7a9bba'},grid:{color:'#1a3a5c'} }, y: { ticks:{color:'#7a9bba'},grid:{color:'#1a3a5c'} } } }
+  });
+}
+
+async function pingMachine(code) {
+  try {
+    const res = await API('/api/monitoring/sync/' + code + '/ping', { method: 'POST' });
+    if (!res.success) { showToast('Ping failed: ' + res.error.message, 'err'); return; }
+    const p = res.data;
+    const status = p.reachable ? 'Online (' + p.latency_ms + 'ms)' : p.status;
+    showToast(code + ': ' + status, p.reachable ? 'ok' : 'err');
+    const m = machines.find(m => m.machine_code === code);
+    if (m) { m._reachable = p.reachable; m._latency = p.latency_ms; m._pingStatus = p.status; }
+    renderMachines();
+  } catch(e) { showToast('Ping error', 'err'); }
+}
+
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  t.textContent = msg;
+  document.getElementById('toastBox').appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+loadMachines();
+// Auto-refresh every 30 seconds
+setInterval(loadMachines, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+{
+  "exportedAt": "2026-06-15T05:19:10.647Z",
+  "totalMachines": 7,
+  "successful": 7,
+  "totalUsers": 4544,
+  "totalAttendances": 38726,
+  "machines": [
+    {
+      "machine": "OFFICE_PGE",
+      "ip": "223.25.98.220",
+      "port": 4370,
+      "success": true,
+      "userCount": 909,
+      "attendanceCount": 9820
+    },
+    {
+      "machine": "MILL",
+      "ip": "103.127.66.32",
+      "port": 4370,
+      "success": true,
+      "userCount": 569,
+      "attendanceCount": 3273
+    },
+    {
+      "machine": "OFFICE_APE",
+      "ip": "103.144.208.154",
+      "port": 4370,
+      "success": true,
+      "userCount": 1083,
+      "attendanceCount": 11423
+    },
+    {
+      "machine": "IJL",
+      "ip": "103.144.211.226",
+      "port": 4370,
+      "success": true,
+      "userCount": 166,
+      "attendanceCount": 4910
+    },
+    {
+      "machine": "AB2",
+      "ip": "103.144.208.154",
+      "port": 4400,
+      "success": true,
+      "userCount": 233,
+      "attendanceCount": 3944
+    },
+    {
+      "machine": "P1A",
+      "ip": "10.0.0.90",
+      "port": 4100,
+      "success": true,
+      "userCount": 792,
+      "attendanceCount": 2681
+    },
+    {
+      "machine": "P1B",
+      "ip": "10.0.0.91",
+      "port": 4300,
+      "success": true,
+      "userCount": 792,
+      "attendanceCount": 2675
+    }
+  ]
+}

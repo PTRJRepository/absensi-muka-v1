@@ -1,0 +1,56 @@
+{
+  "id": "IMPL-020",
+  "title": "Verify PRD requirements and document feature",
+  "scope": "Documentation",
+  "action": "Document",
+  "description": "Verify all PRD requirements are met and document the feature implementation",
+  "files": [],
+  "implementation": [
+    "Review PRD requirements checklist:",
+    "  - [ ] currentEmpCode added WITHOUT deleting parsedCode",
+    "  - [ ] NIK is stable identity key",
+    "  - [ ] Flow: raw_device_user_id -> parsedCode -> NIK -> currentEmpCode",
+    "  - [ ] Status cascade implemented correctly",
+    "  - [ ] All schema changes from PRD completed",
+    "  - [ ] All API endpoints updated",
+    "  - [ ] All frontend components updated",
+    "Update docs/SYNC-ARCHITECTURE.md with currentEmpCode flow",
+    "Update docs/ARCHITECTURE.md with new tables and relationships",
+    "Document status cascade in docs/API.md"
+  ],
+  "reference": {
+    "pattern": "Follow existing documentation patterns",
+    "files": [
+      "docs/SYNC-ARCHITECTURE.md",
+      "docs/ARCHITECTURE.md",
+      "docs/API.md"
+    ],
+    "examples": "Use existing documentation style"
+  },
+  "convergence": {
+    "criteria": [
+      "All 7 PRD requirements verified",
+      "Documentation updated with new feature",
+      "docs/SYNC-ARCHITECTURE.md includes currentEmpCode flow",
+      "docs/ARCHITECTURE.md includes new tables: hr_employee_current_snapshot, employee_code_history"
+    ]
+  },
+  "depends_on": ["IMPL-019"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-020",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 7,
+  "test": {
+    "manual_checks": [
+      "Review all PRD requirements",
+      "Update documentation files"
+    ],
+    "success_metrics": [
+      "100% PRD requirements verified",
+      "Documentation complete and accurate"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

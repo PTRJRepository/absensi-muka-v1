@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Machine Employees - Attendance Monitoring</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .view-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+    .view-btn { padding: 8px 16px; border: 1px solid #167A3A; background: transparent; color: #38a169; cursor: pointer; border-radius: 4px; }
+    .view-btn.active { background: #167A3A; color: white; }
+    .mapping-bar { height: 8px; background: #1a3a5c; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+    .mapping-fill { height: 100%; background: linear-gradient(90deg, #38a169, #219653); transition: width 0.5s; }
+    .filter-chip { display: inline-block; padding: 4px 12px; border-radius: 16px; font-size: 12px; margin: 2px; cursor: pointer; border: 1px solid #2a4a6c; color: #7a9bba; }
+    .filter-chip.active { background: #167A3A; color: white; border-color: #167A3A; }
+    .badge-mapped { background: #38a169; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+    .badge-unmapped { background: #e53e3e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+    .badge-review { background: #d69e2e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: #0f2744; padding: 24px; border-radius: 8px; width: 500px; max-width: 90%; }
+    .modal-content input, .modal-content select { width: 100%; padding: 8px; margin: 8px 0; background: #1a3a5c; border: 1px solid #2a4a6c; color: white; border-radius: 4px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">PTRJ Monitor</div>
+    <a href="/dashboard.html">Dashboard</a>
+    <a href="/machines.html">Mesin</a>
+    <a href="/machine-employees.html" class="active">Karyawan</a>
+    <a href="/division-analysis.html">Divisi</a>
+    <a href="/data-quality.html">Kualitas</a>
+  </div>
+
+  <div class="main-content">
+    <div class="topbar">
+      <h2>Machine Employee Browser</h2>
+      <button class="btn" onclick="exportCSV()">&#x1F4E4; Export CSV</button>
+    </div>
+
+    <!-- Machine Selector -->
+    <div class="card" style="margin: 16px 0;">
+      <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <label>Mesin:</label>
+        <select id="machineSelect" onchange="loadEmployees()" style="padding:8px;background:#1a3a5c;border:1px solid #2a4a6c;color:white;border-radius:4px;min-width:150px;">
+          <option value="">Pilih Mesin...</option>
+        </select>
+        <div class="view-toggle" style="margin-left:auto">
+          <button class="view-btn active" id="btnMachine" onclick="setView('machine')">Mesin</button>
+          <button class="view-btn" id="btnDatabase" onclick="setView('database')">Database</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div id="summarySection" class="card" style="margin: 16px 0; display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <span id="summaryText">Loading...</span>
+        </div>
+        <div style="text-align:right">
+          <small style="color:#7a9bba">Mapping Ratio</small>
+          <div class="mapping-bar" style="width:200px">
+            <div class="mapping-fill" id="mappingBar" style="width:0%"></div>
+          </div>
+          <small id="mappingPct" style="color:#38a169">0%</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card" style="margin: 16px 0;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="color:#7a9bba;font-size:12px">Filter:</span>
+        <span class="filter-chip active" data-filter="all" onclick="setFilter('all')">All</span>
+        <span class="filter-chip" data-filter="MAPPED" onclick="setFilter('MAPPED')">Mapped</span>
+        <span class="filter-chip" data-filter="UNMAPPED" onclick="setFilter('UNMAPPED')">Unmapped</span>
+        <span class="filter-chip" data-filter="NEED_REVIEW" onclick="setFilter('NEED_REVIEW')">Need Review</span>
+        <input type="text" id="searchInput" placeholder="Search ID atau Nama..." oninput="debounceSearch()" style="margin-left:auto;padding:6px 12px;background:#1a3a5c;border:1px solid #2a4a6c;color:white;border-radius:4px;width:220px">
+      </div>
+    </div>
+
+    <!-- Employee Table -->
+    <div class="card">
+      <table class="data-table" style="width:100%">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+            <th>Raw Device ID</th>
+            <th>Employee Code</th>
+            <th>Nama</th>
+            <th>Divisi</th>
+            <th>Total Scans</th>
+            <th>Last Scan</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="employeeTable"><tr><td colspan="9" style="text-align:center;color:#7a9bba">Pilih mesin terlebih dahulu</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div id="bulkActions" class="card" style="margin-top:16px;display:none;background:#1a3a5c">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <span id="selectedCount">0 selected</span>
+        <button class="btn" onclick="bulkMap()">Bulk Map Selected</button>
+        <button class="btn btn-danger" onclick="clearSelection()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mapping Modal -->
+  <div class="modal" id="mapModal">
+    <div class="modal-content">
+      <h3 id="mapModalTitle">Assign Employee</h3>
+      <p id="mapModalInfo" style="color:#7a9bba;font-size:13px"></p>
+      <label>Employee Code:</label>
+      <input type="text" id="mapEmployeeCode" placeholder="e.g. A0140">
+      <label>Cari Nama:</label>
+      <input type="text" id="mapSearchName" placeholder="Ketik nama..." oninput="searchEmployee()">
+      <div id="employeeSearchResults" style="max-height:150px;overflow-y:auto;background:#1a3a5c;border:1px solid #2a4a6c;border-radius:4px;margin-top:4px"></div>
+      <div class="modal-actions">
+        <button class="btn" onclick="closeMapModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmMap()">Assign</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentMachine = '';
+    let currentView = 'machine';
+    let currentFilter = 'all';
+    let allEmployees = [];
+    let selectedIds = new Set();
+    let currentMappingRawId = '';
+    let debounceTimer;
+
+    async function loadMachineList() {
+      try {
+        const res = await fetch('/api/monitoring/machines');
+        const data = await res.json();
+        const machines = data.data || data;
+        const sel = document.getElementById('machineSelect');
+        sel.innerHTML = '<option value="">Pilih Mesin...</option>';
+        machines.forEach(m => {
+          sel.innerHTML += '<option value="' + m.machine_code + '">' + m.machine_code + ' - ' + (m.location_name || m.machine_code) + '</option>';
+        });
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadEmployees() {
+      currentMachine = document.getElementById('machineSelect').value;
+      if (!currentMachine) return;
+      selectedIds.clear();
+      document.getElementById('bulkActions').style.display = 'none';
+      document.getElementById('employeeTable').innerHTML = '<tr><td colspan="9" style="text-align:center;color:#7a9bba">Loading...</td></tr>';
+      document.getElementById('summarySection').style.display = 'block';
+
+      try {
+        const res = await fetch('/api/monitoring/machine/' + currentMachine + '/employees');
+        const data = await res.json();
+        const empData = data.data || data;
+        allEmployees = empData.machine_raw || empData.database_mapped || [];
+
+        updateSummary();
+        renderTable();
+      } catch (e) {
+        document.getElementById('employeeTable').innerHTML = '<tr><td colspan="9" style="color:#e53e3e">Error loading: ' + e.message + '</td></tr>';
+      }
+    }
+
+    function updateSummary() {
+      const mapped = allEmployees.filter(e => e.mapping_status === 'MAPPED').length;
+      const total = allEmployees.length;
+      const pct = total > 0 ? Math.round((mapped / total) * 100) : 0;
+      document.getElementById('summaryText').textContent = total + ' unique IDs | ' + mapped + ' mapped | ' + (total - mapped) + ' unmapped';
+      document.getElementById('mappingBar').style.width = pct + '%';
+      document.getElementById('mappingPct').textContent = pct + '%';
+      document.getElementById('mappingPct').style.color = pct > 80 ? '#38a169' : pct > 50 ? '#d69e2e' : '#e53e3e';
+    }
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === f));
+      renderTable();
+    }
+
+    function setView(v) {
+      currentView = v;
+      document.getElementById('btnMachine').classList.toggle('active', v === 'machine');
+      document.getElementById('btnDatabase').classList.toggle('active', v === 'database');
+      renderTable();
+    }
+
+    function debounceSearch() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(renderTable, 300);
+    }
+
+    function getFiltered() {
+      let rows = allEmployees;
+      if (currentFilter !== 'all') rows = rows.filter(e => e.mapping_status === currentFilter);
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      if (q) {
+        rows = rows.filter(e =>
+          (e.raw_device_user_id || '').toLowerCase().includes(q) ||
+          (e.parsed_employee_code || '').toLowerCase().includes(q) ||
+          (e.employee_name || '').toLowerCase().includes(q)
+        );
+      }
+      return rows;
+    }
+
+    function renderTable() {
+      const rows = getFiltered();
+      if (rows.length === 0) {
+        document.getElementById('employeeTable').innerHTML = '<tr><td colspan="9" style="text-align:center;color:#7a9bba">Tidak ada data</td></tr>';
+        return;
+      }
+      document.getElementById('employeeTable').innerHTML = rows.map(e => {
+        const rawId = e.raw_device_user_id || e.raw_id || '-';
+        const empCode = e.parsed_employee_code || e.employee_code || '-';
+        const name = e.employee_name || '-';
+        const div = e.parsed_division_code || e.division_code || '-';
+        const scans = e.occurrence_count || e.total_scans || 0;
+        const last = e.last_scan ? new Date(e.last_scan).toLocaleString('id-ID') : '-';
+        const status = e.mapping_status || 'UNMAPPED';
+        const badge = status === 'MAPPED' ? 'badge-mapped' : status === 'NEED_REVIEW' ? 'badge-review' : 'badge-unmapped';
+        const checked = selectedIds.has(rawId) ? 'checked' : '';
+        const isUnmapped = status !== 'MAPPED';
+        return '<tr>' +
+          '<td><input type="checkbox" ' + checked + ' onchange="toggleSelect('' + rawId + '')"></td>' +
+          '<td style="font-family:monospace">' + rawId + '</td>' +
+          '<td style="font-family:monospace">' + (empCode !== '-' ? '<a href="/employee-detail.html?code=' + empCode + '" style="color:#38a169">' + empCode + '</a>' : '-') + '</td>' +
+          '<td>' + name + '</td>' +
+          '<td>' + div + '</td>' +
+          '<td style="text-align:center">' + scans.toLocaleString() + '</td>' +
+          '<td style="font-size:11px">' + last + '</td>' +
+          '<td><span class="' + badge + '">' + status + '</span></td>' +
+          '<td><button class="btn" style="padding:4px 8px;font-size:11px" onclick="openMapModal('' + rawId + '')"' + (isUnmapped ? '' : ' disabled style="opacity:0.3"') + '>Map</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function toggleSelect(id) {
+      if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+      updateBulkActions();
+    }
+
+    function toggleSelectAll() {
+      const checked = document.getElementById('selectAll').checked;
+      const rows = getFiltered();
+      if (checked) rows.forEach(r => selectedIds.add(r.raw_device_user_id || r.raw_id));
+      else selectedIds.clear();
+      renderTable();
+      updateBulkActions();
+    }
+
+    function updateBulkActions() {
+      const n = selectedIds.size;
+      document.getElementById('bulkActions').style.display = n > 0 ? 'block' : 'none';
+      document.getElementById('selectedCount').textContent = n + ' selected';
+    }
+
+    function clearSelection() { selectedIds.clear(); renderTable(); updateBulkActions(); }
+
+    function openMapModal(rawId) {
+      currentMappingRawId = rawId;
+      document.getElementById('mapModalTitle').textContent = 'Assign Employee to: ' + rawId;
+      document.getElementById('mapModalInfo').textContent = 'Machine: ' + currentMachine + ' | Currently: ' + (allEmployees.find(e => (e.raw_device_user_id||e.raw_id) === rawId)?.parsed_employee_code || 'UNMAPPED');
+      document.getElementById('mapEmployeeCode').value = '';
+      document.getElementById('employeeSearchResults').innerHTML = '';
+      document.getElementById('mapModal').classList.add('show');
+    }
+
+    function closeMapModal() { document.getElementById('mapModal').classList.remove('show'); }
+
+    async function searchEmployee() {
+      const q = document.getElementById('mapSearchName').value;
+      if (q.length < 2) { document.getElementById('employeeSearchResults').innerHTML = ''; return; }
+      try {
+        const res = await fetch('/api/employees/search?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        const emps = data.data || data;
+        document.getElementById('employeeSearchResults').innerHTML = emps.slice(0, 10).map(e =>
+          '<div style="padding:6px 10px;cursor:pointer" onclick="selectEmployee('' + e.employee_code + '')">' + e.employee_code + ' - ' + e.employee_name + '</div>'
+        ).join('');
+      } catch (e) { document.getElementById('employeeSearchResults').innerHTML = '<div style="padding:6px;color:#e53e3e">Error</div>'; }
+    }
+
+    function selectEmployee(code) {
+      document.getElementById('mapEmployeeCode').value = code;
+      document.getElementById('employeeSearchResults').innerHTML = '';
+    }
+
+    async function confirmMap() {
+      const empCode = document.getElementById('mapEmployeeCode').value.trim();
+      if (!empCode) return;
+      try {
+        const res = await fetch('/api/monitoring/employees/' + currentMachine + '/map', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ raw_id: currentMappingRawId, employee_code: empCode, machine_code: currentMachine })
+        });
+        const data = await res.json();
+        if (data.success || data.data?.success) {
+          closeMapModal();
+          loadEmployees();
+        } else {
+          alert('Mapping failed: ' + (data.message || JSON.stringify(data)));
+        }
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    async function bulkMap() {
+      if (selectedIds.size === 0) return;
+      alert('Bulk mapping ' + selectedIds.size + ' IDs - coming soon!');
+    }
+
+    function exportCSV() {
+      const rows = getFiltered();
+      const csv = ['Raw ID,Employee Code,Nama,Divisi,Scans,Last Scan,Status'];
+      rows.forEach(e => {
+        csv.push([e.raw_device_user_id||e.raw_id||'', e.parsed_employee_code||e.employee_code||'', e.employee_name||'', e.parsed_division_code||e.division_code||'', e.occurrence_count||e.total_scans||0, e.last_scan||'', e.mapping_status||'UNMAPPED'].join(','));
+      });
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'employees_' + currentMachine + '.csv'; a.click();
+    }
+
+    loadMachineList();
+  </script>
+</body>
+</html>

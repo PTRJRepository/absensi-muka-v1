@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kualitas Data - PTRJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#071426;--green:#167A3A;--green-light:#1a9a4a;--bg:#F1F5F9;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--danger:#dc2626;--success:#16a34a}
+body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--navy);color:#fff;flex-shrink:0;position:fixed;height:100vh;overflow-y:auto}
+.sidebar .logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar .logo h1{font-size:15px;font-weight:700}
+.sidebar .logo span{display:block;font-size:11px;font-weight:400;opacity:.6;margin-top:2px}
+.sidebar nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff;border-left-color:var(--green)}
+.nav-item i{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.4}
+.main{flex:1;margin-left:240px}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar h2{font-size:18px;font-weight:600}
+.content{padding:28px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:20px;border-left:4px solid var(--green)}
+.stat-card.red{border-left-color:var(--danger)}.stat-card.yellow{border-left-color:var(--warning)}
+.stat-label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stat-value{font-size:32px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:24px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-title{font-size:15px;font-weight:600}
+.chart-container{position:relative;height:280px}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#dcfce7;color:#166534}.badge-red{background:#fee2e2;color:#991b1b}
+.badge-yellow{background:#fef9c3;color:#854d0e}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+.loading::after{content:" ";display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:1000;display:none;border-left:4px solid var(--green)}
+.toast.show{display:block}
+.text-green{color:var(--green)}.text-red{color:var(--danger)}.text-muted{color:var(--muted)}
+select{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text)}
+select:focus{outline:none;border-color:var(--green)}
+.info-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 16px;font-size:13px;color:#166534;margin-bottom:16px;display:flex;align-items:flex-start;gap:8px}
+.warn-box{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;align-items:flex-start;gap:8px;margin-bottom:16px}
+.action-btn{padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:4px}
+.action-btn:hover{background:var(--bg)}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:3px;transition:width .3s}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><h1>PTRJ Absensi<span>Monitoring System</span></h1></div>
+  <nav>
+    <a href="/dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+    <a href="/machines.html" class="nav-item"><i data-lucide="scan"></i>Mesin Absensi</a>
+    <a href="/import-history.html" class="nav-item"><i data-lucide="upload"></i>Riwayat Import</a>
+    <a href="/scheduler.html" class="nav-item"><i data-lucide="clock"></i>Penjadwalan</a>
+    <a href="/data-quality.html" class="nav-item active"><i data-lucide="bar-chart-2"></i>Kualitas Data</a>
+  </nav>
+  <div class="sidebar-footer">PTRJ Absensi v2.0</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2>Kualitas Data</h2>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="daysFilter" onchange="loadQuality()" style="padding:6px 12px;font-size:12px">
+        <option value="7">7 Hari</option>
+        <option value="14">14 Hari</option>
+        <option value="30" selected>30 Hari</option>
+        <option value="90">90 Hari</option>
+      </select>
+      <button class="action-btn" onclick="loadQuality()"><i data-lucide="refresh-cw"></i>Refresh</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- Summary Stats -->
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Total Raw Records</div><div class="stat-value" id="sTotal">-</div><div class="stat-sub" id="sTotalSub"></div></div>
+      <div class="stat-card" style="border-left-color:var(--success)"><div class="stat-label">Mapped Rate</div><div class="stat-value text-green" id="sMapped">-</div><div class="stat-sub">employee code resolved</div></div>
+      <div class="stat-card red"><div class="stat-label">Unmapped</div><div class="stat-value text-red" id="sUnmapped">-</div><div class="stat-sub">raw device IDs</div></div>
+      <div class="stat-card yellow"><div class="stat-label">Need Review</div><div class="stat-value" id="sReview">-</div><div class="stat-sub">requires manual check</div></div>
+      <div class="stat-card"><div class="stat-label">Total Imported</div><div class="stat-value" id="sImported">-</div><div class="stat-sub">into attendance_imports</div></div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box" id="infoBox" style="display:none"><i data-lucide="info" style="width:16px;height:16px;flex-shrink:0;margin-top:2px"></i><span id="infoMsg"></span></div>
+
+    <!-- Charts -->
+    <div class="chart-row">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Trend Absensi Harian</div></div>
+        <canvas id="trendChart" class="chart-container"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Records per Divisi</div></div>
+        <canvas id="divisionChart" class="chart-container"></canvas>
+      </div>
+    </div>
+
+    <!-- Unmapped Codes Table -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Unmapped Employee Codes</div>
+        <span class="badge badge-red" id="unmappedCount">0</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Raw Device ID</th><th>Occurrences</th><th>Machines</th><th>Last Seen</th></tr></thead>
+          <tbody id="unmappedTable"><tr><td colspan="4" class="loading">Memuat...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Monthly by Division -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Summary per Divisi (Selected Period)</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Divisi</th><th>Kode</th><th>Total Records</th><th>Unique Employees</th><th>% of Total</th><th>Visual</th></tr></thead>
+          <tbody id="divisionTable"><tr><td colspan="5" class="loading">Memuat...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = (url, opts={}) => {
+  const token = localStorage.getItem('token') || '';
+  return fetch(url, {...opts,headers:{...opts.headers,'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+    body:opts.body && !(opts.body instanceof FormData)?JSON.stringify(opts.body):opts.body
+  }).then(r=>r.json()).catch(e=>{showToast(e.message);throw e;});
+};
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(()=>t.className='toast',4000);}
+let trendChart, divisionChart;
+
+async function loadQuality() {
+  const days = parseInt(document.getElementById('daysFilter').value);
+  const data = await API('/api/monitoring/quality?days=' + days);
+  renderStats(data);
+  renderCharts(data);
+  renderUnmapped(data.unmappedCodes || []);
+  lucide.createIcons();
+}
+
+function renderStats(data) {
+  document.getElementById('sTotal').textContent = (data.totalScanLogs || 0).toLocaleString('id-ID');
+  document.getElementById('sMapped').textContent = (data.mappedRate || 0) + '%';
+  document.getElementById('sUnmapped').textContent = (data.unmappedCount || 0).toLocaleString('id-ID');
+  document.getElementById('sReview').textContent = (data.needReviewCount || 0).toLocaleString('id-ID');
+  document.getElementById('sImported').textContent = (data.totalImported || 0).toLocaleString('id-ID');
+  document.getElementById('sTotalSub').textContent = (data.mappedCount || 0) + ' mapped, ' + (data.unmappedCount || 0) + ' unmapped';
+  document.getElementById('unmappedCount').textContent = data.unmappedCodes ? data.unmappedCodes.length : 0;
+  
+  const rate = data.mappedRate || 0;
+  const infoBox = document.getElementById('infoBox');
+  const infoMsg = document.getElementById('infoMsg');
+  if (rate >= 90) {
+    infoBox.className = 'info-box'; infoMsg.textContent = 'Kualitas data baik. ' + rate + '% records berhasil di-resolve ke employee code.';
+    infoBox.style.display = 'flex';
+  } else if (rate >= 70) {
+    infoBox.className = 'warn-box'; infoMsg.textContent = 'Kualitas data perlu perhatian. ' + rate + '% records berhasil di-resolve.';
+    infoBox.style.display = 'flex';
+  } else {
+    infoBox.className = 'warn-box'; infoMsg.textContent = 'Kualitas data rendah. ' + rate + '% mapped. Banyak raw device IDs tidak bisa di-resolve.';
+    infoBox.style.display = 'flex';
+  }
+}
+
+function renderCharts(data) {
+  const trendCtx = document.getElementById('trendChart');
+  if (trendChart) trendChart.destroy();
+  const daily = data.dailyTrend || [];
+  trendChart = new Chart(trendCtx, {
+    type:'bar',
+    data:{
+      labels: daily.map(d => new Date(d.date).toLocaleDateString('id-ID',{day:'2-digit',month:'short'})),
+      datasets:[{
+        label:'Total Records', data:daily.map(d=>d.record_count),
+        backgroundColor:'rgba(22,122,58,0.7)', borderRadius:4
+      },{
+        label:'Unique Employees', data:daily.map(d=>d.unique_employees),
+        backgroundColor:'rgba(14,165,233,0.7)', borderRadius:4
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11}}}},scales:{y:{beginAtZero:true}}}}
+  });
+
+  const divCtx = document.getElementById('divisionChart');
+  if (divisionChart) divisionChart.destroy();
+  const divs = (data.recordsPerDivision||[]).slice(0,8);
+  const colors = ['#167A3A','#0ea5e9','#8b5cf6','#f59e0b','#ef4444','#10b981','#6366f1','#ec4899'];
+  divisionChart = new Chart(divCtx, {
+    type:'doughnut',
+    data:{labels:divs.map(d=>d.division),datasets:[{data:divs.map(d=>d.record_count),backgroundColor:colors}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}}
+  });
+}
+
+function renderUnmapped(codes) {
+  const tbody = document.getElementById('unmappedTable');
+  if (!codes.length) { tbody.innerHTML='<tr><td colspan="4" class="empty-state"><p>Semua employee codes berhasil di-resolve!</p></td></tr>'; return; }
+  tbody.innerHTML = codes.map(c => `<tr>
+    <td style="font-family:monospace;font-weight:600">${c.raw_device_user_id}</td>
+    <td><span class="badge badge-red">${c.occurrence_count}</span></td>
+    <td style="font-size:12px">${c.machines||'-'}</td>
+    <td style="font-size:12px">${c.last_seen?new Date(c.last_seen).toLocaleString('id-ID'):'-'}</td>
+  </tr>`).join('');
+}
+
+loadQuality();
+</script>
+</body>
+</html>

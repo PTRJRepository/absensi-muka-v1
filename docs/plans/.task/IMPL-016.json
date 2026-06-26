@@ -1,0 +1,54 @@
+{
+  "id": "IMPL-016",
+  "title": "Update frontend AttendancePage to display currentEmpCode",
+  "scope": "frontend/src/components/features/attendance/AttendancePage.tsx",
+  "action": "Update",
+  "description": "Update AttendancePage component to display currentEmpCode alongside parsedEmployeeCode",
+  "files": [
+    {
+      "path": "frontend/src/components/features/attendance/AttendancePage.tsx",
+      "action": "modify",
+      "target": "AttendancePage component",
+      "change": "Add currentEmpCode display in attendance table"
+    }
+  ],
+  "implementation": [
+    "Add column for currentEmpCode in attendance table",
+    "Display format: parsedEmployeeCode (original) -> currentEmpCode (current)",
+    "Add tooltip or expandable row to show identity resolution status",
+    "Handle NULL values with '-' display per UI rules",
+    "Update table headers and column definitions"
+  ],
+  "reference": {
+    "pattern": "Follow existing frontend patterns",
+    "files": [
+      "frontend/src/components/features/attendance/AttendancePage.tsx",
+      "frontend/src/components/features/matrix/AttendanceMatrixPage.tsx"
+    ],
+    "examples": "Use DataTable component with proper null handling"
+  },
+  "convergence": {
+    "criteria": [
+      "Attendance table shows currentEmpCode column",
+      "NULL values display as '-' not null/undefined/NaN",
+      "Table has loading, empty, and error states"
+    ]
+  },
+  "depends_on": ["IMPL-011"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-016",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 6,
+  "test": {
+    "manual_checks": [
+      "Verify currentEmpCode displays correctly",
+      "Verify null handling"
+    ],
+    "success_metrics": [
+      "npm run frontend:build passes"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

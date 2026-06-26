@@ -1,0 +1,55 @@
+{
+  "id": "IMPL-011",
+  "title": "Update attendance.routes.ts for currentEmpCode display",
+  "scope": "src/api/routes/attendance.routes.ts",
+  "action": "Update",
+  "description": "Update attendance API routes to return currentEmpCode and related fields in responses",
+  "files": [
+    {
+      "path": "src/api/routes/attendance.routes.ts",
+      "action": "modify",
+      "target": "attendance API endpoints",
+      "change": "Add currentEmpCode fields to JSON responses"
+    }
+  ],
+  "implementation": [
+    "Update /api/attendance/monthly-matrix to include current_emp_code, parsed_employee_code, resolved_nik",
+    "Update /api/attendance/by-employee/:code to show both parsed and current emp code",
+    "Add mapping_version to responses where applicable",
+    "Ensure NULL values display as '-' not null/undefined (UI rule)",
+    "Add Zod validation for new fields if needed"
+  ],
+  "reference": {
+    "pattern": "Follow existing API response patterns",
+    "files": [
+      "src/api/routes/attendance.routes.ts"
+    ],
+    "examples": "Use sendJson from api/response.ts"
+  },
+  "convergence": {
+    "criteria": [
+      "GET /api/attendance/monthly-matrix returns current_emp_code field",
+      "Response format validated against Zod schema",
+      "NULL values display as '-' per UI rules"
+    ]
+  },
+  "depends_on": ["IMPL-010"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-011",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 4,
+  "test": {
+    "manual_checks": [
+      "Test API endpoint returns new fields",
+      "Verify null handling"
+    ],
+    "success_metrics": [
+      "API returns 200 with new fields"
+    ],
+    "unit": [],
+    "integration": [
+      "test_attendance_api_returns_current_empcode"
+    ]
+  }
+}

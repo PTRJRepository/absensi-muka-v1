@@ -1,0 +1,56 @@
+{
+  "id": "IMPL-004",
+  "title": "Create migration 045: Create employee_code_history table",
+  "scope": "migrations/045_create_employee_code_history.sql",
+  "action": "Create",
+  "description": "Create employee_code_history table to track all employee code assignments per NIK over time",
+  "files": [
+    {
+      "path": "migrations/045_create_employee_code_history.sql",
+      "action": "create",
+      "target": "new table",
+      "change": "Create employee_code_history table for audit trail"
+    }
+  ],
+  "implementation": [
+    "Create table employee_code_history with columns: id, nik, emp_code, emp_name, loc_code, hr_status, create_date, update_date, is_current, created_at",
+    "Create INDEX IX_history_nik ON employee_code_history(nik)",
+    "Create INDEX IX_history_emp_code ON employee_code_history(emp_code)",
+    "Create INDEX IX_history_is_current ON employee_code_history(is_current)",
+    "Insert historical data from db_ptrj.HR_EMPLOYEE",
+    "Set is_current=1 for rows matching current_snapshot"
+  ],
+  "reference": {
+    "pattern": "Audit table pattern",
+    "files": [
+      "migrations/042_add_nik_and_employee_master_quality.sql"
+    ],
+    "examples": "employee_hr_sync_audit table structure"
+  },
+  "convergence": {
+    "criteria": [
+      "Table created with correct schema",
+      "Historical data loaded",
+      "is_current flag correctly set",
+      "SELECT COUNT(*) FROM employee_code_history returns > 0"
+    ]
+  },
+  "depends_on": ["IMPL-003"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-004",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 1,
+  "test": {
+    "manual_checks": [
+      "Verify history table populated",
+      "Verify is_current matches snapshot"
+    ],
+    "success_metrics": [
+      "History table has > 1000 rows",
+      "Zero duplicate (nik, emp_code) combinations"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

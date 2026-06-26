@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penjadwalan - PTRJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#071426;--green:#167A3A;--green-light:#1a9a4a;--bg:#F1F5F9;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;--danger:#dc2626;--success:#16a34a}
+body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--navy);color:#fff;flex-shrink:0;position:fixed;height:100vh;overflow-y:auto}
+.sidebar .logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar .logo h1{font-size:15px;font-weight:700}
+.sidebar .logo span{display:block;font-size:11px;font-weight:400;opacity:.6;margin-top:2px}
+.sidebar nav{padding:16px 0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;font-weight:500;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff;border-left-color:var(--green)}
+.nav-item i{width:18px;height:18px;flex-shrink:0}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.4}
+.main{flex:1;margin-left:240px}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar h2{font-size:18px;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:var(--green-light)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{background:#f8fafc}
+.content{padding:28px}
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:24px;margin-bottom:20px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-title{font-size:15px;font-weight:600}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#dcfce7;color:#166534}.badge-red{background:#fee2e2;color:#991b1b}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+.loading::after{content:" ";display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-left:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:14px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:1000;display:none;border-left:4px solid var(--green)}
+.toast.show{display:block}
+.text-green{color:var(--green)}.text-muted{color:var(--muted)}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+.toggle-label{font-size:14px;font-weight:500}
+.toggle-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.toggle{display:width:44px;height:24px;background:var(--border);border-radius:12px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle.active{background:var(--green)}
+.toggle::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.toggle.active::after{transform:translateX(20px)}
+select,input{padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text)}
+select:focus,input:focus{outline:none;border-color:var(--green)}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.action-btn{padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;font-size:12px;display:inline-flex;align-items:center;gap:4px;color:var(--text)}
+.action-btn:hover{background:var(--bg)}
+.action-btn.danger{color:var(--danger);border-color:var(--danger)}
+.action-btn.danger:hover{background:#fee2e2}
+.checkbox-item{display:flex;align-items:center;gap:8px;padding:6px 0}
+input[type="checkbox"]{width:16px;height:16px;accent-color:var(--green)}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><h1>PTRJ Absensi<span>Monitoring System</span></h1></div>
+  <nav>
+    <a href="/dashboard.html" class="nav-item"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+    <a href="/machines.html" class="nav-item"><i data-lucide="scan"></i>Mesin Absensi</a>
+    <a href="/import-history.html" class="nav-item"><i data-lucide="upload"></i>Riwayat Import</a>
+    <a href="/scheduler.html" class="nav-item active"><i data-lucide="clock"></i>Penjadwalan</a>
+    <a href="/data-quality.html" class="nav-item"><i data-lucide="bar-chart-2"></i>Kualitas Data</a>
+  </nav>
+  <div class="sidebar-footer">PTRJ Absensi v2.0</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2>Penjadwalan Sync</h2>
+    <button class="btn btn-green" onclick="showCreateJob()">
+      <i data-lucide="plus" style="width:16px;height:16px"></i> Job Baru
+    </button>
+  </div>
+  <div class="content">
+    <!-- Global Scheduler Config -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Pengaturan Global</div></div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Scheduler Aktif</div>
+          <div class="toggle-sub">Otomatis sync semua mesin pada interval yang ditentukan</div>
+        </div>
+        <div class="toggle ${schedulerEnabled?'active':''}" id="globalToggle" onclick="toggleGlobal()"></div>
+      </div>
+      <div style="padding:16px 0;border-bottom:1px solid var(--border)">
+        <div class="form-group" style="margin-bottom:12px">
+          <label>Interval Sync</label>
+          <select id="globalInterval" onchange="saveGlobalConfig()" style="width:200px">
+            <option value="15">Setiap 15 menit</option>
+            <option value="30">Setiap 30 menit</option>
+            <option value="60" selected>Setiap 1 jam</option>
+            <option value="120">Setiap 2 jam</option>
+            <option value="240">Setiap 4 jam</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding-top:12px">
+        <button class="btn btn-green" onclick="runSyncAll()"><i data-lucide="play" style="width:14px;height:14px"></i> Jalankan Sekarang</button>
+        <button class="btn btn-outline" onclick="loadScheduler()"><i data-lucide="refresh-cw" style="width:14px;height:14px"></i> Refresh</button>
+      </div>
+    </div>
+
+    <!-- Jobs List -->
+    <div class="card">
+      <div class="card-header"><div class="card-title">Scheduled Jobs</div></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Job Name</th><th>Mesin</th><th>Interval</th><th>Status</th><th>Terakhir Run</th><th>Aksi</th></tr></thead>
+          <tbody id="jobsTableBody"><tr><td colspan="6" class="loading">Memuat...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Create Job Modal -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header" style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <h3 style="font-size:16px;font-weight:600">Job Schedule Baru</h3>
+      <button onclick="closeCreateModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)">&times;</button>
+    </div>
+    <div style="padding:24px">
+      <div class="form-group">
+        <label>Nama Job</label>
+        <input type="text" id="jobName" placeholder="Contoh: Morning Sync, Night Backup">
+      </div>
+      <div class="form-group">
+        <label>Interval (menit)</label>
+        <select id="jobInterval">
+          <option value="15">15 menit</option><option value="30">30 menit</option>
+          <option value="60" selected>1 jam</option><option value="120">2 jam</option><option value="240">4 jam</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Pilih Mesin (kosongkan untuk semua)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:12px" id="machineCheckboxes"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+        <button class="btn btn-outline" onclick="closeCreateModal()">Batal</button>
+        <button class="btn btn-green" onclick="createJob()"><i data-lucide="plus" style="width:14px;height:14px"></i> Buat Job</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = (url, opts={}) => {
+  const token = localStorage.getItem('token') || '';
+  return fetch(url, {...opts,headers:{...opts.headers,'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+    body:opts.body && !(opts.body instanceof FormData)?JSON.stringify(opts.body):opts.body
+  }).then(r=>r.json()).catch(e=>{showToast(e.message);throw e;});
+};
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show';setTimeout(()=>t.className='toast',4000);}
+let schedulerEnabled=false, allMachines=[];
+
+async function loadScheduler() {
+  const [status, jobs, machines] = await Promise.all([
+    API('/api/scheduler/status'),
+    API('/api/scheduler/jobs'),
+    API('/api/monitoring/machines')
+  ]);
+  schedulerEnabled = status.enabled || false;
+  document.getElementById('globalToggle').className = 'toggle ' + (schedulerEnabled ? 'active' : '');
+  document.getElementById('globalInterval').value = status.intervalMinutes || 60;
+  allMachines = machines;
+  renderJobs(jobs);
+  renderMachineCheckboxes(machines);
+}
+
+function renderJobs(data) {
+  const tbody = document.getElementById('jobsTableBody');
+  const jobs = data.jobs || [];
+  if (!jobs.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><p>Belum ada scheduled job. Buat job baru untuk memulai.</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML = jobs.map(j => `
+    <tr>
+      <td style="font-weight:600">${j.name}</td>
+      <td style="font-size:12px">${j.machines && j.machines.length ? j.machines.join(', ') : '<span class="text-muted">Semua mesin</span>'}</td>
+      <td>${j.intervalMinutes} menit</td>
+      <td><span class="badge ${j.enabled?'badge-green':'badge-gray'}">${j.enabled?'Aktif':'Nonaktif'}</span></td>
+      <td>${j.lastRun ? new Date(j.lastRun.startedAt).toLocaleString('id-ID') : '<span class="text-muted">Belum pernah</span>'}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="action-btn" onclick="toggleJob('${j.name}', ${!j.enabled})" title="${j.enabled?'Disable':'Enable'}">
+            <i data-lucide="${j.enabled?'pause':'play'}" style="width:14px;height:14px"></i>
+          </button>
+          <button class="action-btn" onclick="runJob('${j.name}')" title="Run Now"><i data-lucide="zap" style="width:14px;height:14px"></i></button>
+          <button class="action-btn danger" onclick="deleteJob('${j.name}')" title="Delete"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+  lucide.createIcons();
+}
+
+function renderMachineCheckboxes(machines) {
+  const container = document.getElementById('machineCheckboxes');
+  container.innerHTML = machines.map(m => `
+    <label class="checkbox-item">
+      <input type="checkbox" value="${m.machine_code}"> ${m.machine_code}
+    </label>`).join('');
+}
+
+async function toggleGlobal() {
+  schedulerEnabled = !schedulerEnabled;
+  document.getElementById('globalToggle').className = 'toggle ' + (schedulerEnabled ? 'active' : '');
+  await API('/api/scheduler/config', {method:'PUT', body:{enabled:schedulerEnabled}});
+  showToast('Scheduler ' + (schedulerEnabled ? 'diaktifkan' : 'dinonaktifkan'));
+}
+
+async function saveGlobalConfig() {
+  const interval = parseInt(document.getElementById('globalInterval').value);
+  await API('/api/scheduler/config', {method:'PUT', body:{intervalMinutes:interval}});
+  showToast('Interval diupdate ke ' + interval + ' menit');
+}
+
+function showCreateJob() { document.getElementById('createModal').classList.add('show'); }
+function closeCreateModal() { document.getElementById('createModal').classList.remove('show'); }
+
+async function createJob() {
+  const name = document.getElementById('jobName').value.trim();
+  const interval = parseInt(document.getElementById('jobInterval').value);
+  const machines = [...document.querySelectorAll('#machineCheckboxes input:checked')].map(c=>c.value);
+  if (!name) { showToast('Nama job wajib diisi'); return; }
+  await API('/api/scheduler/jobs', {method:'POST', body:{name, intervalMinutes:interval, machines}});
+  showToast('Job "'+name+'" dibuat');
+  closeCreateModal();
+  loadScheduler();
+}
+
+async function toggleJob(name, enabled) {
+  await API('/api/scheduler/jobs/'+encodeURIComponent(name), {method:'PUT', body:{enabled}});
+  showToast('Job ' + (enabled ? 'diaktifkan' : 'dinonaktifkan'));
+  loadScheduler();
+}
+
+async function runJob(name) {
+  await API('/api/scheduler/jobs/'+encodeURIComponent(name)+'/run', {method:'POST'});
+  showToast('Job "'+name+'" dimulai');
+  setTimeout(loadScheduler, 2000);
+}
+
+async function deleteJob(name) {
+  if (!confirm('Hapus job "'+name+'"? Ini tidak bisa dibatalkan.')) return;
+  await API('/api/scheduler/jobs/'+encodeURIComponent(name), {method:'DELETE'});
+  showToast('Job dihapus');
+  loadScheduler();
+}
+
+async function runSyncAll() {
+  await API('/api/scheduler/sync-all', {method:'POST'});
+  showToast('Sync semua mesin dimulai');
+}
+
+loadScheduler();
+</script>
+</body>
+</html>

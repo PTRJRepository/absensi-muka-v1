@@ -1,0 +1,159 @@
+{
+  "summary": "Implementation plan for adding currentEmpCode based on NIK without removing parsedCode. This feature enables tracking employee code changes over time using NIK as the stable identity key from db_ptrj.HR_EMPLOYEE.",
+  "approach": "Phased implementation starting with database migrations, followed by HR snapshot sync script, backend service updates for currentEmpCode resolution, API updates, backfill scripts, frontend updates, and finally quality checks. The implementation preserves parsedCode as historical record while adding currentEmpCode for final absensi mapping.",
+  "phases": [
+    {
+      "id": 1,
+      "name": "Database & Migrations",
+      "description": "Create all required database schema changes including new columns, tables, and indexes",
+      "task_ids": ["IMPL-001", "IMPL-002", "IMPL-003", "IMPL-004", "IMPL-005", "IMPL-006"],
+      "estimated_time": "3-4 days",
+      "dependencies": []
+    },
+    {
+      "id": 2,
+      "name": "HR Snapshot Sync Script",
+      "description": "Create script to sync hr_employee_current_snapshot from db_ptrj.HR_EMPLOYEE",
+      "task_ids": ["IMPL-007"],
+      "estimated_time": "1-2 days",
+      "dependencies": ["IMPL-003", "IMPL-004"]
+    },
+    {
+      "id": 3,
+      "name": "Backend Services (currentEmpCode Resolution)",
+      "description": "Update employee-mapping, sync-orchestrator, and attendance-process services",
+      "task_ids": ["IMPL-008", "IMPL-009", "IMPL-010"],
+      "estimated_time": "4-5 days",
+      "dependencies": ["IMPL-007"]
+    },
+    {
+      "id": 4,
+      "name": "API Updates",
+      "description": "Update attendance and employees API routes for currentEmpCode display",
+      "task_ids": ["IMPL-011", "IMPL-012"],
+      "estimated_time": "2-3 days",
+      "dependencies": ["IMPL-010"]
+    },
+    {
+      "id": 5,
+      "name": "Backfill Scripts",
+      "description": "Create and run backfill scripts for existing data",
+      "task_ids": ["IMPL-013", "IMPL-014", "IMPL-015"],
+      "estimated_time": "2-3 days",
+      "dependencies": ["IMPL-001", "IMPL-002", "IMPL-006", "IMPL-007", "IMPL-008"]
+    },
+    {
+      "id": 6,
+      "name": "Frontend Updates",
+      "description": "Update AttendancePage, EmployeeComprehensivePage, and Dashboard",
+      "task_ids": ["IMPL-016", "IMPL-017", "IMPL-018"],
+      "estimated_time": "3-4 days",
+      "dependencies": ["IMPL-011", "IMPL-012"]
+    },
+    {
+      "id": 7,
+      "name": "Quality Checks & Monitoring",
+      "description": "Integration testing and PRD verification",
+      "task_ids": ["IMPL-019", "IMPL-020"],
+      "estimated_time": "2-3 days",
+      "dependencies": ["IMPL-009", "IMPL-010", "IMPL-011", "IMPL-012", "IMPL-013", "IMPL-014", "IMPL-015", "IMPL-016", "IMPL-017", "IMPL-018"]
+    }
+  ],
+  "task_ids": [
+    "IMPL-001",
+    "IMPL-002",
+    "IMPL-003",
+    "IMPL-004",
+    "IMPL-005",
+    "IMPL-006",
+    "IMPL-007",
+    "IMPL-008",
+    "IMPL-009",
+    "IMPL-010",
+    "IMPL-011",
+    "IMPL-012",
+    "IMPL-013",
+    "IMPL-014",
+    "IMPL-015",
+    "IMPL-016",
+    "IMPL-017",
+    "IMPL-018",
+    "IMPL-019",
+    "IMPL-020"
+  ],
+  "task_count": 20,
+  "estimated_time": "2-3 weeks",
+  "recommended_execution": "Codex",
+  "complexity": "High",
+  "_metadata": {
+    "timestamp": "2026-06-23T00:00:00.000Z",
+    "source": "lite-planning-agent",
+    "plan_type": "feature",
+    "schema_version": "2.1",
+    "planning_mode": "direct",
+    "prd": "PRD: Penambahan currentEmpCode Berbasis NIK tanpa Menghapus parsedCode",
+    "prd_file": "docs/PRD-current-empcode-by-nik.md",
+    "audit_verdict": "NEEDS_REVISION",
+    "audit_score": "6.5/10",
+    "audit_risk": "HIGH",
+    "audit_fixes_applied": [
+      "P0: employees table schema verified - nik, hr_employee_code, hr_loc_code, hr_status, hr_verified, hr_verified_at already exist (migration 042)",
+      "P0: IMPL-006 adjusted - only add: current_emp_code, current_emp_name, identity_source, identity_resolution_reason",
+      "P0: attendance_imports.parsed_employee_code clarified - intentional audit trail duplicate",
+      "P1: db_ptrj server will use env variable: process.env.HR_DB_SERVER"
+    ],
+    "existing_migrations": {
+      "042": "add_nik_and_employee_master_quality.sql - employees nik columns",
+      "043": "create_employee_machine_enrollments.sql",
+      "044": "backfill_employee_machine_enrollments.sql",
+      "045": "clean_invalid_employee_codes.sql",
+      "046": "update_attendance_to_employee_id.sql"
+    },
+    "hr_resolution_rule": "ROW_NUMBER() OVER (PARTITION BY LTRIM(RTRIM(NewICNo)) ORDER BY CASE WHEN Status='1' THEN 0 ELSE 1 END, UpdateDate DESC, CreateDate DESC, EmpCode DESC)",
+    "example_nik": "1906041207910002",
+    "example_current_emp_code": "A0966",
+    "example_parsed_code": "J0786",
+    "duration_seconds": 0
+  },
+  "design_decisions": [
+    {
+      "decision": "Use NIK as stable identity key",
+      "rationale": "NIK (NewICNo) from db_ptrj.HR_EMPLOYEE is the only stable identifier that persists across employee code changes",
+      "tradeoff": "Requires additional join to HR table but ensures accurate historical tracking"
+    },
+    {
+      "decision": "Preserve parsedCode as historical record",
+      "rationale": "parsedCode shows what employee code was used at the time of scanning, critical for audit trail",
+      "tradeoff": "Additional storage overhead but maintains data integrity"
+    },
+    {
+      "decision": "Use snapshot table for current employee state",
+      "rationale": "Performance optimization - avoid re-computing ROW_NUMBER() on every sync",
+      "tradeoff": "Requires periodic refresh of snapshot table"
+    },
+    {
+      "decision": "Status cascade: MAPPED_CURRENT > PARSED_ONLY > NIK_NOT_FOUND",
+      "rationale": "Clear precedence rules for mapping resolution with fallback chain",
+      "tradeoff": "More complex mapping logic but comprehensive coverage"
+    }
+  ],
+  "status_cascade": [
+    "MAPPED_CURRENT",
+    "PARSED_ONLY",
+    "PARSED_CODE_NOT_FOUND_IN_HR",
+    "NIK_NOT_FOUND",
+    "CURRENT_EMP_NOT_FOUND",
+    "NIK_DUPLICATE_AMBIGUOUS",
+    "NEED_REVIEW_CURRENT"
+  ],
+  "data_flow": {
+    "diagram": "raw_device_user_id -> parsedCode (SSOT Parser) -> NIK (HR Lookup) -> currentEmpCode (Snapshot Lookup) -> attendance_imports",
+    "tables": [
+      "attendance_scan_logs (updated with resolved_nik, current_emp_code, current_mapping_status)",
+      "attendance_imports (updated with parsed_employee_code, resolved_nik, current_emp_code)",
+      "employees (updated with current_emp_code, current_emp_name, identity_source)",
+      "hr_employee_current_snapshot (NEW)",
+      "employee_code_history (NEW)"
+    ]
+  }
+}

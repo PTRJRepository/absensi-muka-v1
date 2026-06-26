@@ -1,0 +1,19 @@
+# ABSENSI MUKA — Quick Audit
+
+Read these files and produce a simple text plan (NO fixing):
+
+1. Read `src/api/routes/import-control.routes.ts` — find all routes that query `machine_name` column
+2. Read `src/api/routes/import.routes.ts` — find all routes
+3. Check what columns `import_batches` table has: run `sqlcmd -S 10.0.0.110 -U sa -P "<DB_PASSWORD>" -d rebinmas_absensi_monitoring -Q "SET NOCOUNT ON; SELECT TOP 1 * FROM import_batches" -W`
+4. Read `src/api/routes/sync.routes.ts` — find all routes and note any obvious issues
+5. Read `src/api/routes/scheduler.routes.ts` — find all routes
+
+Output: Write to `D:/Gawean Rebinmas/Absensi_Muka/AUDIT_PLAN.md`
+Format:
+## Broken Endpoints
+- endpoint: error / fix needed
+
+## Route Files Summary
+- filename: N routes, N broken
+
+That's it. No testing, no building, just read and plan.

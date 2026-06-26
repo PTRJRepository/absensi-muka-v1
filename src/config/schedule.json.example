@@ -1,0 +1,22 @@
+{
+  "_comment": "Scheduler Configuration - Copy this file to schedule.json and modify as needed",
+  "enabled": true,
+  "intervalMinutes": 60,
+  "machines": [],
+  "jobs": [
+    {
+      "id": "hr_snapshot_sync",
+      "name": "HR Snapshot Sync",
+      "machines": [],
+      "intervalMinutes": 1440,
+      "enabled": true,
+      "script": "dist/scripts/sync-hr-current-snapshot.js",
+      "env": {
+        "HR_DB_SERVER": "DESKTOP-U5GUJPG"
+      },
+      "dryRun": false,
+      "createdAt": "2026-06-23T00:00:00Z",
+      "_comment": "Syncs HR employee data from DB_PTRJ to hr_employee_current_snapshot and employee_code_history tables. Runs daily (1440 minutes)."
+    }
+  ]
+}

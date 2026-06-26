@@ -1,0 +1,52 @@
+{
+  "id": "IMPL-006",
+  "title": "Create migration 047: Add identity tracking columns to employees table",
+  "scope": "migrations/047_update_employees_identity_columns.sql",
+  "action": "Create",
+  "description": "Add identity_resolution columns to employees table: identity_source, identity_resolution_reason, current_emp_code, current_emp_name (some columns already exist from migration 042)",
+  "files": [
+    {
+      "path": "migrations/047_update_employees_identity_columns.sql",
+      "action": "create",
+      "target": "employees table",
+      "change": "Add remaining identity tracking columns"
+    }
+  ],
+  "implementation": [
+    "Add identity_source NVARCHAR(30) NULL (PARSED, MANUAL, HR_SNAPSHOT)",
+    "Add identity_resolution_reason NVARCHAR(500) NULL",
+    "Add current_emp_code NVARCHAR(30) NULL",
+    "Add current_emp_name NVARCHAR(100) NULL",
+    "Check existing columns from migration 042 first",
+    "Create index IX_employees_current_emp_code"
+  ],
+  "reference": {
+    "pattern": "Check existing schema first",
+    "files": [
+      "migrations/042_add_nik_and_employee_master_quality.sql"
+    ],
+    "examples": "Check INFORMATION_SCHEMA.COLUMNS before adding"
+  },
+  "convergence": {
+    "criteria": [
+      "All required columns exist or added",
+      "Verify with: SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='employees'"
+    ]
+  },
+  "depends_on": [],
+  "cli_execution_id": "plan-2026-06-23-IMPL-006",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 1,
+  "test": {
+    "manual_checks": [
+      "Verify employees table has all required columns"
+    ],
+    "success_metrics": [
+      "No duplicate columns added"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

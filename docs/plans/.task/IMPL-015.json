@@ -1,0 +1,52 @@
+{
+  "id": "IMPL-015",
+  "title": "Create backfill-employee-master.ts script",
+  "scope": "src/scripts/backfill-employee-master.ts",
+  "action": "Create",
+  "description": "Create backfill script to update employees table with currentEmpCode based on NIK lookup",
+  "files": [
+    {
+      "path": "src/scripts/backfill-employee-master.ts",
+      "action": "create",
+      "target": "new script",
+      "change": "Create backfill script for employee master data"
+    }
+  ],
+  "implementation": [
+    "Query employees WHERE current_emp_code IS NULL AND nik IS NOT NULL",
+    "Lookup hr_employee_current_snapshot by nik",
+    "Update employees with current_emp_code, current_emp_name, identity_source='HR_SNAPSHOT'",
+    "Log progress and statistics",
+    "Support --dry-run and --limit flags"
+  ],
+  "reference": {
+    "pattern": "Follow existing backfill patterns",
+    "files": [
+      "src/scripts/sanitize-employee-master.ts"
+    ],
+    "examples": "Use JOIN with snapshot table"
+  },
+  "convergence": {
+    "criteria": [
+      "Script runs successfully",
+      "Employees with NIK get current_emp_code populated",
+      "identity_source is set correctly"
+    ]
+  },
+  "depends_on": ["IMPL-006", "IMPL-007"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-015",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 5,
+  "test": {
+    "manual_checks": [
+      "Verify employees table updated"
+    ],
+    "success_metrics": [
+      "> 95% of employees with NIK get current_emp_code"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

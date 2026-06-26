@@ -1,0 +1,56 @@
+{
+  "id": "IMPL-014",
+  "title": "Create backfill-current-empcode-imports.ts script",
+  "scope": "src/scripts/backfill-current-empcode-imports.ts",
+  "action": "Create",
+  "description": "Create backfill script to populate currentEmpCode columns in existing attendance_imports",
+  "files": [
+    {
+      "path": "src/scripts/backfill-current-empcode-imports.ts",
+      "action": "create",
+      "target": "new script",
+      "change": "Create backfill script for existing imports data"
+    }
+  ],
+  "implementation": [
+    "Create TypeScript script with batch processing",
+    "Query attendance_imports WHERE current_emp_code IS NULL",
+    "Join with attendance_scan_logs to get resolved values",
+    "Update attendance_imports with parsed_employee_code, resolved_nik, current_emp_code, current_employee_id",
+    "Increment mapping_version",
+    "Log progress and statistics",
+    "Support --dry-run and --limit flags"
+  ],
+  "reference": {
+    "pattern": "Follow existing backfill patterns",
+    "files": [
+      "src/scripts/backfill-current-empcode-scan-logs.ts"
+    ],
+    "examples": "Use batch UPDATE with JOIN"
+  },
+  "convergence": {
+    "criteria": [
+      "Script runs successfully",
+      "Existing imports get current_emp_code populated",
+      "SELECT COUNT(*) FROM attendance_imports WHERE current_emp_code IS NOT NULL returns expected"
+    ]
+  },
+  "depends_on": ["IMPL-002", "IMPL-013"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-014",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 5,
+  "test": {
+    "manual_checks": [
+      "Run with --dry-run first",
+      "Verify affected row count"
+    ],
+    "success_metrics": [
+      "All existing imports processed",
+      "No data loss"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

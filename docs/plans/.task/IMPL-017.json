@@ -1,0 +1,53 @@
+{
+  "id": "IMPL-017",
+  "title": "Update EmployeeComprehensivePage to display currentEmpCode",
+  "scope": "frontend/src/components/features/employees-comprehensive/EmployeeComprehensivePage.tsx",
+  "action": "Update",
+  "description": "Update EmployeeComprehensivePage to display current employee code and identity resolution status",
+  "files": [
+    {
+      "path": "frontend/src/components/features/employees-comprehensive/EmployeeComprehensivePage.tsx",
+      "action": "modify",
+      "target": "EmployeeComprehensivePage",
+      "change": "Add currentEmpCode and identity fields to employee display"
+    }
+  ],
+  "implementation": [
+    "Add column for currentEmpCode",
+    "Add identity_source badge (HR_SNAPSHOT, PARSED, MANUAL)",
+    "Show identity_resolution_reason in tooltip or expandable row",
+    "Handle NULL values with '-' per UI rules",
+    "Update table headers and column definitions"
+  ],
+  "reference": {
+    "pattern": "Follow existing frontend patterns",
+    "files": [
+      "frontend/src/components/features/employees-comprehensive/EmployeeComprehensiveTable.tsx"
+    ],
+    "examples": "Use Badge component for identity_source"
+  },
+  "convergence": {
+    "criteria": [
+      "Employee table shows currentEmpCode column",
+      "identity_source badge displays correctly",
+      "NULL values display as '-'"
+    ]
+  },
+  "depends_on": ["IMPL-012"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-017",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 6,
+  "test": {
+    "manual_checks": [
+      "Verify display in browser",
+      "Verify null handling"
+    ],
+    "success_metrics": [
+      "npm run frontend:build passes"
+    ],
+    "unit": [],
+    "integration": []
+  }
+}

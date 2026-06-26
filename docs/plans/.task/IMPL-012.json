@@ -1,0 +1,56 @@
+{
+  "id": "IMPL-012",
+  "title": "Update employees.routes.ts for currentEmpCode display",
+  "scope": "src/api/routes/employees.routes.ts",
+  "action": "Update",
+  "description": "Update employees API routes to return currentEmpCode and identity resolution fields",
+  "files": [
+    {
+      "path": "src/api/routes/employees.routes.ts",
+      "action": "modify",
+      "target": "employees API endpoints",
+      "change": "Add currentEmpCode and identity fields to responses"
+    }
+  ],
+  "implementation": [
+    "Update /api/employees/:code to include current_emp_code, current_emp_name, identity_source, identity_resolution_reason",
+    "Update /api/employees/list to include new fields",
+    "Add /api/employees/:code/history endpoint to return employee_code_history",
+    "Add /api/employees/by-nik/:nik endpoint for NIK-based lookup",
+    "Ensure NULL values display as '-' per UI rules"
+  ],
+  "reference": {
+    "pattern": "Follow existing API patterns",
+    "files": [
+      "src/api/routes/employees.routes.ts",
+      "src/api/routes/employees-comprehensive.routes.ts"
+    ],
+    "examples": "Existing employee endpoints pattern"
+  },
+  "convergence": {
+    "criteria": [
+      "GET /api/employees/A0966 returns current_emp_code and identity fields",
+      "GET /api/employees/by-nik/1906041207910002 returns employee info",
+      "GET /api/employees/A0966/history returns code history"
+    ]
+  },
+  "depends_on": ["IMPL-006", "IMPL-008"],
+  "cli_execution_id": "plan-2026-06-23-IMPL-012",
+  "cli_execution": {
+    "strategy": "new"
+  },
+  "phase": 4,
+  "test": {
+    "manual_checks": [
+      "Test all new endpoints",
+      "Verify null handling"
+    ],
+    "success_metrics": [
+      "All endpoints return 200 with correct data"
+    ],
+    "unit": [],
+    "integration": [
+      "test_employees_api_current_empcode"
+    ]
+  }
+}

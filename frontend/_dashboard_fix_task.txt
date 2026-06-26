@@ -1,0 +1,51 @@
+# Fix DashboardPage — Quality API Mismatch
+
+## PROBLEM
+Dashboard page crashes: `Cannot read properties of undefined (reading 'healthy_count')`
+
+The backend `/api/quality/summary` returns:
+```json
+{
+  "success": true,
+  "data": {
+    "period_days": 7,
+    "total_scans": 50152,
+    "mapped_employees": 1409,
+    "unmapped_codes": 716,
+    "failed_batches": 104,
+    "completed_batches": 0,
+    "status": "WARNING"
+  }
+}
+```
+
+But DashboardPage expects `QualityReport` type:
+```typescript
+interface QualityReport {
+  score: number;
+  overall_status: 'healthy' | 'warning' | 'critical';
+  summary: { healthy_count: number; warning_count: number; critical_count: number; };
+  metrics: Array<{ name: string; status: 'healthy' | 'warning' | 'critical'; value: number }>;
+}
+```
+
+## TASK
+
+1. Read: `D:/Gawean Rebinmas/Absensi_Muka/frontend/src/components/features/dashboard/DashboardPage.tsx`
+2. Read: `D:/Gawean Rebinmas/Absensi_Muka/frontend/src/types/index.ts` (find QualityReport interface)
+3. Find how DashboardPage uses `quality.score`, `quality.overall_status`, `quality.summary.healthy_count`, `quality.metrics`
+4. Fix DashboardPage to handle the actual API response shape. Options:
+   - Transform the data in the queryFn before returning
+   - Or update the QualityReport type + the rendering code
+5. The fix should:
+   - Use `quality?.data?.status` → map to `overall_status` ('healthy'|'warning'|'critical')
+   - Calculate a `score` from `mapped_employees` and `unmapped_codes`
+   - Set `summary` with sensible defaults
+   - Set `metrics` with the available data
+6. Use Write/Edit tools to apply the fix
+7. Verify with: `npx vite build` (must succeed)
+8. Test in browser: http://localhost:3001/dasbor
+
+## FILES
+- Read/Write/Edit: `D:/Gawean Rebinmas/Absensi_Muka/frontend/src/components/features/dashboard/DashboardPage.tsx`
+- Read: `D:/Gawean Rebinmas/Absensi_Muka/frontend/src/types/index.ts`
