@@ -47,6 +47,37 @@ Recovery + orphan rescue + full system audit completed. Current production state
 
 **Full audit report:** `docs/FULL_SYSTEM_AUDIT_2026-06-26.md`
 
+## ⚠️ WEB APP PATCH: COMPLETE (2026-06-26)
+
+Patch web app untuk arsitektur absensi baru. Semua endpoint yang dulu return 500 sekarang return 200.
+
+**Architecture principle:** Machine data = already-imported raw data (`machine_user_raw` + `attendance_scan_logs`), NOT live ZKTeco connections. Endpoint mesin membaca dari data yang sudah di-import, bukan koneksi langsung ke ZKTeco.
+
+**Verified endpoints (all return 200, fast):**
+
+| Endpoint | Root Cause | Fix |
+|----------|-----------|-----|
+| `/api/attendance/monthly-matrix?mode=database` | Query `vw_attendance_monthly_matrix` hang >60s (view masih ref `zkteco_hr_employee_map` dropped) | New `monthly-matrix.service.ts` query `attendance_imports` langsung (FR-002) |
+| `/api/attendance/monthly-matrix?mode=datamesin` | Correlated subqueries `resolvedEmployeeCodeSql()` di 800k scan_logs (30-50s) | Pakai kolom langsung `current_emp_code`/`mapping_reason` (resolved at import) — 2.6s |
+| `/api/monitoring/machine/:code/employees` | GROUP BY error + correlated subqueries (500 di ARC_01 offline) | Query `machine_user_raw` (~6k rows) — offline machine return 200 dengan data imported |
+| `/api/employees-comprehensive` (both modes) | Non-existent columns `e.division_code`/`e.gang_code`/`e.machine_count`/`e.parsed_employee_code` + missing `@mappingStatus` param | Divisions JOIN + NULL aliases + add param |
+
+**New/changed files:**
+
+| File | Change |
+|------|--------|
+| `src/modules/attendance/monthly-matrix.service.ts` | **NEW** — `getProcessedMatrix()` query `attendance_imports` direct (FR-002, FR-019) |
+| `src/api/routes/attendance.routes.ts` | Database mode early-return calls service (bypass slow view). Datamesin: direct columns, no correlated subqueries |
+| `src/api/routes/machine-employee.routes.ts` | Rewrite: `machine_user_raw` base + LEFT JOIN scan_logs aggregates (FR-007). Try/catch guard |
+| `src/modules/employees/employee-comprehensive.service.ts` | Fix non-existent columns + missing param (FR-008) |
+| `frontend/src/utils/display.ts` | **NEW** — `safeText()` + `resolveDisplayName()` (FR-012) |
+| `frontend/src/services/employee-comprehensive.service.ts` | Drop `ApiResponse<>` wrapper (api() sudah unwrap) — fix list/KPIs always empty |
+| `frontend/src/components/features/employees-comprehensive/EmployeeComprehensiveTable.tsx` | Fix duplicate key `undefined` (FR-010) |
+| `frontend/src/components/features/employees-comprehensive/EmployeeComprehensivePage.tsx` | Access unwrapped data + isError/error banner (FR-009) |
+| `frontend/src/components/features/machines/MachinesPage.tsx` | Outer `<button>` → `<article role="button">` fix nested button (FR-011) |
+
+**⚠️ DO NOT re-introduce correlated subqueries** (`resolvedEmployeeCodeSql()`, `resolvedMappingReasonSql()`, `resolvedEmployeeNameSql()`) in matrix/machine queries. They cause 30-50s timeouts on 800k scan_logs. scan_logs sudah punya `current_emp_code`, `parsed_employee_code`, `mapping_reason` yang resolved saat import.
+
 ## Tech Stack
 
 - **Runtime**: Node.js v22+
@@ -87,7 +118,7 @@ Absensi_Muka/
 │   │   ├── machines/         # ZKTeco TCP client, machine inventory
 │   │   ├── employees/        # Employee CRUD, HR sync, device-to-employee mapping
 │   │   ├── import/           # ZKTeco data import, sync orchestration
-│   │   ├── attendance/       # Attendance process service (scan_logs → attendance_imports)
+│   │   ├── attendance/       # Attendance process service + monthly-matrix.service.ts (matrix queries)
 │   │   ├── monitoring/        # Dashboard, anomaly detection, alerts
 │   │   ├── audit/            # Audit logging
 │   │   ├── scheduler/        # Scheduler service

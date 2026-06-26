@@ -43,6 +43,23 @@ updated: 2026-06-26
 
 ---
 
+## Web App Patch (2026-06-26)
+
+All previously-500ing endpoints now return 200 (live-verified):
+
+| Endpoint | Fix |
+|----------|-----|
+| `/api/attendance/monthly-matrix?mode=database` | New `monthly-matrix.service.ts` queries `attendance_imports` directly (bypass `vw_attendance_monthly_matrix` that hangs >60s) |
+| `/api/attendance/monthly-matrix?mode=datamesin` | Replaced correlated subqueries with direct `current_emp_code`/`mapping_reason` columns — 30-50s → 2.6s |
+| `/api/monitoring/machine/:code/employees` | Rewrite to `machine_user_raw` base (offline machines return 200 with imported data, not 500) |
+| `/api/employees-comprehensive` (both modes) | Fixed non-existent `employees` columns (`division_code`/`gang_code`/`machine_count`/`parsed_employee_code`) + missing `@mappingStatus` param |
+
+**Architecture principle:** Machine data = already-imported raw data (`machine_user_raw` + `attendance_scan_logs`), NOT live ZKTeco connections. No correlated subqueries in matrix/machine queries (caused 30-50s timeouts on 800k scan_logs).
+
+**Frontend fixes:** duplicate React key `undefined`, envelope mismatch (employees-comprehensive stuck/empty), nested `<button>`, isError states, new `safeText()` helper.
+
+---
+
 ## Current DB State (2026-06-26)
 
 | Table | Rows | Notes |

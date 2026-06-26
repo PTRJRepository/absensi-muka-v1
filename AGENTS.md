@@ -138,19 +138,20 @@ Database: `rebinmas_absensi_monitoring`
 |-------|---------|
 | `employees` | Master employee data (emp_code, emp_name, division_id) |
 | `divisions` | Division master (division_code, division_name) |
-| `attendance_scan_logs` | Raw attendance scan records |
+| ttendance_scan_logs | Raw attendance scan records (current_emp_code, parsed_employee_code, mapping_reason resolved at import) |
+| machine_user_raw | Machine user enrollment data (user_name, role, card_no) — imported from ZKTeco |
 | `attendance_imports` | Processed attendance records |
 | `attendance_import_batches` | Import batch tracking |
 | `attendance_machines` | Machine inventory |
 
-## Data Status (2026-06-15)
+## Data Status (2026-06-26)
 
-- ✅ 7 machines accessible via ZKTeco
-- ✅ 5,289 users exported from machines
-- ✅ 51,816 attendance records imported
-- ✅ 4,182 employees in database
-- ✅ 134,037 total attendance records
-- ⏳ 9 machines blocked (need firewall/router config)
+- ✅ 7 machines accessible via ZKTeco (9 blocked — firewall/router)
+- ✅ 6,293 users in `machine_user_raw` (imported from machines)
+- ✅ 808,093 rows in `attendance_scan_logs` (WIB-corrected)
+- ✅ 55,051 rows in `attendance_imports` (all 11 divisions)
+- ✅ 8,005 employees in `employees` (division_id correct)
+- ✅ All web app endpoints return 200 (no more 500s)
 
 ## Quick Reference
 
@@ -167,6 +168,9 @@ Database: `rebinmas_absensi_monitoring`
 2. **P1A & P1B ARE ZKTeco devices** - not "NON_ZKTECO" as documented before
 3. **emp_code parsing** - Use locCode prefix + last 4 digits of userId
 4. **Scanner code prefix** in userId needs to be stripped before parsing
+5. **Machine data = imported raw data** — endpoint mesin baca dari `machine_user_raw` + `attendance_scan_logs` yang sudah di-import, BUKAN koneksi live ZKTeco. Mesin offline (ARC_01) tetap return 200 dengan data imported.
+6. **No correlated subqueries** — jangan pakai `resolvedEmployeeCodeSql()`/`resolvedMappingReasonSql()` di query matrix/machine. Sebab 30-50s timeout di 800k scan_logs. Pakai kolom langsung (`current_emp_code`, `mapping_reason`) yang sudah resolved saat import.
+7. **monthly-matrix database mode** pakai `attendance_imports` langsung via `monthly-matrix.service.ts`, BUKAN `vw_attendance_monthly_matrix` (view hang >60s, masih ref `zkteco_hr_employee_map` dropped).
 
 ## Detailed Docs
 See `context_user/` for full machine configs, data sources, API reference, and current status.
