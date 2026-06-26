@@ -31,7 +31,7 @@ export const employeeComprehensiveApi = {
     if (filters.startDate) params.set('startDate', filters.startDate);
     if (filters.endDate) params.set('endDate', filters.endDate);
 
-    const response = await requestData<ApiResponse<PaginatedResponse<EmployeeComprehensiveRow>>>(
+    const response = await requestData<PaginatedResponse<EmployeeComprehensiveRow>>(
       `/api/employees-comprehensive?${params.toString()}`
     );
     return response;
@@ -49,7 +49,7 @@ export const employeeComprehensiveApi = {
     if (filters.startDate) params.set('startDate', filters.startDate);
     if (filters.endDate) params.set('endDate', filters.endDate);
 
-    const response = await requestData<ApiResponse<EmployeeKPIs>>(
+    const response = await requestData<EmployeeKPIs>(
       `/api/employees-comprehensive/kpis?${params.toString()}`
     );
     return response;
@@ -62,7 +62,7 @@ export const employeeComprehensiveApi = {
     const params = new URLSearchParams();
     if (machineCode) params.set('machineCode', machineCode);
 
-    const response = await requestData<ApiResponse<EmployeeIdentity>>(
+    const response = await requestData<EmployeeIdentity>(
       `/api/employees-comprehensive/${encodeURIComponent(employeeCode)}/detail?${params.toString()}`
     );
     return response;
@@ -79,7 +79,7 @@ export const employeeComprehensiveApi = {
 
     if (machineCode) params.set('machineCode', machineCode);
 
-    const response = await requestData<ApiResponse<PaginatedResponse<ScanRecord>>>(
+    const response = await requestData<PaginatedResponse<ScanRecord>>(
       `/api/employees-comprehensive/${encodeURIComponent(employeeCode)}/scans?${params.toString()}`
     );
     return response;

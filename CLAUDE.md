@@ -11,40 +11,36 @@ Sistem monitoring dan penyimpanan data absensi dari 16 mesin absensi ZKTeco di b
 **There is NO IT Solution API.** All attendance data comes from ZKTeco machines only.
 The `api-attendance-import.service.ts` file is DEPRECATED and must not be used.
 
-## ⚠️ EMERGENCY RECOVERY STATUS: COMPLETE (2026-06-25)
+## ⚠️ EMERGENCY RECOVERY STATUS: COMPLETE (2026-06-26)
 
-Recovery completed. Current production state:
-- `attendance_scan_logs`: 788,915 rows restored from backup
-- `attendance_imports`: **45,348 rows** (all 11 divisions with correct `division_code`)
+Recovery + orphan rescue completed. Current production state:
+- `attendance_scan_logs`: 808,104 rows (WIB-corrected)
+- `attendance_imports`: **55,063 rows** (all 11 divisions enriched)
 - `employees`: 8,005 rows — all 6,032 HR employees have correct `division_id`
 - Scheduler: **ENABLED** (`src/config/schedule.json` `enabled: true`)
+- `attendance_pipeline_sync`: **ENABLED** (was DISABLED — now runs every 60 min)
 - Backend port: **8004** (`APP_PORT=8004`)
 
-**Key fixes applied during this session (2026-06-25):**
+**Key fixes applied (2026-06-25 to 2026-06-26):**
 
 | Fix | Detail |
 |-----|--------|
 | `division_id` backfill | 5,420 employees fixed via `hr_loc_code → divisions.division_code` |
-| `attendance_imports.division_code` | All 45,348 rows fixed via `employees → divisions` JOIN |
-| `hr-employee-sync.service.ts` | Fixed `division_id` lookup: uses `locCode` (P1A, P2B) directly as key |
-| `sync-employees-from-hr.ts` | Removed `division_id` sync (would overwrite correct values) |
-| `schedule.json` | Added `attendance_pipeline_sync` job (60 min); enabled `hr_snapshot_sync` (daily) |
-| `sync-machines.ts` | Removed duplicate console.log |
-| `attendance-imports` | Rebuilt from scratch — 45,348 rows, 2026-03-07 → 2026-06-25 |
-| `scheduler.routes.ts` | Now uses `schedulerService` (getSchedulerService singleton) — aligns with schedule.json |
-| `import-control.routes.ts` | Uses `schedulerService` — single source of truth for schedule config |
-| `hr-employee-sync.service.ts` | `HR_DB_SERVER` now from env var, not hardcoded `DESKTOP-U5GUJPG` |
-| `sync-employees-from-hr.ts` | All DB configs from `process.env` with proper defaults |
-| `migrations/072` | **NEW** — Rebuilds `vw_attendance_monthly_matrix` without `zkteco_hr_employee_map` |
-| `migrations/073` | **NEW** — Deprecates `020_` and `023_` legacy migrations |
+| `attendance_imports.division_code` | All rows fixed via `employees → divisions` JOIN |
+| `hr-employee-sync.service.ts` | Fixed `division_id` lookup: uses `hr_loc_code` (P1A) as key |
+| `attendance-process-import.service.ts` | Added direct employee_code lookup fallback for PGE/MILL/APE numeric badge IDs |
+| `migrations/074` | **NEW** — Converted 10,022 MANUAL_REVIEW orphans to enriched employee records |
+| `schedule.json` | `attendance_pipeline_sync` **ENABLED** (60 min interval) |
 
 **⚠️ DEPRECATED migrations — do NOT re-run:**
 - `migrations/020_update_attendance_views.sql` — references `zkteco_hr_employee_map` (DROPPED 2026-06-24)
 - `migrations/023_live_attendance_compat.sql` — references `zkteco_hr_employee_map` (DROPPED 2026-06-24)
 
 **Known remaining issues:**
-- **PGE: 0 attendance records** — PGE employee codes (`1000001`, `10002`) don't match any ZKTeco-generated code. Fix: run `sync-machines.js --machine=OFFICE_PGE` to populate `employees.zkteco_user_id`, then backfill scan_logs.
-- `attendance_imports` does NOT auto-rebuild from new sync data — must run `rebuild-attendance-imports.js` or rely on scheduler job
+- **P2A/P2B: ~69 records** — machines on PGE estate network unreachable
+- **AB1/ARC_01/ARC_02: port forwarding needed** on 103.144.208.154 router (~17K records inaccessible)
+- **2 true orphan records** — MANUAL_REVIEW with date=2000-01-01 and empty `raw_device_user_id` (AB1, MILL)
+- J division NIK_NOT_FOUND: J0127 employees have no NIK in DB_PTRJ
 
 ## Tech Stack
 

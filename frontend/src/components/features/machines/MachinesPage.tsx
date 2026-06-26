@@ -337,10 +337,17 @@ export function MachinesPage() {
 
                   <div className="machine-grid noc">
                     {group.machines.map((machine) => (
-                      <button
+                      <article
                         key={machine.machineCode}
                         className={`machine-card machine-noc-card ${machine.status.toLowerCase()}`}
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setSelectedMachine(machine)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            setSelectedMachine(machine);
+                          }
+                        }}
                       >
                         <div className="machine-card-header">
                           <div className="machine-info">
@@ -405,7 +412,7 @@ export function MachinesPage() {
                         {testResult[machine.machineCode] && (
                           <div className="machine-action-result">{testResult[machine.machineCode]}</div>
                         )}
-                      </button>
+                      </article>
                     ))}
                   </div>
                 </div>

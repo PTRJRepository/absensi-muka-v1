@@ -76,23 +76,23 @@ export function EmployeeComprehensivePage() {
   };
 
   // Fetch KPIs
-  const { data: kpisData } = useQuery({
+  const { data: kpisData, isError: kpisError, refetch: refetchKpis } = useQuery({
     queryKey: ['employee-comprehensive', 'kpis', filters],
     queryFn: () => employeeComprehensiveApi.getKPIs(filters),
     staleTime: 60000,
   });
 
-  const kpis = kpisData?.data;
+  const kpis = kpisData;
 
   // Fetch employee list
-  const { data: employeesData, isLoading } = useQuery({
+  const { data: employeesData, isLoading, isError: employeesError, error: empError, refetch: refetchEmployees } = useQuery({
     queryKey: ['employee-comprehensive', 'employees', filters],
     queryFn: () => employeeComprehensiveApi.getEmployees({ ...filters, mode }),
     staleTime: 30000,
   });
 
-  const employees = employeesData?.data?.rows ?? [];
-  const pagination = employeesData?.data?.pagination;
+  const employees = employeesData?.rows ?? [];
+  const pagination = employeesData?.pagination;
   const totalPages = pagination?.totalPages ?? 1;
 
   // Handle row click for detail view
@@ -110,6 +110,13 @@ export function EmployeeComprehensivePage() {
           Telusuri hubungan antara Absensi ID, Parsed ID, Employee Code, Mesin, dan Divisi.
         </p>
       </div>
+
+      {(employeesError || kpisError) && (
+        <div className="error-banner">
+          <p>Gagal memuat data karyawan. {empError instanceof Error ? empError.message : 'Unknown error'}</p>
+          <button className="btn-organic btn-organic-secondary" onClick={() => { refetchEmployees(); refetchKpis(); }}>Coba lagi</button>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="kpi-grid">

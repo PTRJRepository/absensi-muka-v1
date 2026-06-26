@@ -121,16 +121,39 @@ export function parseZktecoUserIdToEmployeeCode(input: ZktecoUserIdInput): Parse
 /**
  * Parse numeric-only ZKTeco user IDs.
  *
- * CRITICAL: Scanner prefix check MUST run first — for ALL numeric lengths.
- * Order: <=5 -> excluded, long scanner prefix -> parse, long no-prefix -> lookup.
+ * CRITICAL parsing rules:
+ * - ID <= 5 digits  → EXCLUDED (too short, ambiguous with scanner-prefixed IDs)
+ * - ID = 6 digits   → NONE (known orphan format: some machines produce 6-digit badge IDs
+ *                        that are not in the employee master. These will go to NEED_REVIEW
+ *                        and can be rescued by a direct badge-ID → employee lookup if needed.
+ *                        Examples: AB2=4000572, AB1=9000628 — real employees but not in HR.)
+ * - ID = 7 digits  → parseWithScannerPrefix (scanner prefix + 4-digit employee number)
+ *                        e.g. 4000001 → H0001, 1000290 → A0290
+ * - ID >= 8 digits → NONE (extremely long badge IDs need manual investigation)
+ *
+ * AB2 (locCode=H) machines generate IDs in two formats:
+ *   - 7-digit: 4000001-4000NNN (employee code = HNNNN) — standard enrollment
+ *   - 6-digit: 4000572, 4000573, 4000575 — orphan enrollments, employee not in master
+ *   The 6-digit variants happen when a badge is enrolled on the machine but the employee
+ *   is not yet created in the HR system. The parser cannot determine the correct
+ *   employee code from the raw ID alone — these go to NEED_REVIEW for manual resolution.
+ *
+ * G0628 (AB1) and A0979 (P1A/P1B) similarly represent new hires whose codes don't yet exist
+ * in the employees table.
  */
-/* eslint-disable @typescript-eslint/no-inferrable-types */
 function parseNumericUserId(rawId: string, input: ZktecoUserIdInput): ParsedMappingResult {
   void input;
+  // Rule: Short IDs (<=5 digits) are excluded — scanner-prefixed IDs are always >= 6 digits
   if (rawId.length <= 5) {
     return { rawInput: rawId, parsedEmployeeCode: null, scannerPrefix: null, locCode: null, confidence: 'EXCLUDED', reason: 'RAW_ID_TOO_SHORT_EXCLUDED', allowAutoMap: false };
   }
-  // Long numeric scanner IDs are parsed by prefix + last 4 digits.
+  // Rule: 6-digit IDs — orphan badge enrollments (employee exists on machine but not in HR).
+  // Cannot determine correct employee code from raw ID alone.
+  // Will go to NEED_REVIEW and can be rescued by direct badge-ID → employee lookup.
+  if (rawId.length === 6) {
+    return { rawInput: rawId, parsedEmployeeCode: null, scannerPrefix: null, locCode: null, confidence: 'NONE', reason: 'SIX_DIGIT_ID_NO_HR_EMPLOYEE', allowAutoMap: false };
+  }
+  // Rule: 7+ digit IDs — parse with scanner prefix (standard ZKTeco enrollment format).
   switch (rawId.substring(0, 3)) {
     case '001': return parseWithScannerPrefix(rawId, '001');
     case '100': return parseWithScannerPrefix(rawId, '100');
@@ -146,7 +169,6 @@ function parseNumericUserId(rawId: string, input: ZktecoUserIdInput): ParsedMapp
   // Long numeric IDs without scanner prefix need exact/manual lookup.
   return { rawInput: rawId, parsedEmployeeCode: null, scannerPrefix: null, locCode: null, confidence: 'NONE', reason: 'LONG_RAW_ID_NO_PREFIX_LOOKUP_REQUIRED', allowAutoMap: false };
 }
-/* eslint-enable complexity */
 
 
 /**

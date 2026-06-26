@@ -548,16 +548,16 @@ export function EmployeeComprehensiveTable({
         <table className="data-table">
           <thead>
             <tr>
-              {columns.map((col) => (
-                <th key={String(col.id)}>{typeof col.header === 'string' ? col.header : 'Loading...'}</th>
+              {columns.map((col, index) => (
+                <th key={col.id ?? col.accessorKey ?? `col-${index}`}>{typeof col.header === 'string' ? col.header : 'Loading...'}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {Array.from({ length: 10 }).map((_, i) => (
               <tr key={i}>
-                {columns.map((col) => (
-                  <td key={String(col.id)}>
+                {columns.map((col, index) => (
+                  <td key={col.id ?? col.accessorKey ?? `col-${index}`}>
                     <div className="skeleton" style={{ height: 14, borderRadius: 4 }} />
                   </td>
                 ))}
@@ -575,8 +575,8 @@ export function EmployeeComprehensiveTable({
         <table className="data-table">
           <thead>
             <tr>
-              {columns.map((col) => (
-                <th key={String(col.id)}>{typeof col.header === 'string' ? col.header : ''}</th>
+              {columns.map((col, index) => (
+                <th key={col.id ?? col.accessorKey ?? `col-${index}`}>{typeof col.header === 'string' ? col.header : ''}</th>
               ))}
             </tr>
           </thead>
