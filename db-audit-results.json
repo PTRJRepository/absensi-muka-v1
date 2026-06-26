@@ -1,0 +1,2764 @@
+{
+  "tables": [
+    {
+      "TABLE_NAME": "api_attendance_raw"
+    },
+    {
+      "TABLE_NAME": "app_config"
+    },
+    {
+      "TABLE_NAME": "app_configs"
+    },
+    {
+      "TABLE_NAME": "attendance_anomaly"
+    },
+    {
+      "TABLE_NAME": "attendance_change_logs"
+    },
+    {
+      "TABLE_NAME": "attendance_daily_process"
+    },
+    {
+      "TABLE_NAME": "attendance_division_reconcile"
+    },
+    {
+      "TABLE_NAME": "attendance_holiday"
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches"
+    },
+    {
+      "TABLE_NAME": "attendance_imports"
+    },
+    {
+      "TABLE_NAME": "attendance_imports_backup_before_rebuild_20260625"
+    },
+    {
+      "TABLE_NAME": "attendance_imports_state_before_recovery_20260625"
+    },
+    {
+      "TABLE_NAME": "attendance_machine_time_profile"
+    },
+    {
+      "TABLE_NAME": "attendance_machines"
+    },
+    {
+      "TABLE_NAME": "attendance_machines_state_before_recovery_20260625"
+    },
+    {
+      "TABLE_NAME": "attendance_manual_adjustment"
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections"
+    },
+    {
+      "TABLE_NAME": "attendance_process_detail"
+    },
+    {
+      "TABLE_NAME": "attendance_raw_log"
+    },
+    {
+      "TABLE_NAME": "attendance_recovery_audit_log"
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs"
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs_backup_20260623_233022"
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs_backup_20260623_233115"
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs_linked_backup_20260623"
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs_state_before_recovery_20260625"
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs_unmapped_backup_20260623"
+    },
+    {
+      "TABLE_NAME": "attendance_sync_logs"
+    },
+    {
+      "TABLE_NAME": "attendance_time_correction_batch"
+    },
+    {
+      "TABLE_NAME": "attendance_time_correction_detail"
+    },
+    {
+      "TABLE_NAME": "attendance_work_config"
+    },
+    {
+      "TABLE_NAME": "audit_log"
+    },
+    {
+      "TABLE_NAME": "divisions"
+    },
+    {
+      "TABLE_NAME": "employee_code_history"
+    },
+    {
+      "TABLE_NAME": "employee_daily_assignment"
+    },
+    {
+      "TABLE_NAME": "employee_division_history"
+    },
+    {
+      "TABLE_NAME": "employee_mapping_overrides"
+    },
+    {
+      "TABLE_NAME": "employee_schedules"
+    },
+    {
+      "TABLE_NAME": "employees"
+    },
+    {
+      "TABLE_NAME": "employees_backup_20260623"
+    },
+    {
+      "TABLE_NAME": "employees_contaminated_archive"
+    },
+    {
+      "TABLE_NAME": "employees_state_before_recovery_20260625"
+    },
+    {
+      "TABLE_NAME": "gangs"
+    },
+    {
+      "TABLE_NAME": "holidays"
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot"
+    },
+    {
+      "TABLE_NAME": "import_batch"
+    },
+    {
+      "TABLE_NAME": "loc_codes"
+    },
+    {
+      "TABLE_NAME": "machine_connection_logs"
+    },
+    {
+      "TABLE_NAME": "machine_user_map"
+    },
+    {
+      "TABLE_NAME": "machine_user_raw"
+    },
+    {
+      "TABLE_NAME": "monitoring_daily_summary"
+    },
+    {
+      "TABLE_NAME": "mst_division"
+    },
+    {
+      "TABLE_NAME": "mst_employee"
+    },
+    {
+      "TABLE_NAME": "mst_estate"
+    },
+    {
+      "TABLE_NAME": "mst_gang"
+    },
+    {
+      "TABLE_NAME": "mst_machine"
+    },
+    {
+      "TABLE_NAME": "roles"
+    },
+    {
+      "TABLE_NAME": "scan_logs_backup_current_empcode_20260623"
+    },
+    {
+      "TABLE_NAME": "scanner_codes"
+    },
+    {
+      "TABLE_NAME": "shifts"
+    },
+    {
+      "TABLE_NAME": "sync_job"
+    },
+    {
+      "TABLE_NAME": "user_roles"
+    },
+    {
+      "TABLE_NAME": "users"
+    },
+    {
+      "TABLE_NAME": "zkteco_absensi_user_registry_backup_current_empcode_20260623"
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map"
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map_backup_20260623"
+    }
+  ],
+  "views": [
+    {
+      "TABLE_NAME": "vw_attendance_anomaly_open"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_daily_summary"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_final"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_monitoring_daily"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_monthly_matrix"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_monthly_summary"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_monthly_summary_v2"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_zkteco_daily_summary"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_zkteco_final"
+    },
+    {
+      "TABLE_NAME": "vw_attendance_zkteco_monthly_summary"
+    },
+    {
+      "TABLE_NAME": "vw_employee_master_clean"
+    },
+    {
+      "TABLE_NAME": "vw_sync_latest_status"
+    }
+  ],
+  "columns": [
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "batch_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "source",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "machine_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "division_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "period_start",
+      "DATA_TYPE": "date",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "period_end",
+      "DATA_TYPE": "date",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "started_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "finished_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "records_total",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "records_success",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "records_failed",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "attendance_import_batches",
+      "COLUMN_NAME": "error_message",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 14
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "employee_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "employee_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "division_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "gang_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "attendance_date",
+      "DATA_TYPE": "date",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "attendance_year",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "attendance_month",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "check_in_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "check_out_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "attendance_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "has_work",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "is_leave",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "is_sick",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 14
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "is_holiday",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 15
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "overtime_hours",
+      "DATA_TYPE": "decimal",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 16
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "source",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 17
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "source_reference",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 18
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "batch_id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 19
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "raw_scan_log_id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 20
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "created_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 21
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "needs_manual_review",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 22
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "parsed_employee_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 23
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "employee_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 24
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "hr_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 25
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "hr_loc_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 26
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "nik",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 27
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "current_emp_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 28
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "current_hr_loc_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 29
+    },
+    {
+      "TABLE_NAME": "attendance_imports",
+      "COLUMN_NAME": "current_hr_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 30
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "machine_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "location_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "ip_address",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "port",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "local_ip",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "machine_type",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "scanner_code",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "loc_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "access_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "data_source",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "notes",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "is_active",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "last_sync_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 14
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "last_error_message",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 15
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "created_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 16
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "updated_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 17
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "timezone_mode",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 18
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "timezone_offset_minutes",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 19
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "clock_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 20
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "clock_drift_minutes",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 21
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "last_clock_checked_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 22
+    },
+    {
+      "TABLE_NAME": "attendance_machines",
+      "COLUMN_NAME": "clock_note",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 23
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "employee_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "employee_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "division_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "gang_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "attendance_date",
+      "DATA_TYPE": "date",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "attendance_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "check_in_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "check_out_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "has_work",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "is_leave",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "is_sick",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "is_holiday",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "overtime_hours",
+      "DATA_TYPE": "decimal",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 14
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "reason",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 15
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "is_deleted",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 16
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "created_by",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 17
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "updated_by",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 18
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "created_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 19
+    },
+    {
+      "TABLE_NAME": "attendance_manual_corrections",
+      "COLUMN_NAME": "updated_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 20
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "machine_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "machine_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "raw_device_user_id",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "raw_user_sn",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "raw_record_time",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "raw_ip",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "parsed_employee_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "parsed_division_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "mapping_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "mapping_reason",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "scan_time",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "scan_date",
+      "DATA_TYPE": "date",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "event_type",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 14
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "verify_type",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 15
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "work_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 16
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "sync_batch_id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 17
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "created_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 18
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "scan_time_original",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 19
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "scan_date_original",
+      "DATA_TYPE": "date",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 20
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "scan_time_wib",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 21
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "scan_date_wib",
+      "DATA_TYPE": "date",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 22
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "time_correction_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 23
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "time_correction_offset_minutes",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 24
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "time_correction_reason",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 25
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "time_corrected_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 26
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "time_corrected_by",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 27
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "time_correction_batch_id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 28
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "zkteco_user_name_source",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 29
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "zkteco_user_name_synced_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 30
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "zkteco_user_name_sync_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 31
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "zkteco_user_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 32
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "current_emp_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 33
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "current_employee_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 34
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "current_mapping_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 35
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "current_mapping_reason",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 36
+    },
+    {
+      "TABLE_NAME": "attendance_scan_logs",
+      "COLUMN_NAME": "current_resolved_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 37
+    },
+    {
+      "TABLE_NAME": "divisions",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "divisions",
+      "COLUMN_NAME": "division_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "divisions",
+      "COLUMN_NAME": "division_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "divisions",
+      "COLUMN_NAME": "is_active",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "divisions",
+      "COLUMN_NAME": "created_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "nik",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "emp_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "emp_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "loc_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "hr_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "create_date",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "update_date",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "is_current",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "source_table",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "employee_code_history",
+      "COLUMN_NAME": "synced_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "employee_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "employee_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "division_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "gang_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "employment_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "is_active",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "created_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "updated_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "nik",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_emp_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_emp_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "hr_employee_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "hr_loc_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 14
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "hr_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 15
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "raw_device_user_id",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 16
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "zkteco_user_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 17
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "parsed_division_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 18
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "mapping_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 19
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "mapping_reason",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 20
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_resolution_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 21
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_resolution_method",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 22
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_resolution_reason",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 23
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_hr_loc_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 24
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_hr_create_date",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 25
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_hr_update_date",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 26
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "current_resolved_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 27
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "resolved_nik",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 28
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "scan_count",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 29
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "first_seen_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 30
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "last_seen_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 31
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "raw_id_length",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 32
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "id_category",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 33
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "hr_verified",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 34
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "hr_verified_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 35
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "data_quality_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 36
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "data_quality_reason",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 37
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "zkteco_user_id",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 38
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "is_raw_id",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 39
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "batch_import",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 40
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "machine_codes",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 41
+    },
+    {
+      "TABLE_NAME": "employees",
+      "COLUMN_NAME": "identity_source",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 42
+    },
+    {
+      "TABLE_NAME": "gangs",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "gangs",
+      "COLUMN_NAME": "gang_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "gangs",
+      "COLUMN_NAME": "gang_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "gangs",
+      "COLUMN_NAME": "division_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "gangs",
+      "COLUMN_NAME": "is_active",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "nik",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "current_emp_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "current_emp_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "current_loc_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "current_status",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "current_create_date",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "current_update_date",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "active_count",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "row_count",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "is_ambiguous",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "ambiguity_reason",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "hr_employee_current_snapshot",
+      "COLUMN_NAME": "synced_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "map_id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "machine_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "machine_user_id",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "employee_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "emp_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "mapped_by_rule",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "mapped_source",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "loc_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "scanner_code",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "confidence_score",
+      "DATA_TYPE": "decimal",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "is_active",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "first_seen_at",
+      "DATA_TYPE": "datetime",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "last_seen_at",
+      "DATA_TYPE": "datetime",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "verified_by",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 14
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "verified_at",
+      "DATA_TYPE": "datetime",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 15
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "created_at",
+      "DATA_TYPE": "datetime",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 16
+    },
+    {
+      "TABLE_NAME": "machine_user_map",
+      "COLUMN_NAME": "updated_at",
+      "DATA_TYPE": "datetime",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 17
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "machine_user_raw_id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "import_batch_id",
+      "DATA_TYPE": "bigint",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "machine_id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "machine_uid",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "machine_user_id",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "user_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "role",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "card_no",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "password_exists",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "raw_payload",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "imported_at",
+      "DATA_TYPE": "datetime",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 11
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "first_seen_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 12
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "last_seen_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 13
+    },
+    {
+      "TABLE_NAME": "machine_user_raw",
+      "COLUMN_NAME": "machine_raw_user_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 14
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "id",
+      "DATA_TYPE": "int",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 1
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "machine_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 2
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "zkteco_user_id",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 3
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "zkteco_user_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 4
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "hr_employee_code",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 5
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "hr_employee_name",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "YES",
+      "ORDINAL_POSITION": 6
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "match_confidence",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 7
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "match_method",
+      "DATA_TYPE": "nvarchar",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 8
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "created_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 9
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "updated_at",
+      "DATA_TYPE": "datetime2",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 10
+    },
+    {
+      "TABLE_NAME": "zkteco_hr_employee_map",
+      "COLUMN_NAME": "is_active",
+      "DATA_TYPE": "bit",
+      "IS_NULLABLE": "NO",
+      "ORDINAL_POSITION": 11
+    }
+  ],
+  "rowcounts": [
+    {
+      "table_name": "machine_user_raw",
+      "total": 6293
+    },
+    {
+      "table_name": "attendance_scan_logs",
+      "total": 808093
+    },
+    {
+      "table_name": "employees",
+      "total": 8005
+    },
+    {
+      "table_name": "attendance_imports",
+      "total": 55057
+    },
+    {
+      "table_name": "attendance_import_batches",
+      "total": 304
+    },
+    {
+      "table_name": "attendance_machines",
+      "total": 16
+    },
+    {
+      "table_name": "divisions",
+      "total": 16
+    },
+    {
+      "table_name": "gangs",
+      "total": 0
+    },
+    {
+      "table_name": "hr_employee_current_snapshot",
+      "total": 4763
+    },
+    {
+      "table_name": "employee_code_history",
+      "total": 5967
+    },
+    {
+      "table_name": "attendance_manual_corrections",
+      "total": 0
+    }
+  ],
+  "viewdefs": [
+    {
+      "view_name": "vw_attendance_anomaly_open",
+      "definition": "CREATE VIEW vw_attendance_anomaly_open AS\nSELECT\r\n    a.anomaly_id,\r\n    a.detected_at,\r\n    a.work_date,\r\n    e.emp_code,\r\n    e.emp_name,\r\n    d.division_code,\r\n    m.machine_code,\r\n    a.anomaly_type,\r\n    a.severity,\r\n    a.title,\r\n    a.description,\r\n    a.status\r\nFROM attendance_anomaly a\r\nLEFT JOIN mst_employee e ON a.employee_id = e.employee_id\r\nLEFT JOIN mst_division d ON a.division_id = d.division_id\r\nLEFT JOIN mst_machine m ON a.machine_id = m.machine_id\r\nWHERE a.status = 'OPEN';"
+    },
+    {
+      "view_name": "vw_attendance_daily_summary",
+      "definition": "CREATE   VIEW vw_attendance_daily_summary AS\nSELECT\n  attendance_date,\n  division_code,\n  COUNT(*) AS total_employees,\n  SUM(CASE WHEN attendance_status = 'PRESENT' THEN 1 ELSE 0 END) AS total_present,\n  SUM(CASE WHEN attendance_status = 'ABSENT' OR attendance_status = 'NO_DATA' THEN 1 ELSE 0 END) AS total_absent,\n  SUM(CASE WHEN is_leave = 1 THEN 1 ELSE 0 END) AS total_leave,\n  SUM(CASE WHEN is_sick = 1 THEN 1 ELSE 0 END) AS total_sick,\n  SUM(overtime_hours) AS total_overtime_hours\nFROM vw_attendance_final\nGROUP BY attendance_date, division_code;"
+    },
+    {
+      "view_name": "vw_attendance_final",
+      "definition": "CREATE   VIEW vw_attendance_final AS\nSELECT\n  e.employee_code,\n  e.employee_name,\n  d.division_code,\n  g.gang_code,\n  calendar.attendance_date,\n  COALESCE(c.attendance_status, i.attendance_status, 'NO_DATA') AS attendance_status,\n  COALESCE(c.has_work, i.has_work, CONVERT(bit,0)) AS has_work,\n  COALESCE(c.is_leave, i.is_leave, CONVERT(bit,0)) AS is_leave,\n  COALESCE(c.is_sick, i.is_sick, CONVERT(bit,0)) AS is_sick,\n  COALESCE(c.is_holiday, i.is_holiday, CONVERT(bit,0)) AS is_holiday,\n  COALESCE(c.overtime_hours, i.overtime_hours, 0) AS overtime_hours,\n  CASE WHEN c.id IS NOT NULL THEN 'MANUAL_CORRECTION' WHEN i.id IS NOT NULL THEN i.source ELSE 'NO_DATA' END AS source,\n  CASE WHEN c.id IS NOT NULL AND i.id IS NOT NULL THEN CONVERT(bit,1) ELSE CONVERT(bit,0) END AS has_conflict,\n  i.id AS import_id,\n  c.id AS correction_id\nFROM employees e\nJOIN divisions d ON d.id = e.division_id\nLEFT JOIN gangs g ON g.id = e.gang_id\nCROSS APPLY (\n  SELECT DISTINCT attendance_date FROM attendance_imports\n  UNION\n  SELECT DISTINCT attendance_date FROM attendance_manual_corrections WHERE is_deleted = 0\n) calendar\nLEFT JOIN attendance_imports i ON i.employee_code = e.employee_code AND i.attendance_date = calendar.attendance_date\nLEFT JOIN attendance_manual_corrections c ON c.employee_code = e.employee_code AND c.attendance_date = calendar.attendance_date AND c.is_deleted = 0;"
+    },
+    {
+      "view_name": "vw_attendance_monitoring_daily",
+      "definition": "CREATE VIEW vw_attendance_monitoring_daily AS\nSELECT\r\n    p.work_date,\r\n    e.emp_code,\r\n    e.emp_name,\r\n    d.division_code,\r\n    d.division_name,\r\n    g.gang_code,\r\n    p.jam_masuk,\r\n    p.jam_keluar,\r\n    p.scan_count,\r\n    p.has_machine_log,\r\n    p.has_api_data,\r\n    p.has_manual_adjustment,\r\n    p.has_work,\r\n    p.is_cuti,\r\n    p.is_sakit,\r\n    p.is_holiday,\r\n    p.ot_hours,\r\n    p.task_code,\r\n    p.attendance_status,\r\n    p.reconcile_status,\r\n    r.match_status,\r\n    r.mismatch_reason,\r\n    p.processed_at\r\nFROM attendance_daily_process p\r\nJOIN mst_employee e ON p.employee_id = e.employee_id\r\nLEFT JOIN mst_division d ON p.final_division_id = d.division_id\r\nLEFT JOIN mst_gang g ON p.final_gang_id = g.gang_id\r\nLEFT JOIN attendance_division_reconcile r ON p.process_id = r.process_id;"
+    },
+    {
+      "view_name": "vw_attendance_monthly_matrix",
+      "definition": "\n    CREATE VIEW dbo.vw_attendance_monthly_matrix AS\n    WITH calendar AS (\n      SELECT DISTINCT CAST(attendance_date AS DATE) AS attendance_date FROM dbo.attendance_imports\n      UNION ALL\n      SELECT DISTINCT CAST(scan_date AS DATE) FROM dbo.attendance_scan_logs\n      UNION ALL\n      SELECT DISTINCT CAST(attendance_date AS DATE) FROM dbo.attendance_manual_corrections WHERE is_deleted = 0\n    ),\n    raw_daily AS (\n      SELECT\n        COALESCE(NULLIF(zm.hr_employee_code, ''), NULLIF(s.parsed_employee_code, '')) AS employee_code,\n        CAST(s.scan_date AS DATE) AS attendance_date,\n        MIN(s.scan_time) AS zkteco_check_in,\n        MAX(s.scan_time) AS zkteco_check_out,\n        MIN(s.machine_code) AS zkteco_machine_code\n      FROM dbo.attendance_scan_logs s\n      LEFT JOIN dbo.zkteco_hr_employee_map zm ON zm.machine_code = s.machine_code AND zm.zkteco_user_id = s.raw_device_user_id AND zm.is_active = 1\n      WHERE COALESCE(NULLIF(zm.hr_employee_code, ''), NULLIF(s.parsed_employee_code, '')) IS NOT NULL\n      GROUP BY COALESCE(NULLIF(zm.hr_employee_code, ''), NULLIF(s.parsed_employee_code, '')), CAST(s.scan_date AS DATE)\n    ),\n    import_daily AS (\n      SELECT\n        employee_code, attendance_date,\n        MIN(check_in_at) AS db_check_in,\n        MAX(check_out_at) AS db_check_out,\n        MAX(attendance_status) AS db_status,\n        MAX(CASE WHEN source IN ('ZKTECO', 'DIRECT_ZKTECO') THEN 'ZKTECO' ELSE source END) AS db_source,\n        MAX(CAST(is_leave AS INT)) AS is_leave,\n        MAX(CAST(is_sick AS INT)) AS is_sick,\n        MAX(CAST(is_holiday AS INT)) AS is_holiday,\n        MAX(overtime_hours) AS overtime_hours,\n        MAX(CASE WHEN employee_name IS NOT NULL AND employee_name <> '' THEN employee_name END) AS enriched_name,\n        MAX(CASE WHEN hr_loc_code IS NOT NULL AND hr_loc_code <> '' THEN hr_loc_code END) AS enriched_hr_loc,\n        MAX(CASE WHEN hr_status IS NOT NULL AND hr_status <> '' THEN hr_status END) AS enriched_hr_status,\n        MAX(CASE WHEN nik IS NOT NULL AND nik <> '' THEN nik END) AS enriched_nik\n      FROM dbo.attendance_imports\n      GROUP BY employee_code, attendance_date\n    ),\n    hr_enrich AS (\n      SELECT nik, current_emp_name, current_loc_code, current_status\n      FROM dbo.hr_employee_current_snapshot\n      WHERE nik IS NOT NULL AND nik <> ''\n    ),\n    correction AS (\n      SELECT employee_code, attendance_date, check_in_at, check_out_at, attendance_status,\n        CAST(is_leave AS INT) AS is_leave, CAST(is_sick AS INT) AS is_sick, CAST(is_holiday AS INT) AS is_holiday, overtime_hours\n      FROM dbo.attendance_manual_corrections WHERE is_deleted = 0\n    )\n    SELECT\n      YEAR(cal.attendance_date) AS attendance_year,\n      MONTH(cal.attendance_date) AS attendance_month,\n      cal.attendance_date,\n      e.id AS employee_id,\n      e.employee_code,\n      e.employee_name,\n      COALESCE(i.enriched_hr_loc, hr.current_loc_code, d.division_code) AS hr_loc_code,\n      COALESCE(i.enriched_hr_status, hr.current_status, e.hr_status) AS hr_status,\n      d.division_code,\n      d.division_name,\n      COALESCE(g.gang_code, 'N/A') AS gang_code,\n      r.zkteco_check_in,\n      r.zkteco_check_out,\n      r.zkteco_machine_code,\n      COALESCE(i.db_status, 'NO_DATA') AS db_status,\n      i.db_check_in,\n      i.db_check_out,\n      COALESCE(i.db_source, 'NO_DATA') AS db_source,\n      CASE WHEN c.employee_code IS NOT NULL THEN c.attendance_status\n           WHEN i.employee_code IS NOT NULL THEN i.db_status\n           ELSE 'NO_DATA' END AS final_status,\n      COALESCE(c.check_in_at, i.db_check_in) AS final_check_in,\n      COALESCE(c.check_out_at, i.db_check_out) AS final_check_out,\n      CASE WHEN c.employee_code IS NOT NULL THEN 'MANUAL_CORRECTION'\n           WHEN i.employee_code IS NOT NULL THEN COALESCE(i.db_source, 'DATABASE')\n           ELSE 'NO_DATA' END AS source,\n      CAST(COALESCE(c.is_leave, i.is_leave, 0) AS INT) AS is_leave,\n      CAST(COALESCE(c.is_sick, i.is_sick, 0) AS INT) AS is_sick,\n      CAST(COALESCE(c.is_holiday, i.is_holiday, 0) AS INT) AS is_holiday,\n      COALESCE(c.overtime_hours, i.overtime_hours, 0) AS overtime_hours,\n      e.nik,\n      hr.current_emp_name AS hr_emp_name\n    FROM calendar cal\n    CROSS JOIN dbo.employees e\n    INNER JOIN dbo.divisions d ON d.id = e.division_id\n    LEFT JOIN dbo.gangs g ON g.id = e.gang_id\n    LEFT JOIN import_daily i ON i.employee_code = e.employee_code AND i.attendance_date = cal.attendance_date\n    LEFT JOIN raw_daily r ON r.employee_code = e.employee_code AND r.attendance_date = cal.attendance_date\n    LEFT JOIN hr_enrich hr ON hr.nik = e.nik\n    LEFT JOIN correction c ON c.employee_code = e.employee_code AND c.attendance_date = cal.attendance_date\n    WHERE e.is_active = 1\n  "
+    },
+    {
+      "view_name": "vw_attendance_monthly_summary",
+      "definition": "CREATE   VIEW vw_attendance_monthly_summary AS\nSELECT\n  YEAR(attendance_date) AS attendance_year,\n  MONTH(attendance_date) AS attendance_month,\n  employee_code,\n  employee_name,\n  division_code,\n  gang_code,\n  SUM(CASE WHEN attendance_status = 'PRESENT' THEN 1 ELSE 0 END) AS total_present,\n  SUM(CASE WHEN attendance_status = 'ABSENT' OR attendance_status = 'NO_DATA' THEN 1 ELSE 0 END) AS total_absent,\n  SUM(CASE WHEN is_leave = 1 THEN 1 ELSE 0 END) AS total_leave,\n  SUM(CASE WHEN is_sick = 1 THEN 1 ELSE 0 END) AS total_sick,\n  SUM(overtime_hours) AS total_overtime_hours\nFROM vw_attendance_final\nGROUP BY YEAR(attendance_date), MONTH(attendance_date), employee_code, employee_name, division_code, gang_code;"
+    },
+    {
+      "view_name": "vw_attendance_monthly_summary_v2",
+      "definition": "CREATE   VIEW dbo.vw_attendance_monthly_summary_v2 AS\nSELECT\n  attendance_year,\n  attendance_month,\n  employee_id,\n  employee_code,\n  employee_name,\n  division_code,\n  division_name,\n  gang_code,\n  COUNT(*) AS total_days,\n  SUM(CASE WHEN final_status IN ('PRESENT', 'HADIR') THEN 1 ELSE 0 END) AS total_present,\n  SUM(CASE WHEN final_status IN ('ABSENT', 'ALPHA', 'TIDAK_HADIR') THEN 1 ELSE 0 END) AS total_absent,\n  SUM(CASE WHEN final_status = 'NO_DATA' THEN 1 ELSE 0 END) AS total_no_data,\n  SUM(CASE WHEN is_leave = 1 THEN 1 ELSE 0 END) AS total_leave,\n  SUM(CASE WHEN is_sick = 1 THEN 1 ELSE 0 END) AS total_sick,\n  SUM(CASE WHEN is_holiday = 1 THEN 1 ELSE 0 END) AS total_holiday,\n  SUM(overtime_hours) AS total_overtime_hours,\n  SUM(CASE WHEN source IN ('ZKTECO', 'DIRECT_ZKTECO') THEN 1 ELSE 0 END) AS days_from_zkteco,\n  SUM(CASE WHEN source IN ('IT_SOLUTION_API', 'API') THEN 1 ELSE 0 END) AS days_from_api,\n  SUM(CASE WHEN source = 'MANUAL_CORRECTION' THEN 1 ELSE 0 END) AS days_from_manual,\n  SUM(CASE WHEN source = 'NO_DATA' THEN 1 ELSE 0 END) AS days_no_data\nFROM dbo.vw_attendance_monthly_matrix\nGROUP BY attendance_year, attendance_month, employee_id, employee_code, employee_name,\n         division_code, division_name, gang_code;"
+    },
+    {
+      "view_name": "vw_attendance_zkteco_daily_summary",
+      "definition": "-- =============================================================================\n-- ZKTeco-native daily summary\n-- =============================================================================\n\nCREATE   VIEW vw_attendance_zkteco_daily_summary AS\nSELECT\n  cal.attendance_date,\n  d.division_code,\n  COUNT(DISTINCT e.employee_code) AS total_employees,\n  COUNT(DISTINCT CASE WHEN s.id IS NOT NULL THEN e.employee_code END) AS total_present,\n  COUNT(DISTINCT CASE WHEN s.id IS NULL THEN e.employee_code END) AS total_absent,\n  0 AS total_leave,\n  0 AS total_sick,\n  0 AS total_overtime_hours\nFROM employees e\nINNER JOIN divisions d ON d.id = e.division_id\nCROSS APPLY (\n  SELECT DISTINCT CAST(scan_date AS DATE) AS attendance_date\n  FROM attendance_scan_logs\n  WHERE scan_date >= DATEADD(day, -60, GETDATE())\n) cal\nLEFT JOIN attendance_scan_logs s\n  ON s.parsed_employee_code = e.employee_code\n  AND s.scan_date = cal.attendance_date\nWHERE e.is_active = 1\nGROUP BY cal.attendance_date, d.division_code;"
+    },
+    {
+      "view_name": "vw_attendance_zkteco_final",
+      "definition": "-- =============================================================================\n-- ZKTeco-native attendance view using direct scan logs\n-- Key insight: attendance_scan_logs.parsed_employee_code matches employees.employee_code\n-- Both are in ZKTeco format (e.g., \"A0044\", not IT API format \"0010001\")\n-- =============================================================================\n\n-- Create a calendar table function approach using CROSS APPLY\nCREATE   VIEW vw_attendance_zkteco_final AS\nSELECT\n  e.employee_code,\n  e.employee_name,\n  d.division_code,\n  COALESCE(g.gang_code, 'N/A') AS gang_code,\n  cal.attendance_date,\n  CASE WHEN s.id IS NOT NULL THEN 'PRESENT' ELSE 'NO_DATA' END AS attendance_status,\n  CASE WHEN s.id IS NOT NULL THEN 1 ELSE 0 END AS has_work,\n  0 AS is_leave,\n  0 AS is_sick,\n  0 AS is_holiday,\n  0 AS overtime_hours,\n  CASE WHEN s.id IS NOT NULL THEN 'DIRECT_ZKTECO' ELSE 'NO_DATA' END AS source,\n  s.machine_code\nFROM employees e\nINNER JOIN divisions d ON d.id = e.division_id\nLEFT JOIN gangs g ON g.id = e.gang_id\n-- Calendar of all dates that have scan logs\nCROSS APPLY (\n  SELECT DISTINCT CAST(scan_date AS DATE) AS attendance_date\n  FROM attendance_scan_logs\n  WHERE scan_date >= DATEADD(day, -60, GETDATE())  -- Last 60 days only for performance\n) cal\n-- Scan logs joined on parsed_employee_code (ZKTeco format)\nLEFT JOIN attendance_scan_logs s\n  ON s.parsed_employee_code = e.employee_code\n  AND s.scan_date = cal.attendance_date;"
+    },
+    {
+      "view_name": "vw_attendance_zkteco_monthly_summary",
+      "definition": "-- =============================================================================\n-- ZKTeco-native monthly summary for attendance matrix\n-- =============================================================================\n\nCREATE   VIEW vw_attendance_zkteco_monthly_summary AS\nSELECT\n  YEAR(cal.attendance_date) AS attendance_year,\n  MONTH(cal.attendance_date) AS attendance_month,\n  e.employee_code,\n  e.employee_name,\n  d.division_code,\n  COALESCE(g.gang_code, 'N/A') AS gang_code,\n  COUNT(DISTINCT CASE WHEN s.id IS NOT NULL THEN cal.attendance_date END) AS total_present,\n  COUNT(DISTINCT CASE WHEN s.id IS NULL THEN cal.attendance_date END) AS total_absent,\n  0 AS total_leave,\n  0 AS total_sick,\n  0 AS total_overtime_hours\nFROM employees e\nINNER JOIN divisions d ON d.id = e.division_id\nLEFT JOIN gangs g ON g.id = e.gang_id\nCROSS APPLY (\n  SELECT DISTINCT CAST(scan_date AS DATE) AS attendance_date\n  FROM attendance_scan_logs\n  WHERE scan_date >= DATEADD(day, -90, GETDATE())\n) cal\nLEFT JOIN attendance_scan_logs s\n  ON s.parsed_employee_code = e.employee_code\n  AND s.scan_date = cal.attendance_date\nWHERE e.is_active = 1\nGROUP BY YEAR(cal.attendance_date), MONTH(cal.attendance_date),\n     e.employee_code, e.employee_name, d.division_code, g.gang_code;"
+    },
+    {
+      "view_name": "vw_employee_master_clean",
+      "definition": "\n      CREATE VIEW dbo.vw_employee_master_clean AS\n      SELECT\n        e.id AS employee_id,\n        e.employee_code,\n        e.employee_name,\n        e.nik,\n        e.hr_loc_code,\n        e.hr_status,\n        e.hr_verified,\n        e.is_active,\n        e.is_raw_id,\n        e.data_quality_status,\n        e.data_quality_reason,\n        d.division_code,\n        STRING_AGG(CAST(eme.machine_code AS NVARCHAR(MAX)), ',') WITHIN GROUP (ORDER BY eme.machine_code) AS machine_codes,\n        COUNT(DISTINCT eme.machine_code) AS machine_count,\n        MIN(eme.first_seen_at) AS first_seen_at,\n        MAX(eme.last_seen_at) AS last_seen_at\n      FROM dbo.employees e\n      LEFT JOIN dbo.employee_machine_enrollments eme ON eme.employee_id = e.id AND eme.is_active = 1\n      LEFT JOIN divisions d ON d.id = e.division_id\n      GROUP BY\n        e.id, e.employee_code, e.employee_name, e.nik,\n        e.hr_loc_code, e.hr_status, e.hr_verified,\n        e.is_active, e.is_raw_id, e.data_quality_status,\n        e.data_quality_reason, d.division_code\n    "
+    },
+    {
+      "view_name": "vw_sync_latest_status",
+      "definition": "CREATE   VIEW vw_sync_latest_status AS\nWITH ranked AS (\n  SELECT *, ROW_NUMBER() OVER (PARTITION BY COALESCE(machine_code, division_code, source) ORDER BY started_at DESC) AS rn\n  FROM attendance_sync_logs\n)\nSELECT\n  id,\n  sync_type,\n  source,\n  machine_id,\n  machine_code,\n  division_code,\n  status,\n  failure_category,\n  started_at,\n  finished_at,\n  duration_ms,\n  records_synced,\n  error_message,\n  is_dry_run\nFROM ranked\nWHERE rn = 1;"
+    }
+  ],
+  "foreignkeys": [
+    {
+      "fk_name": "FK_api_raw_batch",
+      "child_table": "api_attendance_raw",
+      "child_column": "import_batch_id",
+      "parent_table": "import_batch",
+      "parent_column": "import_batch_id"
+    },
+    {
+      "fk_name": "FK_api_raw_division",
+      "child_table": "api_attendance_raw",
+      "child_column": "division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_anomaly_process",
+      "child_table": "attendance_anomaly",
+      "child_column": "process_id",
+      "parent_table": "attendance_daily_process",
+      "parent_column": "process_id"
+    },
+    {
+      "fk_name": "FK_anomaly_division",
+      "child_table": "attendance_anomaly",
+      "child_column": "division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_anomaly_employee",
+      "child_table": "attendance_anomaly",
+      "child_column": "employee_id",
+      "parent_table": "mst_employee",
+      "parent_column": "employee_id"
+    },
+    {
+      "fk_name": "FK_anomaly_machine",
+      "child_table": "attendance_anomaly",
+      "child_column": "machine_id",
+      "parent_table": "mst_machine",
+      "parent_column": "machine_id"
+    },
+    {
+      "fk_name": "fk_change_logs_user",
+      "child_table": "attendance_change_logs",
+      "child_column": "changed_by",
+      "parent_table": "users",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "FK_daily_division",
+      "child_table": "attendance_daily_process",
+      "child_column": "final_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_daily_scan_division",
+      "child_table": "attendance_daily_process",
+      "child_column": "scan_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_daily_home_division",
+      "child_table": "attendance_daily_process",
+      "child_column": "home_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_daily_employee",
+      "child_table": "attendance_daily_process",
+      "child_column": "employee_id",
+      "parent_table": "mst_employee",
+      "parent_column": "employee_id"
+    },
+    {
+      "fk_name": "FK_daily_gang",
+      "child_table": "attendance_daily_process",
+      "child_column": "final_gang_id",
+      "parent_table": "mst_gang",
+      "parent_column": "gang_id"
+    },
+    {
+      "fk_name": "FK_reconcile_process",
+      "child_table": "attendance_division_reconcile",
+      "child_column": "process_id",
+      "parent_table": "attendance_daily_process",
+      "parent_column": "process_id"
+    },
+    {
+      "fk_name": "FK_reconcile_expected_division",
+      "child_table": "attendance_division_reconcile",
+      "child_column": "expected_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_reconcile_detected_division",
+      "child_table": "attendance_division_reconcile",
+      "child_column": "detected_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_reconcile_api_division",
+      "child_table": "attendance_division_reconcile",
+      "child_column": "api_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_reconcile_final_division",
+      "child_table": "attendance_division_reconcile",
+      "child_column": "final_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_reconcile_employee",
+      "child_table": "attendance_division_reconcile",
+      "child_column": "employee_id",
+      "parent_table": "mst_employee",
+      "parent_column": "employee_id"
+    },
+    {
+      "fk_name": "FK_reconcile_machine",
+      "child_table": "attendance_division_reconcile",
+      "child_column": "source_machine_id",
+      "parent_table": "mst_machine",
+      "parent_column": "machine_id"
+    },
+    {
+      "fk_name": "fk_import_batches_machine",
+      "child_table": "attendance_import_batches",
+      "child_column": "machine_id",
+      "parent_table": "attendance_machines",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_imports_batch",
+      "child_table": "attendance_imports",
+      "child_column": "batch_id",
+      "parent_table": "attendance_import_batches",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_imports_scan_log",
+      "child_table": "attendance_imports",
+      "child_column": "raw_scan_log_id",
+      "parent_table": "attendance_scan_logs",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_imports_employee",
+      "child_table": "attendance_imports",
+      "child_column": "employee_id",
+      "parent_table": "employees",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "FK_manual_process",
+      "child_table": "attendance_manual_adjustment",
+      "child_column": "process_id",
+      "parent_table": "attendance_daily_process",
+      "parent_column": "process_id"
+    },
+    {
+      "fk_name": "FK_manual_employee",
+      "child_table": "attendance_manual_adjustment",
+      "child_column": "employee_id",
+      "parent_table": "mst_employee",
+      "parent_column": "employee_id"
+    },
+    {
+      "fk_name": "fk_corrections_employee",
+      "child_table": "attendance_manual_corrections",
+      "child_column": "employee_id",
+      "parent_table": "employees",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_corrections_created_by",
+      "child_table": "attendance_manual_corrections",
+      "child_column": "created_by",
+      "parent_table": "users",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "FK_process_detail_process",
+      "child_table": "attendance_process_detail",
+      "child_column": "process_id",
+      "parent_table": "attendance_daily_process",
+      "parent_column": "process_id"
+    },
+    {
+      "fk_name": "FK_process_detail_raw",
+      "child_table": "attendance_process_detail",
+      "child_column": "raw_log_id",
+      "parent_table": "attendance_raw_log",
+      "parent_column": "raw_log_id"
+    },
+    {
+      "fk_name": "FK_process_detail_division",
+      "child_table": "attendance_process_detail",
+      "child_column": "detected_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_process_detail_machine",
+      "child_table": "attendance_process_detail",
+      "child_column": "machine_id",
+      "parent_table": "mst_machine",
+      "parent_column": "machine_id"
+    },
+    {
+      "fk_name": "FK_raw_log_batch",
+      "child_table": "attendance_raw_log",
+      "child_column": "import_batch_id",
+      "parent_table": "import_batch",
+      "parent_column": "import_batch_id"
+    },
+    {
+      "fk_name": "FK_raw_log_machine",
+      "child_table": "attendance_raw_log",
+      "child_column": "machine_id",
+      "parent_table": "mst_machine",
+      "parent_column": "machine_id"
+    },
+    {
+      "fk_name": "fk_scan_logs_batch",
+      "child_table": "attendance_scan_logs",
+      "child_column": "sync_batch_id",
+      "parent_table": "attendance_import_batches",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_scan_logs_machine",
+      "child_table": "attendance_scan_logs",
+      "child_column": "machine_id",
+      "parent_table": "attendance_machines",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_sync_logs_machine",
+      "child_table": "attendance_sync_logs",
+      "child_column": "machine_id",
+      "parent_table": "attendance_machines",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_sync_logs_user",
+      "child_table": "attendance_sync_logs",
+      "child_column": "triggered_by",
+      "parent_table": "users",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "FK_emp_daily_detected_division",
+      "child_table": "employee_daily_assignment",
+      "child_column": "detected_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_emp_daily_final_division",
+      "child_table": "employee_daily_assignment",
+      "child_column": "final_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_emp_daily_employee",
+      "child_table": "employee_daily_assignment",
+      "child_column": "employee_id",
+      "parent_table": "mst_employee",
+      "parent_column": "employee_id"
+    },
+    {
+      "fk_name": "FK_emp_div_hist_division",
+      "child_table": "employee_division_history",
+      "child_column": "division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_emp_div_hist_employee",
+      "child_table": "employee_division_history",
+      "child_column": "employee_id",
+      "parent_table": "mst_employee",
+      "parent_column": "employee_id"
+    },
+    {
+      "fk_name": "FK_emp_div_hist_estate",
+      "child_table": "employee_division_history",
+      "child_column": "estate_id",
+      "parent_table": "mst_estate",
+      "parent_column": "estate_id"
+    },
+    {
+      "fk_name": "FK_emp_div_hist_gang",
+      "child_table": "employee_division_history",
+      "child_column": "gang_id",
+      "parent_table": "mst_gang",
+      "parent_column": "gang_id"
+    },
+    {
+      "fk_name": "fk_schedules_employee",
+      "child_table": "employee_schedules",
+      "child_column": "employee_id",
+      "parent_table": "employees",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_schedules_shift",
+      "child_table": "employee_schedules",
+      "child_column": "shift_id",
+      "parent_table": "shifts",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_employees_division",
+      "child_table": "employees",
+      "child_column": "division_id",
+      "parent_table": "divisions",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_employees_gang",
+      "child_table": "employees",
+      "child_column": "gang_id",
+      "parent_table": "gangs",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_gangs_division",
+      "child_table": "gangs",
+      "child_column": "division_id",
+      "parent_table": "divisions",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "FK_import_batch_division",
+      "child_table": "import_batch",
+      "child_column": "division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_import_batch_machine",
+      "child_table": "import_batch",
+      "child_column": "machine_id",
+      "parent_table": "mst_machine",
+      "parent_column": "machine_id"
+    },
+    {
+      "fk_name": "FK_import_batch_sync_job",
+      "child_table": "import_batch",
+      "child_column": "sync_job_id",
+      "parent_table": "sync_job",
+      "parent_column": "sync_job_id"
+    },
+    {
+      "fk_name": "fk_connection_logs_machine",
+      "child_table": "machine_connection_logs",
+      "child_column": "machine_id",
+      "parent_table": "attendance_machines",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_connection_logs_user",
+      "child_table": "machine_connection_logs",
+      "child_column": "checked_by",
+      "parent_table": "users",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "FK_machine_user_map_employee",
+      "child_table": "machine_user_map",
+      "child_column": "employee_id",
+      "parent_table": "mst_employee",
+      "parent_column": "employee_id"
+    },
+    {
+      "fk_name": "FK_machine_user_map_machine",
+      "child_table": "machine_user_map",
+      "child_column": "machine_id",
+      "parent_table": "mst_machine",
+      "parent_column": "machine_id"
+    },
+    {
+      "fk_name": "FK_machine_user_raw_batch",
+      "child_table": "machine_user_raw",
+      "child_column": "import_batch_id",
+      "parent_table": "import_batch",
+      "parent_column": "import_batch_id"
+    },
+    {
+      "fk_name": "FK_machine_user_raw_machine",
+      "child_table": "machine_user_raw",
+      "child_column": "machine_id",
+      "parent_table": "mst_machine",
+      "parent_column": "machine_id"
+    },
+    {
+      "fk_name": "FK_summary_division",
+      "child_table": "monitoring_daily_summary",
+      "child_column": "division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_summary_estate",
+      "child_table": "monitoring_daily_summary",
+      "child_column": "estate_id",
+      "parent_table": "mst_estate",
+      "parent_column": "estate_id"
+    },
+    {
+      "fk_name": "FK_mst_division_estate",
+      "child_table": "mst_division",
+      "child_column": "estate_id",
+      "parent_table": "mst_estate",
+      "parent_column": "estate_id"
+    },
+    {
+      "fk_name": "FK_mst_employee_division",
+      "child_table": "mst_employee",
+      "child_column": "current_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_mst_employee_gang",
+      "child_table": "mst_employee",
+      "child_column": "current_gang_id",
+      "parent_table": "mst_gang",
+      "parent_column": "gang_id"
+    },
+    {
+      "fk_name": "FK_mst_gang_division",
+      "child_table": "mst_gang",
+      "child_column": "division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_mst_machine_division",
+      "child_table": "mst_machine",
+      "child_column": "default_division_id",
+      "parent_table": "mst_division",
+      "parent_column": "division_id"
+    },
+    {
+      "fk_name": "FK_mst_machine_estate",
+      "child_table": "mst_machine",
+      "child_column": "estate_id",
+      "parent_table": "mst_estate",
+      "parent_column": "estate_id"
+    },
+    {
+      "fk_name": "fk_user_roles_role",
+      "child_table": "user_roles",
+      "child_column": "role_id",
+      "parent_table": "roles",
+      "parent_column": "id"
+    },
+    {
+      "fk_name": "fk_user_roles_user",
+      "child_table": "user_roles",
+      "child_column": "user_id",
+      "parent_table": "users",
+      "parent_column": "id"
+    }
+  ],
+  "indexes": [
+    {
+      "table_name": "attendance_imports",
+      "index_name": "IX_attendance_imports_manual_review",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_imports",
+      "index_name": "ix_imports_attendance_date",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_imports",
+      "index_name": "ix_imports_batch_id",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_imports",
+      "index_name": "ix_imports_division_code",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_imports",
+      "index_name": "ix_imports_employee_code",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_imports",
+      "index_name": "ix_imports_source",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_imports",
+      "index_name": "ix_imports_year_month",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_imports",
+      "index_name": "PK__attendan__3213E83FE3A1D9FF",
+      "is_unique": true,
+      "type_desc": "CLUSTERED"
+    },
+    {
+      "table_name": "attendance_imports",
+      "index_name": "uq_attendance_import",
+      "is_unique": true,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_machines",
+      "index_name": "ix_machines_code",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_machines",
+      "index_name": "ix_machines_status_source",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_machines",
+      "index_name": "PK__attendan__3213E83F051291F1",
+      "is_unique": true,
+      "type_desc": "CLUSTERED"
+    },
+    {
+      "table_name": "attendance_machines",
+      "index_name": "UQ__attendan__FDCF4D733613F321",
+      "is_unique": true,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_scan_logs",
+      "index_name": "ix_scan_logs_employee",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_scan_logs",
+      "index_name": "ix_scan_logs_machine_date",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_scan_logs",
+      "index_name": "ix_scan_logs_mapping_status",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "attendance_scan_logs",
+      "index_name": "PK__attendan__3213E83F7E3A7D9E",
+      "is_unique": true,
+      "type_desc": "CLUSTERED"
+    },
+    {
+      "table_name": "employees",
+      "index_name": "ix_employees_division",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "employees",
+      "index_name": "ix_employees_employee_code",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "employees",
+      "index_name": "PK__employee__3213E83FE46080C3",
+      "is_unique": true,
+      "type_desc": "CLUSTERED"
+    },
+    {
+      "table_name": "employees",
+      "index_name": "UQ__employee__B0AA73455680695B",
+      "is_unique": true,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "machine_user_raw",
+      "index_name": "IX_machine_user_raw_machine_code",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "machine_user_raw",
+      "index_name": "IX_machine_user_raw_user_name",
+      "is_unique": false,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "machine_user_raw",
+      "index_name": "PK__machine___032BA2D9F864CE93",
+      "is_unique": true,
+      "type_desc": "CLUSTERED"
+    },
+    {
+      "table_name": "machine_user_raw",
+      "index_name": "UQ_machine_user_raw",
+      "is_unique": true,
+      "type_desc": "NONCLUSTERED"
+    },
+    {
+      "table_name": "machine_user_raw",
+      "index_name": "UQ_machine_user_raw_machine_user",
+      "is_unique": true,
+      "type_desc": "NONCLUSTERED"
+    }
+  ],
+  "dq_mapping_status": [
+    {
+      "mapping_status": "MAPPED",
+      "total": 789974
+    },
+    {
+      "mapping_status": "NEED_REVIEW",
+      "total": 18119
+    }
+  ],
+  "dq_attendance_status": [
+    {
+      "attendance_status": "HADIR",
+      "total": 45367
+    },
+    {
+      "attendance_status": "INCOMPLETE_SCAN",
+      "total": 9690
+    }
+  ],
+  "dq_division_code": [
+    {
+      "division_code": "AB1",
+      "total": 6017
+    },
+    {
+      "division_code": "AB2",
+      "total": 5953
+    },
+    {
+      "division_code": "ARA",
+      "total": 254
+    },
+    {
+      "division_code": "ARC",
+      "total": 13870
+    },
+    {
+      "division_code": "DME",
+      "total": 9246
+    },
+    {
+      "division_code": "IJL",
+      "total": 2894
+    },
+    {
+      "division_code": "MANUAL_REVIEW",
+      "total": 5
+    },
+    {
+      "division_code": "P1A",
+      "total": 3492
+    },
+    {
+      "division_code": "P1B",
+      "total": 3316
+    },
+    {
+      "division_code": "P2A",
+      "total": 34
+    },
+    {
+      "division_code": "P2B",
+      "total": 40
+    },
+    {
+      "division_code": "PGE",
+      "total": 9936
+    }
+  ],
+  "dq_null_raw_scan_log_id": [
+    {
+      "total_imports": 55057,
+      "null_raw_scan_log_id": 45034
+    }
+  ],
+  "legacy_table_counts": {
+    "error": "Incorrect syntax near ') ELSE -1 END AS row_count'."
+  },
+  "dq_current_emp_code_employees": [
+    {
+      "status": "SAME",
+      "total": 6801
+    },
+    {
+      "status": "DIFFERENT",
+      "total": 1204
+    }
+  ],
+  "dq_nik_status": [
+    {
+      "status": "HAS_NIK",
+      "total": 5967
+    },
+    {
+      "status": "NULL",
+      "total": 2038
+    }
+  ]
+}

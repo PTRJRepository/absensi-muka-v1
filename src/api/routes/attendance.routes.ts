@@ -677,7 +677,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
       SELECT
         s.raw_device_user_id,
         s.parsed_employee_code,
-        ${resolvedEmployeeCodeSql()} AS employee_code,
+        COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS employee_code,
         NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
         s.machine_code,
         CAST(s.scan_date AS DATE) AS attendance_date,
@@ -686,7 +686,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
       FROM attendance_scan_logs s
       WHERE s.scan_date >= @startDate
         AND s.scan_date <= EOMONTH(@startDate)
-        AND ${resolvedEmployeeCodeSql()} IS NOT NULL
+        AND COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) IS NOT NULL
         AND (@machineCode IS NULL OR s.machine_code = @machineCode)
     ),
     raw_daily AS (
@@ -951,8 +951,8 @@ route('GET', '/api/attendance/monthly-matrix-traceable', async (ctx) => {
     ),
     scan_rows AS (
       SELECT
-        COALESCE(${resolvedEmployeeCodeSql()}, s.raw_device_user_id) AS employee_code,
-        ${resolvedEmployeeCodeSql()} AS resolved_employee_code,
+        COALESCE(COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code), s.raw_device_user_id) AS employee_code,
+        COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS resolved_employee_code,
         s.raw_device_user_id,
         s.machine_code,
         CAST(s.scan_date AS DATE) AS attendance_date,
@@ -962,7 +962,7 @@ route('GET', '/api/attendance/monthly-matrix-traceable', async (ctx) => {
       WHERE s.scan_date >= @startDate
         AND s.scan_date <= EOMONTH(@startDate)
         AND (@machineCode IS NULL OR s.machine_code = @machineCode)
-        AND (@searchRaw = '' OR s.raw_device_user_id LIKE @search OR s.parsed_employee_code LIKE @search OR ${resolvedEmployeeCodeSql()} LIKE @search OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search)
+        AND (@searchRaw = '' OR s.raw_device_user_id LIKE @search OR s.parsed_employee_code LIKE @search OR COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) LIKE @search OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search)
     ),
     raw_daily AS (
       SELECT
@@ -1012,27 +1012,27 @@ route('GET', '/api/attendance/monthly-matrix-traceable', async (ctx) => {
       SELECT
         CASE
           WHEN ${rawDeviceUserIdLengthSql()} < 5 THEN s.raw_device_user_id
-          ELSE COALESCE(${resolvedEmployeeCodeSql()}, s.raw_device_user_id)
+          ELSE COALESCE(COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code), s.raw_device_user_id)
         END AS employee_code,
-        ${resolvedEmployeeCodeSql()} AS resolved_employee_code,
+        COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS resolved_employee_code,
         s.raw_device_user_id,
         s.machine_code,
-        ${resolvedEmployeeNameSql()} AS employee_name,
+        s.zkteco_user_name AS employee_name,
         COALESCE(d.division_code, s.machine_code) AS division_code,
         COALESCE(d.division_name, s.machine_code) AS division_name,
         COALESCE(g.gang_code, 'N/A') AS gang_code,
         s.mapping_status
       FROM attendance_scan_logs s
-      LEFT JOIN employees e ON e.employee_code = ${resolvedEmployeeCodeSql()}
+      LEFT JOIN employees e ON e.employee_code = COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code)
       LEFT JOIN divisions d ON d.id = e.division_id
       LEFT JOIN gangs g ON g.id = e.gang_id
       WHERE s.scan_date >= @startDate
         AND s.scan_date <= EOMONTH(@startDate)
         AND (@machineCode IS NULL OR s.machine_code = @machineCode)
-        AND (@searchRaw = '' OR s.raw_device_user_id LIKE @search OR s.parsed_employee_code LIKE @search OR ${resolvedEmployeeCodeSql()} LIKE @search OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search)
+        AND (@searchRaw = '' OR s.raw_device_user_id LIKE @search OR s.parsed_employee_code LIKE @search OR COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) LIKE @search OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search)
         AND (
           LEN(LTRIM(RTRIM(CAST(s.raw_device_user_id AS NVARCHAR(100))))) < 5
-          OR ${resolvedEmployeeCodeSql()} IS NULL
+          OR COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) IS NULL
         )
     ),
     raw_identity_scope AS (
@@ -1363,19 +1363,19 @@ route('GET', '/api/attendance/monthly-matrix/cell', async (ctx) => {
       s.id,
       s.raw_device_user_id,
       s.parsed_employee_code AS parsed_employee_code,
-      ${resolvedEmployeeCodeSql()} AS employee_code,
+      COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS employee_code,
       NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
-      ${resolvedEmployeeNameSql()} AS employee_name,
+      s.zkteco_user_name AS employee_name,
       s.machine_code,
       s.scan_time,
       s.event_type,
       s.verify_type,
       s.work_code,
-      CASE WHEN ${resolvedEmployeeCodeSql()} IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
-      ${resolvedMappingReasonSql()} AS mapping_reason
+      CASE WHEN COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
+      s.mapping_reason
     FROM attendance_scan_logs s
     WHERE s.scan_date = @date
-      AND (@employeeCode IS NULL OR ${resolvedEmployeeCodeSql()} = @employeeCode)
+      AND (@employeeCode IS NULL OR s.current_emp_code = @employeeCode OR s.parsed_employee_code = @employeeCode OR s.raw_device_user_id = @employeeCode)
       AND (@rawDeviceUserId IS NULL OR s.raw_device_user_id = @rawDeviceUserId)
       AND (@machineCode IS NULL OR s.machine_code = @machineCode)
     ORDER BY s.scan_time ASC`,
@@ -1561,12 +1561,12 @@ route('GET', '/api/attendance/employee/:employeeCode/raw', async (ctx) => {
        s.machine_code,
        s.parsed_employee_code,
        s.zkteco_user_name,
-       ${resolvedEmployeeCodeSql()} AS employee_code,
-       ${resolvedEmployeeNameSql()} AS employee_name,
+       COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS employee_code,
+       s.zkteco_user_name AS employee_name,
        s.source,
-       CASE WHEN ${resolvedEmployeeCodeSql()} IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status
+       CASE WHEN COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status
      FROM attendance_scan_logs s
-     WHERE ${resolvedEmployeeCodeSql()} = @employeeCode
+     WHERE COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) = @employeeCode
         OR s.raw_device_user_id = @employeeCode
      ORDER BY s.scan_date DESC, s.scan_time DESC`,
     [
