@@ -76,11 +76,11 @@ Sistem Absensi PT Rebinmas Jaya menggunakan **sinkronisasi satu arah (one-way)**
                            ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  SQL Server: rebinmas_absensi_monitoring                                 │
-│  attendance_scan_logs (788,915 rows)                                     │
-│  attendance_imports (45,348 rows — all 11 divisions)                    │
-│  employees (8,005 rows — all with correct division_id)                   │
-│  hr_employee_current_snapshot (daily sync from db_ptrj)                  │
-│  machine_user_raw (1,228 rows)                                          │
+│  attendance_scan_logs (808,093 rows — WIB-corrected)                           │
+│  attendance_imports (55,051 rows — all 11 divisions, 99.99% enriched)        │
+│  employees (8,005 rows — all with correct division_id)                       │
+│  hr_employee_current_snapshot (daily sync from db_ptrj)                      │
+│  machine_user_raw (6,293 rows)                                              │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -313,8 +313,8 @@ Root cause bug: `hr-employee-sync.service.ts` lookup `divisionMap` dengan key `l
 
 | Table | Rows | Fungsi | Ditulis Oleh |
 |-------|------|--------|-------------|
-| `attendance_scan_logs` | 788,915 | Normalized scan records | sync-machines.ts |
-| `attendance_imports` | 45,348 | Processed attendance (check_in/out) | rebuild script + processScanLogsForBatch |
+| `attendance_scan_logs` | 808,093 | Normalized scan records (WIB-corrected) | sync-machines.ts |
+| `attendance_imports` | 55,051 | Processed attendance (check_in/out) | rebuild script + processScanLogsForBatch |
 | `employees` | 8,005 | SSOT employee identity | hr-employee-sync.service.ts |
 
 ### Tabel Mapping

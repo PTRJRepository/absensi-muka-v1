@@ -283,14 +283,14 @@ Priority cascade:
 
 ---
 
-## Dataset Saat Ini (2026-06-25)
+## Dataset Saat Ini (Post-Audit, 2026-06-26)
 
 | Table | Rows | Status |
 |-------|------|--------|
-| `attendance_scan_logs` | 788,915 | Restored from backup ✅ |
-| `attendance_scan_logs.parsed_employee_code` (not null) | 788,893 | Backfilled ✅ |
-| `attendance_scan_logs.mapping_status=MAPPED` | 788,893 | Normalized ✅ |
-| `attendance_scan_logs.current_mapping_status=MAPPED` | 788,852 | Backfilled ✅ |
+| `attendance_scan_logs` | 808,093 | WIB-corrected, 0 corrupt dates ✅ |
+| `attendance_scan_logs.parsed_employee_code` (not null) | ~808,093 | Normalized ✅ |
+| `attendance_scan_logs.mapping_status=MAPPED` | ~808,093 | Normalized ✅ |
+| `attendance_imports` | 55,051 | 11 divisions, 99.99% enriched ✅ |
 | `employees` | 3,761 | Need HR sync |
 | `employees.nik` | NULL (all) | **BLOCKER** — HR sync needed |
 | `employees.current_emp_code` | = employee_code (self-ref) | No NIK → no resolution |

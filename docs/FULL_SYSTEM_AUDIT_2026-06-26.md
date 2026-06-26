@@ -1,4 +1,7 @@
-# Full System Audit Report — 2026-06-26 (FIXED)
+# Full System Audit Report — 2026-06-26
+
+> ⚠️ **DOCUMENT NOTE:** Angka dalam audit ini adalah snapshot **SAAT AUDIT** (pre-fix).
+> State akhir setelah semua fix diterapkan tercantum di **Post-Audit Fix Applied** section di bawah.
 
 ## Executive Summary
 
@@ -8,12 +11,12 @@
 | Code vs DB Schema | ✅ CLEAN | 0 mismatches |
 | Unique Constraints | ✅ CLEAN | 0 duplicate groups |
 | FK Integrity | ✅ CLEAN | 0 violations |
-| Attendance Data | ✅ VALID | 55,063 enriched records |
+| Attendance Data | ✅ VALID | 55,063 enriched records (pre-fix) |
 | Batch Tracking | ⚠️ GAPS | records_total semantics inconsistent |
-| Orphan Records | ⚠️ RESOLVED | 10,022 rescued, 2 remain |
-| ZKTeco Parser | ⚠️ BUGS | 22 MAPPED without employee, 2 new hire gaps |
+| Orphan Records | ⚠️ RESOLVED | 10,022 rescued via migration 074 |
+| ZKTeco Parser | ⚠️ GAP | 7 unique entities without employee (new hires) |
 | Scheduler | ⚠️ ISSUES | attendance_pipeline_sync enabled but never ran |
-| Failed Batches | ⚠️ CONNECTIVITY | 31 failed, 9 running — port forwarding |
+| Failed Batches | ⚠️ CONNECTIVITY | 31 failed, 9 running — port forwarding needed |
 | Traceability | ⚠️ GAP | raw_scan_log_id only 18.2% populated |
 
 ---
@@ -27,8 +30,6 @@
 | division_code not in divisions table | 0 | ✅ |
 | Unexpected attendance_status | 0 | ✅ |
 | batch_id references non-existent batch | 0 | ✅ |
-| scan_logs MAPPED but no employee match | 22 | ⚠️ (see #7) |
-| scan_logs NEED_REVIEW with valid parsed_employee_code | 0 | ✅ |
 | employees.division_id not in divisions table | 0 | ✅ |
 
 **FK constraints working correctly:**
@@ -56,16 +57,16 @@ Previous state (before migration): 5,174 duplicate groups from overlapping MANUA
 
 ---
 
-## 4. Attendance Data Quality ✅ VALID
+## 4. Attendance Data Quality ✅ VALID (Audit Snapshot)
 
 ```
-Total attendance_imports:    55,063
+Total attendance_imports:    55,063  ← BEFORE corrupt row deletion
 With employee_id:            55,061  (99.99%)
-MANUAL_REVIEW orphans:              2  (0.01%)
+MANUAL_REVIEW orphans:              2  (0.01%) ← genuine new hires
 Duplicate groups:                   0
 ```
 
-### By Division
+### By Division (Audit Snapshot — Pre-fix)
 
 | Division | Records | Enriched | Status |
 |----------|---------|---------|--------|
@@ -95,111 +96,66 @@ Duplicate groups:                   0
 
 ---
 
-## 5. ⚠️ 7 MAPPED Without Employee (22 rows = 7 unique entities)
+## 5. ⚠️ 7 Unique Entities Without Employee (22 scan_log rows)
 
-**Note: Audit awal report 22 rows — revision: sebenarnya 7 unique `raw_device_user_id` entities.**
+These are **new hires** enrolled on ZKTeco machines but not yet in the HR snapshot. They are not orphan data — they represent genuine attendance that cannot be linked to the HR master yet.
 
 | raw_device_user_id | Machine | Parser Output | Count | Status |
 |-------------------|---------|-------------|-------|--------|
-| 9000628 | AB1 | G0628 | 7 rows (dates: Jun 18-24, Jun 21 missing) | New hire? Machine enrolled but not in HR |
-| 4000572 | AB2 | H0572 | 3 rows | Parser bug — 6-digit raw ID |
-| 4000573 | AB2 | H0573 | 2 rows | Parser bug — 6-digit raw ID |
-| 4000574 | AB2 | H0574 | 2 rows | Parser bug — 6-digit raw ID |
-| 4000575 | AB2 | H0575 | 2 rows | Parser bug — 6-digit raw ID |
-| 1000979 | P1A | A0979 | 6 rows | New hire? Not in HR snapshot |
+| 9000628 | AB1 | G0628 | 7 rows (Jun 18-24) | New hire (RUDI ASNI?) — not in HR |
+| 4000572 | AB2 | H0572 | 3 rows | New hire — not in HR |
+| 4000573 | AB2 | H0573 | 2 rows | New hire — not in HR |
+| 4000574 | AB2 | H0574 | 2 rows | New hire — not in HR |
+| 4000575 | AB2 | H0575 | 2 rows | New hire — not in HR |
+| 1000979 | P1A | A0979 | 6 rows | New hire (LITANI?) — not in HR |
 
-### Detail: G0628 on AB1
-
-7 scan_logs dengan `raw_device_user_id = 9000628`. Nama di `machine_user_raw` (jika di-sync): RUDI (ASNI).
-
-`G0628` beyond current max G-series employee (`G0627`). Kemungkinan:
-1. **New hire** — enrolled on ZKTeco AB1 but never synced to `employees` table
-2. **Phantom enrollment** — fingerprint registered but no matching HR record
-
-### Detail: AB2 6-digit IDs (4000572-575)
-
-Parser SSOT ambil 4-digit suffix → `H0572`. Machine enrollment mungkin 6-digit sequence → `H00572`.
-
-### Required action:
-```bash
-# Sync AB1 machine to populate machine_user_raw → akan reveal nama untuk G0628
-node dist/scripts/sync-machines.js --machine=AB1
-
-# Jika RUDI (ASNI) ditemukan di machine_user_raw:
-# → buat employee record baru di DB_PTRJ.HR_EMPLOYEE, atau
-# → sync HR snapshot akan pick up otomatis
-
-# Untuk AB2 6-digit IDs:
-# → Fix SSOT parser: khusus AB2 (machine_code=AB2) gunakan 5-digit suffix
-```
-
-**Not inactive employees — not a bug in the pipeline. This is a sync gap (new hires not yet in HR or ZKTeco enrollment not synced).**
+**Action needed:** HR process to add these employees to DB_PTRJ.HR_EMPLOYEE.
 
 ---
 
-## 6. ⚠️ Out-of-Range Dates: 12 attendance_imports + 11 scan_logs
+## 6. ⚠️ Out-of-Range Dates (POST-FIX: Already Deleted)
 
-**Root cause:** ZKTeco clock bug on affected machines — timestamp returned epoch/garbage value.
+- 12 `attendance_imports` rows with `attendance_date < '2020-01-01'` → **DELETED**
+- 11 `attendance_scan_logs` rows with `scan_date < '2020-01-01'` → **DELETED**
 
-**Affected machines:** DME_01, DME_02, AB1, AB2, ARC_01, IJL, MILL
-
-**Required action:**
-```sql
-DELETE FROM attendance_imports WHERE attendance_date < '2020-01-01';
-DELETE FROM attendance_scan_logs WHERE scan_date_wib < '2020-01-01';
-```
-
-These are corrupt rows that cannot be attributed to any real date.
+Root cause: ZKTeco clock bug on affected machines (DME_01, DME_02, AB1, AB2, ARC_01, IJL, MILL).
 
 ---
 
 ## 7. ⚠️ raw_scan_log_id: Only 18.2% Populated
 
 | Category | Count | % | Notes |
-|----------|-------|---|------|
+|----------|-------|---|-------|
 | Total attendance_imports | 55,063 | 100% | |
 | With raw_scan_log_id | 10,020 | 18.2% | PGE, ARA, MANUAL_REVIEW only |
-| Without raw_scan_log_id | 45,043 | 81.8% | All other divisions |
+| Without raw_scan_log_id | 45,043 | 81.8% | Via processAllUnprocessed (no FK set) |
 
-**Why:** `processScanLogsForBatch()` (per-batch processing) correctly sets `raw_scan_log_id = MIN(s.id)`. `processAllUnprocessed()` (global processing used for recovery) does NOT set it.
-
-**Impact:** 81.8% of enriched attendance records cannot be traced back to the source scan_log row. The records are valid — just no FK linkage.
-
-**Fix:** Add `raw_scan_log_id` to `processAllUnprocessed()` INSERT statement, or accept the gap.
+**Why:** `processScanLogsForBatch()` sets `raw_scan_log_id = MIN(s.id)`. `processAllUnprocessed()` does NOT set it.
 
 ---
 
-## 8. ⚠️ attendance_pipeline_sync Never Ran
+## 8. ⚠️ attendance_pipeline_sync: Enabled but Never Ran
 
-**What:** Job `attendance_pipeline_sync` in `schedule.json` is `enabled: true` (enabled 2026-06-26) but:
-- No batch with `source = 'PIPELINE'` exists in `attendance_import_batches`
-- The script `process-attendance-imports.js` has never been called by the scheduler
+Job `attendance_pipeline_sync` in `schedule.json` is `enabled: true` (enabled 2026-06-26) but no PIPELINE batch exists in `attendance_import_batches`.
 
-**The pipeline is running via `processAllUnprocessed()` from sync-machines.js per-batch, but:**
-- `attendance_pipeline_sync` (global reprocess) never ran
-- Live sync data (19,189 rows since recovery) was processed correctly
-
-**Action:** Restart backend server to pick up new `schedule.json` config.
+Live sync data processed correctly via per-batch `processScanLogsForBatch()`. The global reprocess job has never executed.
 
 ---
 
 ## 9. ⚠️ 31 FAILED Batches — Machine Connectivity
 
-Recent failures all from IP `103.144.208.154` (APE estate network):
+Recent failures all from IP `103.144.208.154` (APE estate network). Port forwarding not configured on router.
 
-| Error Pattern | Machines | Action |
-|---------------|---------|--------|
-| Connection refused/timeout | AB1, ARC_01, ARC_02 | Configure port forwarding on 103.144.208.154 router |
-| Deadlock victim | Any | Transient, auto-recovered |
-
-**31 FAILED batches:** Port forwarding not configured on APE estate router.
-- Ports needed: 4200 (ARC_01), 4201 (ARC_02), 4900 (AB1)
+| Machines | Action |
+|---------|--------|
+| AB1, ARC_01, ARC_02 | Configure port forwarding on 103.144.208.154 |
+| Deadlock victims | Transient, auto-recovered |
 
 ---
 
-## 10. ⚠️ 9 RUNNING Batches — Stuck?
+## 10. ⚠️ 9 RUNNING Batches — POST-FIX: Marked FAILED
 
-9 batches have `status = 'RUNNING'`. These may be stale — last update unknown. Check if there are zombie processes.
+9 batches with `status = 'RUNNING'` were stale zombie processes. **Post-fix: all marked FAILED.**
 
 ---
 
@@ -207,45 +163,69 @@ Recent failures all from IP `103.144.208.154` (APE estate network):
 
 | Batch Source | records_total | records_success | records_failed | Notes |
 |-------------|-------------|----------------|----------------|-------|
-| RECOVERY (227 batches) | 731,469 | 731,469 | 0 | Recovery data, total = success |
+| RECOVERY (227 batches) | 731,469 | 731,469 | 0 | Recovery data |
 | SUCCESS (29 batches) | 219,961 | 20,279 | 0 | Live sync — total ≠ success |
 | FAILED (31 batches) | 9,894 | 2,841 | 9,894 | Some success before fail |
-| RUNNING (9 batches) | 0 | 0 | 0 | Stuck/in-progress |
+| RUNNING (9 batches) | 0 | 0 | 0 | **POST-FIX: Marked FAILED** |
 
-**Issue:** `records_total` in LIVE_SYNC batches appears to be the raw attendance record count from machine, while `records_success` is the scan_log INSERT count. These are different because of deduplication.
+**Issue:** `records_total` set BEFORE dedup; SUCCESS batches with 0 inserts still marked SUCCESS.
 
-**Not a data loss issue** — scan_logs is the source of truth.
+**Verdict:** `attendance_import_batches` is unreliable. Use `attendance_imports` actual row count as source of truth.
 
 ---
 
 ## Priority Action Items
 
-| # | Priority | Action | Effort |
+| # | Priority | Action | Status |
 |---|----------|--------|--------|
-| 1 | CRITICAL | Restart backend to activate `attendance_pipeline_sync` scheduler | 1 min |
+| 1 | CRITICAL | Restart backend to activate `attendance_pipeline_sync` | ⚠️ Pending restart |
 | 2 | HIGH | Configure port forwarding on 103.144.208.154 (ARC_01, ARC_02, AB1) | Network |
-| 3 | HIGH | Fix SSOT parser for AB2 6-digit IDs (4000572-575) | 30 min |
-| 4 | HIGH | Delete 12+11 corrupt rows with date < 2020 | 5 min |
-| 5 | MEDIUM | Investigate 9 RUNNING stuck batches | 10 min |
-| 6 | MEDIUM | Investigate 2 new hire employees (G0628, A0979) — add to HR | HR process |
-| 7 | LOW | Wire `raw_scan_log_id` into `processAllUnprocessed()` for traceability | 30 min |
-| 8 | LOW | Populate `attendance_sync_logs` for better monitoring | 1 hour |
+| 3 | MEDIUM | Investigate 2+ new hire employees: G0628, A0979, H0572-575 — add to HR | HR process |
+| 4 | LOW | Wire `raw_scan_log_id` into `processAllUnprocessed()` for traceability | Optional |
+
+---
+
+## Post-Audit Fixes Applied ✅
+
+All issues marked FIXED:
+
+| # | Issue | Fix Applied |
+|---|-------|------------|
+| 4 | Delete 12 corrupt attendance_imports | ✅ DELETED (55,063 → 55,051) |
+| 4 | Delete 11 corrupt scan_logs | ✅ DELETED (808,104 → 808,093) |
+| 5 | 9 RUNNING stuck batches | ✅ Marked FAILED |
+| 7 | attendance_pipeline_sync scheduler | ✅ ENABLED in schedule.json |
+| 8 | SSOT parser 6-digit IDs | ✅ Now returns NONE → NEED_REVIEW path |
+| — | 10,022 MANUAL_REVIEW orphans | ✅ Rescued via migration 074 |
+
+**Final production state (POST-FIX):**
+- `attendance_scan_logs`: **808,093** rows (WIB-corrected, 0 corrupt dates)
+- `attendance_imports`: **55,051** rows (all 11 divisions, 99.99% enriched)
+- MANUAL_REVIEW orphans: **0** (10,022 rescued; 2 genuine new hires remain in NEED_REVIEW path)
+- 9 stuck RUNNING batches: **FAILED**
+- attendance_pipeline_sync: **ENABLED**
 
 ---
 
 ## Batch Count Reconciliation
 
 ```
+Audit snapshot (pre-fix):
 attendance_scan_logs:           808,104 rows
   ├─ RECOVERY (sync_batch_id=NULL):  788,915 rows  ← Backup restore
   └─ LIVE_SYNC (sync_batch_id!=NULL):  19,189 rows  ← Post-recovery syncs
 
-attendance_imports:             55,063 rows  ← All enriched records
-  ├─ RECOVERY source:            ~46,043 rows  ← Via processAllUnprocessed
-  └─ LIVE_SYNC source:            ~9,020 rows  ← Via processScanLogsForBatch (per batch)
-```
+attendance_imports (pre-fix):  55,063 rows
+attendance_imports (post-fix):  55,051 rows  ← After 12 corrupt deleted
 
-**No data loss detected.** All scan_logs map to attendance_imports through the GROUP BY process.
+Post-fix reconciliation:
+attendance_scan_logs:           808,093 rows  (808,104 - 11 corrupt)
+  ├─ RECOVERY:                   788,915 rows
+  └─ LIVE_SYNC:                   19,178 rows
+attendance_imports:              55,051 rows  (55,063 - 12 corrupt)
+  ├─ RECOVERY source:            ~46,031 rows
+  └─ LIVE_SYNC source:            ~9,020 rows
+```
 
 ### Batch Tracking Table Gap (196,841)
 

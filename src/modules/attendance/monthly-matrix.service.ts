@@ -27,7 +27,7 @@ export async function getProcessedMatrix(p: ProcessedMatrixParams) {
   const searchPattern = `%${p.search}%`;
   const rows = await query<any>(
     `
-    WITH ranked AS (
+    WITH filtered AS (
       SELECT
         ai.employee_code AS identity_key,
         COALESCE(e.current_emp_code, ai.employee_code) AS current_emp_code,
@@ -52,8 +52,7 @@ export async function getProcessedMatrix(p: ProcessedMatrixParams) {
         CAST(0 AS INT) AS is_sick,
         CAST(0 AS INT) AS is_holiday,
         'MAPPED' AS mapping_status,
-        DENSE_RANK() OVER (ORDER BY ai.employee_code) AS emp_rn,
-        COUNT(DISTINCT ai.employee_code) OVER () AS total_rows
+        DENSE_RANK() OVER (ORDER BY ai.employee_code) AS emp_rn
       FROM attendance_imports ai
       LEFT JOIN employees e ON e.id = ai.employee_id
       WHERE ai.attendance_year = @year
@@ -67,6 +66,10 @@ export async function getProcessedMatrix(p: ProcessedMatrixParams) {
           OR e.employee_name LIKE @search
           OR e.current_emp_code LIKE @search
         )
+    ),
+    ranked AS (
+      SELECT f.*, (SELECT MAX(emp_rn) FROM filtered) AS total_rows
+      FROM filtered f
     )
     SELECT
       identity_key, current_emp_code, employee_code, employee_name, display_name,

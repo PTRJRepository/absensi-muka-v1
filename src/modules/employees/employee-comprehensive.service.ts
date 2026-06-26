@@ -227,6 +227,7 @@ async function queryDataMesinMode(filters: EmployeeComprehensiveFilters): Promis
     { name: 'machineCode', type: sql.NVarChar, value: machineCode },
     { name: 'divisionCode', type: sql.NVarChar, value: divisionCode },
     { name: 'search', type: sql.NVarChar, value: searchPattern },
+    { name: 'mappingStatus', type: sql.NVarChar, value: mappingStatus ?? 'ALL' },
     { name: 'offset', type: sql.Int, value: offset },
     { name: 'pageSize', type: sql.Int, value: pageSize ?? 50 },
   ]);
@@ -257,7 +258,7 @@ async function queryDatabaseMode(filters: EmployeeComprehensiveFilters): Promise
         e.current_emp_code,
         e.zkteco_user_name,
         e.raw_device_user_id,
-        e.parsed_employee_code,
+        NULL AS parsed_employee_code,
         e.mapping_status AS emp_mapping_status,
         e.machine_codes,
         NULL AS machine_count,
@@ -409,7 +410,7 @@ export async function getEmployeeDetail(
     SELECT TOP 1
       e.employee_code AS identity_key,
       e.raw_device_user_id,
-      NULLIF(e.parsed_employee_code, '') AS parsed_employee_code,
+      NULL AS parsed_employee_code,
       e.employee_code,
       e.zkteco_user_name,
       e.employee_name,
@@ -423,12 +424,12 @@ export async function getEmployeeDetail(
       NULL AS machine_count,
       CASE
         WHEN e.current_emp_code IS NOT NULL THEN 'MAPPED'
-        WHEN e.parsed_employee_code IS NOT NULL THEN 'MAPPED'
+        WHEN NULL IS NOT NULL THEN 'MAPPED'
         ELSE 'NEED_REVIEW'
       END AS mapping_status,
       CASE
         WHEN e.current_emp_code IS NOT NULL THEN 'Resolved via HR snapshot'
-        WHEN e.parsed_employee_code IS NOT NULL THEN 'Mapped via parsed_employee_code'
+        WHEN NULL IS NOT NULL THEN 'Mapped via parsed_employee_code'
         ELSE 'No HR mapping'
       END AS mapping_reason,
       0 AS scan_count,

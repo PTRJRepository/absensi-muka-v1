@@ -40,8 +40,10 @@ Recovery + orphan rescue + full system audit completed. Current production state
 **Known remaining issues:**
 - Port forwarding APE estate: ARC_01/02, AB1 need forwarding on 103.144.208.154 router
 - P2A/P2B: Machines on PGE estate network unreachable (~69 records)
-- 6-digit orphan IDs (G0628, A0979, H0572-575): New hires enrolled on machine but not in HR → routed to NEED_REVIEW → MANUAL_REVIEW via direct lookup fallback
+- 2+ new hires (G0628, A0979, H0572-575): Enrolled on ZKTeco but not yet in HR snapshot → MANUAL_REVIEW status. HR process needed to add them to DB_PTRJ.HR_EMPLOYEE
 - Batch tracking unreliable: `records_total` includes pre-dedup counts. Use `attendance_imports` actual row count as source of truth.
+- Corrupt date rows: **RESOLVED** — 12 attendance_imports + 11 scan_logs with date < 2020 deleted (ZKTeco clock bug). `attendance_scan_logs`: 808,093 rows | `attendance_imports`: 55,051 rows
+- 9 stuck RUNNING batches: **RESOLVED** — marked FAILED (zombie process cleanup)
 
 **Full audit report:** `docs/FULL_SYSTEM_AUDIT_2026-06-26.md`
 

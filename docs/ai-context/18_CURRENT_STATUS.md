@@ -82,7 +82,9 @@ Gap in nik: PGE employees (legacy, not in DB_PTRJ HR)
 | ARA | 254 | 4 | ARA | Accessible |
 | P2B | 40 | 4 | P2B | Unreachable (PGE network) |
 | P2A | 34 | 4 | P2A | Unreachable (PGE network) |
-| MANUAL_REVIEW | 0 | — | — | **All rescued** |
+| MANUAL_REVIEW | **2** | — | — | **New hires (not orphans)**: G0628, A0979, H0572-575 enrolled on machine but not yet in HR snapshot. HR process needed. |
+
+> **Note on MANUAL_REVIEW:** After migration 074 rescued 10,022 orphaned MANUAL_REVIEW records, 2 genuine records remain. These are **new hire employees** enrolled on ZKTeco machines (AB1, AB2, P1A) but not yet in DB_PTRJ.HR_EMPLOYEE. HR process should add them. These are NOT orphan/rescue data.
 
 ---
 

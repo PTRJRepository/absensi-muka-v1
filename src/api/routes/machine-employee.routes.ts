@@ -128,6 +128,7 @@ route('POST', '/api/monitoring/machine-ping', async (ctx) => {
 
 // ─── Machine Employees (raw vs DB comparison) ──────────────────────────────────
 route('GET', '/api/monitoring/machine/:code/employees', async (ctx) => {
+  try {
   const { code } = ctx.params;
 
   const machines = await query<any>(`
@@ -136,84 +137,43 @@ route('GET', '/api/monitoring/machine/:code/employees', async (ctx) => {
   `, [{ name: 'code', type: sql.NVarChar, value: code }]);
   if (!machines.length) return sendError(ctx.res, 404, 'NOT_FOUND', 'Machine not found');
 
-  const [rawStats, mappedStats, unmappedStats, dbEmployees] = await Promise.all([
-    // All unique raw IDs from this machine (datamesin mode)
-    query<any>(`
-      WITH scan_source AS (
-        SELECT
-          s.raw_device_user_id,
-          s.parsed_employee_code,
-          NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
-          s.mapping_status,
-          s.mapping_reason,
-          ${rawIdLengthSql()} AS raw_id_length,
-          ${resolvedEmployeeCodeSql()} AS employee_code,
-          ${resolvedMappingReasonSql()} AS mapping_reason_computed,
-          s.scan_time
-        FROM attendance_scan_logs s
-        WHERE s.machine_code = @code
-      )
-      SELECT TOP 100
-        raw_device_user_id AS raw_id,
-        MAX(parsed_employee_code) AS parsed_employee_code,
-        MAX(employee_code) AS employee_code,
-        MAX(zkteco_user_name) AS zkteco_user_name,
-        CASE WHEN MAX(employee_code) IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
-        MAX(mapping_reason_computed) AS mapping_reason,
-        MAX(raw_id_length) AS raw_id_length,
-        COUNT(*) AS occurrence_count,
-        MAX(scan_time) AS last_seen
-      FROM scan_source
-      GROUP BY raw_device_user_id
-      ORDER BY occurrence_count DESC
-    `, [{ name: 'code', type: sql.NVarChar, value: code }]),
+  // Architecture: read from already-imported raw data (machine_user_raw, ~6k rows)
+  // instead of correlated subqueries against 800k attendance_scan_logs rows.
+  // Machine data is imported data, NOT a live ZKTeco connection.
+  const machineId = machines[0].id;
 
-    // Mapped records (have employee code)
-    query<any>(`
-      SELECT TOP 100
-        s.raw_device_user_id AS raw_id,
-        s.parsed_employee_code,
-        ${resolvedEmployeeCodeSql()} AS employee_code,
-        ${resolvedEmployeeNameSql()} AS employee_name,
-        COUNT(*) AS occurrence_count,
-        MAX(s.scan_time) AS last_seen
-      FROM attendance_scan_logs s
-      WHERE s.machine_code = @code
-        AND ${resolvedEmployeeCodeSql()} IS NOT NULL
-      GROUP BY s.raw_device_user_id, s.parsed_employee_code
-      ORDER BY occurrence_count DESC
-    `, [{ name: 'code', type: sql.NVarChar, value: code }]),
+  const allUsers = await query<any>(`
+    SELECT TOP 500
+      mur.machine_user_id AS raw_id,
+      COALESCE(NULLIF(LTRIM(RTRIM(mur.user_name)), ''),
+               NULLIF(LTRIM(RTRIM(mur.machine_raw_user_name)), ''),
+               mur.machine_user_id) AS zkteco_user_name,
+      mur.role,
+      mur.card_no,
+      mur.first_seen_at,
+      mur.last_seen_at,
+      COUNT(sl.id) AS occurrence_count,
+      MAX(sl.scan_time) AS last_seen,
+      MAX(sl.parsed_employee_code) AS parsed_employee_code,
+      MAX(sl.mapping_status) AS mapping_status,
+      LEN(LTRIM(RTRIM(CAST(mur.machine_user_id AS NVARCHAR(100))))) AS raw_id_length
+    FROM machine_user_raw mur
+    LEFT JOIN attendance_scan_logs sl
+      ON sl.machine_id = mur.machine_id
+     AND sl.raw_device_user_id = mur.machine_user_id
+    WHERE mur.machine_id = @machineId
+    GROUP BY mur.machine_user_raw_id, mur.machine_user_id, mur.user_name,
+             mur.machine_raw_user_name, mur.role, mur.card_no,
+             mur.first_seen_at, mur.last_seen_at
+    ORDER BY occurrence_count DESC
+  `, [{ name: 'machineId', type: sql.Int, value: machineId }]);
 
-    // Unmapped records (no employee code found)
-    query<any>(`
-      WITH scan_source AS (
-        SELECT
-          s.raw_device_user_id,
-          NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
-          s.mapping_status,
-          s.mapping_reason,
-          ${rawIdLengthSql()} AS raw_id_length,
-          ${resolvedEmployeeCodeSql()} AS employee_code,
-          ${resolvedMappingReasonSql()} AS mapping_reason_computed,
-          s.scan_time
-        FROM attendance_scan_logs s
-        WHERE s.machine_code = @code
-          AND ${resolvedEmployeeCodeSql()} IS NULL
-      )
-      SELECT TOP 100
-        raw_device_user_id AS raw_id,
-        COUNT(*) AS occurrence_count,
-        MAX(scan_time) AS last_seen,
-        MAX(zkteco_user_name) AS zkteco_user_name,
-        CASE WHEN MAX(raw_id_length) <= 5 THEN 'EXCLUDED_SHORT_ID' ELSE 'NEED_REVIEW' END AS mapping_status,
-        MAX(mapping_reason_computed) AS mapping_reason,
-        MAX(raw_id_length) AS raw_id_length
-      FROM scan_source
-      GROUP BY raw_device_user_id
-      ORDER BY occurrence_count DESC
-    `, [{ name: 'code', type: sql.NVarChar, value: code }]),
+  const rawStats = allUsers;
+  const mappedStats = allUsers.filter((u: any) => u.parsed_employee_code);
+  const unmappedStats = allUsers.filter((u: any) => !u.parsed_employee_code);
 
-    // DB employees who have records in this machine
+  // DB employees who have records in this machine
+  const [dbEmployees] = await Promise.all([
     query<any>(`
       SELECT DISTINCT TOP 50
         e.employee_code,
@@ -224,7 +184,6 @@ route('GET', '/api/monitoring/machine/:code/employees', async (ctx) => {
       FROM employees e
       INNER JOIN attendance_scan_logs s ON s.parsed_employee_code = e.employee_code
         AND s.machine_code = @code
-      INNER JOIN attendance_machines m ON m.machine_code = s.machine_code
       LEFT JOIN divisions d ON d.id = e.division_id
       GROUP BY e.employee_code, e.employee_name, d.division_code, s.machine_code
       ORDER BY last_scan DESC
@@ -244,6 +203,10 @@ route('GET', '/api/monitoring/machine/:code/employees', async (ctx) => {
     unmapped: unmappedStats,
     db_employees: dbEmployees,
   });
+  } catch (error) {
+    console.error('[machine-employees] failed', error);
+    sendError(ctx.res, 500, 'MACHINE_EMPLOYEES_FAILED', error instanceof Error ? error.message : 'Failed to load machine employees');
+  }
 });
 
 // ─── Machine Raw Data (paginated) ──────────────────────────────────────────────
