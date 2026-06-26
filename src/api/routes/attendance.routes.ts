@@ -568,7 +568,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
           NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
           s.machine_code,
           CAST(s.scan_date AS DATE) AS attendance_date,
-          s.scan_time,
+          COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
           s.mapping_status,
           s.mapping_reason,
           LEN(LTRIM(RTRIM(CAST(s.raw_device_user_id AS NVARCHAR(50))))) AS raw_id_length
@@ -681,7 +681,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
         NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
         s.machine_code,
         CAST(s.scan_date AS DATE) AS attendance_date,
-        s.scan_time,
+        COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
         s.mapping_status
       FROM attendance_scan_logs s
       WHERE s.scan_date >= @startDate
@@ -956,7 +956,7 @@ route('GET', '/api/attendance/monthly-matrix-traceable', async (ctx) => {
         s.raw_device_user_id,
         s.machine_code,
         CAST(s.scan_date AS DATE) AS attendance_date,
-        s.scan_time,
+        COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
         s.mapping_status
       FROM attendance_scan_logs s
       WHERE s.scan_date >= @startDate
@@ -1367,7 +1367,7 @@ route('GET', '/api/attendance/monthly-matrix/cell', async (ctx) => {
       NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
       s.zkteco_user_name AS employee_name,
       s.machine_code,
-      s.scan_time,
+      COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
       s.event_type,
       s.verify_type,
       s.work_code,
@@ -1555,8 +1555,8 @@ route('GET', '/api/attendance/employee/:employeeCode/raw', async (ctx) => {
   const rows = await query(`
      SELECT TOP @limit
        s.id AS scan_log_id,
-       s.scan_date,
-       s.scan_time,
+       COALESCE(s.scan_date_wib, s.scan_date) AS scan_date,
+       COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
        s.raw_device_user_id,
        s.machine_code,
        s.parsed_employee_code,
