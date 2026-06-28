@@ -26,63 +26,29 @@ function rawIdLengthSql(alias = 's') {
  * 3. employees.current_emp_code via parsed_emp_code → employee_code lookup
  * Requires: LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
  */
-function resolvedEmployeeCodeSql(alias = 's') {
-  return `COALESCE(
-    NULLIF(LTRIM(RTRIM(sm.parsed_emp_code)), ''),
-    (
-      SELECT TOP 1 e.current_emp_code
-      FROM employees e
-      WHERE LTRIM(RTRIM(e.zkteco_user_id)) = LTRIM(RTRIM(${alias}.raw_device_user_id))
-        AND e.current_emp_code IS NOT NULL
-      ORDER BY e.id DESC
-    ),
-    (
-      SELECT TOP 1 e.current_emp_code
-      FROM employees e
-      WHERE LTRIM(RTRIM(e.employee_code)) = LTRIM(RTRIM(sm.parsed_emp_code))
-        AND e.current_emp_code IS NOT NULL
-      ORDER BY e.id DESC
-    )
-  )`;
+function resolvedEmployeeCodeSql(_alias = 's') {
+  // ponytail: scan_map.current_emp_code resolved at import via NIK cascade.
+  // Pre-2026-06-27 this was a correlated subquery (SELECT TOP 1 FROM employees...) — 30-50s timeout on 800k rows.
+  // Upgrade path: if scan_map.current_emp_code NULL for new hires, enrich at sync time, not query time.
+  return `COALESCE(NULLIF(LTRIM(RTRIM(sm.current_emp_code)), ''), NULLIF(LTRIM(RTRIM(sm.parsed_emp_code)), ''))`;
 }
 
 /**
- * Employee name: priority cascade.
- * 1. employees.employee_name via zkteco_user_id or parsed_emp_code lookup
- * 2. s.zkteco_user_name (from machine, raw)
+ * Employee name: scan_map.current_emp_name (resolved at import) + raw zkteco_user_name fallback.
  * Requires: LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
  */
 function resolvedEmployeeNameSql(alias = 's') {
-  return `COALESCE(
-    (
-      SELECT TOP 1 e.employee_name
-      FROM employees e
-      WHERE LTRIM(RTRIM(e.zkteco_user_id)) = LTRIM(RTRIM(${alias}.raw_device_user_id))
-        AND e.employee_name IS NOT NULL
-      ORDER BY e.id DESC
-    ),
-    (
-      SELECT TOP 1 e.employee_name
-      FROM employees e
-      WHERE LTRIM(RTRIM(e.employee_code)) = LTRIM(RTRIM(sm.parsed_emp_code))
-        AND e.employee_name IS NOT NULL
-      ORDER BY e.id DESC
-    ),
-    NULLIF(LTRIM(RTRIM(${alias}.zkteco_user_name)), '')
-  )`;
+  return `COALESCE(NULLIF(LTRIM(RTRIM(sm.current_emp_name)), ''), NULLIF(LTRIM(RTRIM(${alias}.zkteco_user_name)), ''))`;
 }
 
 function resolvedMappingReasonSql(alias = 's') {
   const rawLength = rawIdLengthSql(alias);
-  const empCode = resolvedEmployeeCodeSql(alias);
-  const empName = resolvedEmployeeNameSql(alias);
-
   return `CASE
     WHEN ${rawLength} <= 5 THEN 'RAW_ID_TOO_SHORT_EXCLUDED'
-    WHEN ${empCode} IS NOT NULL AND ${empName} IS NOT NULL THEN 'MAPPED_VIA_EMPLOYEES_TABLE'
-    WHEN ${empCode} IS NOT NULL THEN 'MAPPED_VIA_EMPLOYEES_TABLE_PENDING_NAME'
+    WHEN sm.current_emp_code IS NOT NULL AND sm.current_emp_name IS NOT NULL THEN 'MAPPED_VIA_EMPLOYEES_TABLE'
+    WHEN sm.current_emp_code IS NOT NULL THEN 'MAPPED_VIA_EMPLOYEES_TABLE_PENDING_NAME'
     WHEN ${rawLength} > 5 THEN 'CURRENT_EMP_CODE_NOT_FOUND_NEED_REVIEW'
-    ELSE 'UNKNOWN'
+    ELSE COALESCE(sm.map_reason, 'UNKNOWN')
   END`;
 }
 

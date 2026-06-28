@@ -91,16 +91,10 @@ export interface EmployeeScanRow {
 //   3. employees.current_emp_code        → latest code from HR snapshot (via NIK)
 
 function resolvedEmployeeCodeSql(alias = 's') {
-  return `COALESCE(
-    NULLIF(${alias}.parsed_employee_code, ''),
-    (
-      SELECT TOP 1 e2.employee_code
-      FROM dbo.employees e2
-      WHERE e2.zkteco_user_id = LTRIM(RTRIM(CAST(${alias}.raw_device_user_id AS NVARCHAR(100))))
-        AND e2.is_active = 1
-      ORDER BY e2.id DESC
-    )
-  )`;
+  // ponytail: scan_map.current_emp_code exposed via attendance_scan_logs view (raw LEFT JOIN scan_map).
+  // Pre-2026-06-27 this was a correlated subquery (SELECT TOP 1 FROM employees...) — 30-50s timeout on 800k rows.
+  // Upgrade path: if view col NULL, enrich scan_map.current_emp_code at sync time.
+  return `COALESCE(NULLIF(${alias}.current_emp_code, ''), NULLIF(${alias}.parsed_employee_code, ''))`;
 }
 
 // ─── datamesin mode ─────────────────────────────────────────────────────────
@@ -118,6 +112,7 @@ async function queryDataMesinMode(filters: EmployeeComprehensiveFilters): Promis
         s.machine_code,
         s.raw_device_user_id,
         NULLIF(s.parsed_employee_code, '') AS parsed_employee_code,
+        NULLIF(s.current_emp_code, '') AS current_emp_code,
         NULLIF(s.zkteco_user_name, '') AS zkteco_user_name,
         s.mapping_reason,
         s.scan_time
@@ -135,6 +130,7 @@ async function queryDataMesinMode(filters: EmployeeComprehensiveFilters): Promis
         s.raw_device_user_id,
         s.parsed_employee_code,
         MAX(s.zkteco_user_name) AS zkteco_user_name,
+        MAX(s.current_emp_code) AS current_emp_code,
         MAX(s.mapping_reason) AS mapping_reason,
         MAX(s.scan_time) AS last_scan_time,
         MIN(s.scan_time) AS first_scan_time,
