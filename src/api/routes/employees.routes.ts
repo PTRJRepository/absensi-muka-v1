@@ -20,7 +20,7 @@ route('GET', '/api/employees', async (ctx) => {
   let selectCols = `
     e.id, e.employee_code, e.employee_name,
     d.division_code, d.division_name,
-    g.gang_code,
+    'N/A' AS gang_code,
     e.is_active,
     e.nik, e.current_emp_code, e.current_emp_name,
     e.hr_status, e.hr_verified,
@@ -38,7 +38,6 @@ route('GET', '/api/employees', async (ctx) => {
     SELECT ${selectCols}
     FROM employees e
     JOIN divisions d ON d.id=e.division_id
-    LEFT JOIN gangs g ON g.id=e.gang_id
     WHERE ${whereClause}
     ORDER BY e.employee_code
     OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
@@ -101,10 +100,10 @@ route('GET', '/api/employees/:id', async (ctx) => {
     e.batch_import, e.machine_codes,
     e.is_raw_id, e.identity_source, e.identity_resolution_reason,
     d.division_code, d.division_name,
-    g.gang_code
+    'N/A' AS gang_code
   `;
 
-  const rows = await query<any>(`SELECT ${selectCols} FROM employees e LEFT JOIN divisions d ON d.id=e.division_id LEFT JOIN gangs g ON g.id=e.gang_id WHERE e.id=@id`, [
+  const rows = await query<any>(`SELECT ${selectCols} FROM employees e LEFT JOIN divisions d ON d.id=e.division_id WHERE e.id=@id`, [
     { name: 'id', type: sql.Int, value: id },
   ]);
 
@@ -165,16 +164,16 @@ async function checkTableExists(table: string): Promise<boolean> {
 route('POST', '/api/employees', async (ctx) => {
   const input = validate(employeeSchema, ctx.body);
   await execute(`INSERT INTO employees(employee_code,employee_name,division_id,gang_id,is_active)
-    SELECT @employeeCode,@employeeName,d.id,g.id,@isActive FROM divisions d LEFT JOIN gangs g ON g.gang_code=@gangCode WHERE d.division_code=@divisionCode`, [
-    { name: 'employeeCode', type: sql.NVarChar, value: input.employeeCode }, { name: 'employeeName', type: sql.NVarChar, value: input.employeeName }, { name: 'divisionCode', type: sql.NVarChar, value: input.divisionCode }, { name: 'gangCode', type: sql.NVarChar, value: input.gangCode ?? null }, { name: 'isActive', type: sql.Bit, value: input.isActive ?? true },
+    SELECT @employeeCode,@employeeName,d.id,NULL,@isActive FROM divisions d WHERE d.division_code=@divisionCode`, [
+    { name: 'employeeCode', type: sql.NVarChar, value: input.employeeCode }, { name: 'employeeName', type: sql.NVarChar, value: input.employeeName }, { name: 'divisionCode', type: sql.NVarChar, value: input.divisionCode }, { name: 'isActive', type: sql.Bit, value: input.isActive ?? true },
   ]);
   sendJson(ctx.res, 201, { created: true });
 });
 
 route('PUT', '/api/employees/:id', async (ctx) => {
   const input = validate(employeeSchema, ctx.body);
-  await execute(`UPDATE employees SET employee_code=@employeeCode, employee_name=@employeeName, division_id=(SELECT id FROM divisions WHERE division_code=@divisionCode), gang_id=(SELECT id FROM gangs WHERE gang_code=@gangCode), is_active=@isActive, updated_at=SYSUTCDATETIME() WHERE id=@id`, [
-    { name: 'id', type: sql.Int, value: Number(ctx.params.id) }, { name: 'employeeCode', type: sql.NVarChar, value: input.employeeCode }, { name: 'employeeName', type: sql.NVarChar, value: input.employeeName }, { name: 'divisionCode', type: sql.NVarChar, value: input.divisionCode }, { name: 'gangCode', type: sql.NVarChar, value: input.gangCode ?? null }, { name: 'isActive', type: sql.Bit, value: input.isActive ?? true },
+  await execute(`UPDATE employees SET employee_code=@employeeCode, employee_name=@employeeName, division_id=(SELECT id FROM divisions WHERE division_code=@divisionCode), gang_id=NULL, is_active=@isActive, updated_at=SYSUTCDATETIME() WHERE id=@id`, [
+    { name: 'id', type: sql.Int, value: Number(ctx.params.id) }, { name: 'employeeCode', type: sql.NVarChar, value: input.employeeCode }, { name: 'employeeName', type: sql.NVarChar, value: input.employeeName }, { name: 'divisionCode', type: sql.NVarChar, value: input.divisionCode }, { name: 'isActive', type: sql.Bit, value: input.isActive ?? true },
   ]);
   sendJson(ctx.res, 200, { updated: true });
 });
@@ -357,12 +356,11 @@ route('GET', '/api/employees/:id/detail', async (ctx) => {
           e.is_active,
           d.division_code,
           d.division_name,
-          g.gang_code,
+          'N/A' AS gang_code,
           e.created_at,
           e.updated_at
         FROM employees e
         JOIN divisions d ON d.id = e.division_id
-        LEFT JOIN gangs g ON g.id = e.gang_id
         WHERE e.id = @id
       `, [{ name: 'id', type: sql.Int, value: employeeId }]);
 

@@ -1062,12 +1062,11 @@ route('GET', '/api/attendance/monthly-matrix-traceable', async (ctx) => {
         e.employee_name,
         d.division_code,
         d.division_name,
-        COALESCE(g.gang_code, 'N/A') AS gang_code,
+        'N/A' AS gang_code,
         ROW_NUMBER() OVER (ORDER BY d.division_code, e.employee_code) AS rn,
         COUNT(*) OVER () AS total_rows
       FROM employees e
       INNER JOIN divisions d ON d.id = e.division_id
-      LEFT JOIN gangs g ON g.id = e.gang_id
       WHERE (@activeOnly = 0 OR e.is_active = 1)
         AND (@division IS NULL OR d.division_code = @division)
         AND (
@@ -1598,9 +1597,9 @@ route('POST', '/api/attendance/corrections', async (ctx) => {
     return;
   }
   const input = validate(correctionSchema, ctx.body);
-  await execute(`INSERT INTO attendance_manual_corrections(employee_id,employee_code,division_code,gang_code,attendance_date,attendance_status,check_in_at,check_out_at,has_work,is_leave,is_sick,is_holiday,overtime_hours,reason,created_by)
-    SELECT e.id,e.employee_code,d.division_code,g.gang_code,@attendanceDate,@attendanceStatus,@checkInAt,@checkOutAt,@hasWork,@isLeave,@isSick,@isHoliday,@overtimeHours,@reason,@userId
-    FROM employees e JOIN divisions d ON d.id=e.division_id LEFT JOIN gangs g ON g.id=e.gang_id WHERE e.employee_code=@employeeCode`, [
+  await execute(`INSERT INTO attendance_manual_corrections(employee_id,employee_code,division_code,attendance_date,attendance_status,check_in_at,check_out_at,has_work,is_leave,is_sick,is_holiday,overtime_hours,reason,created_by)
+    SELECT e.id,e.employee_code,d.division_code,@attendanceDate,@attendanceStatus,@checkInAt,@checkOutAt,@hasWork,@isLeave,@isSick,@isHoliday,@overtimeHours,@reason,@userId
+    FROM employees e JOIN divisions d ON d.id=e.division_id WHERE e.employee_code=@employeeCode`, [
     { name: 'employeeCode', type: sql.NVarChar, value: input.employeeCode },
     { name: 'attendanceDate', type: sql.Date, value: input.attendanceDate },
     { name: 'attendanceStatus', type: sql.NVarChar, value: input.attendanceStatus },

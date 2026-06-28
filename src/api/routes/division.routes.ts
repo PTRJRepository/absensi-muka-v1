@@ -85,20 +85,22 @@ route('GET', '/api/divisions/compare', async (ctx) => {
   );
 
   // Get daily trend comparison
+  // Use DB-validated division codes (safe for interpolation) + alnum sanitize as defense-in-depth
+  const safeCodes = divisions.map((d: any) => String(d.division_code).replace(/[^A-Za-z0-9_-]/g, ''));
   const dailyTrend = await query<any>(`
     SELECT
       attendance_date AS date,
-      ${divisionCodes.map((code, i) => `
+      ${safeCodes.map((code, i) => `
         SUM(CASE WHEN division_code = '${code}' THEN 1 ELSE 0 END) AS div_${i}_total,
         SUM(CASE WHEN division_code = '${code}' AND attendance_status = 'HADIR' THEN 1 ELSE 0 END) AS div_${i}_hadir
       `).join(',')}
     FROM attendance_imports
-    WHERE division_code IN (${divisionCodes.map((_, i) => `@div${i}`).join(',')})
+    WHERE division_code IN (${safeCodes.map((_, i) => `@div${i}`).join(',')})
       AND attendance_year = @year
       AND attendance_month = @month
     GROUP BY attendance_date
     ORDER BY attendance_date
-  `, [...divisionCodes.map((d, i) => ({ name: `div${i}`, type: sql.NVarChar, value: d })),
+  `, [...safeCodes.map((d, i) => ({ name: `div${i}`, type: sql.NVarChar, value: d })),
       { name: 'year', type: sql.Int, value: year },
       { name: 'month', type: sql.Int, value: month }]);
 
