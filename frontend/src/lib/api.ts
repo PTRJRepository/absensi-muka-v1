@@ -30,11 +30,27 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     },
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  // Read body first so error detail is available (was thrown before body read)
+  const text = await response.text();
+
+  if (response.status === 401) {
+    clearToken();
+    if (typeof window !== 'undefined') window.location.reload();
+    throw new Error('Sesi berakhir, silakan login kembali');
   }
 
-  const text = await response.text();
+  if (!response.ok) {
+    let detail = `${response.status} ${response.statusText}`;
+    if (text) {
+      try {
+        const p = JSON.parse(text);
+        const msg = (p as ApiErrorResponse)?.error ?? (p as ApiErrorResponse)?.message;
+        if (msg) detail = msg;
+      } catch { /* non-JSON error body, keep status detail */ }
+    }
+    throw new Error(detail);
+  }
+
   if (!text) {
     // Return null for empty responses instead of empty array
     return null as T;
