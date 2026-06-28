@@ -1,10 +1,16 @@
 /**
  * Employee Repository
- * 
+ *
  * Data access layer for mst_employee table
  */
 
 import { SqlClient } from '../../shared/database/sql-client';
+
+/** Escape single quotes for legacy SqlClient.select (which takes a raw WHERE string).
+ * ponytail: SqlClient.select has no parameterization — escape at call site until migrated to mssql @param. */
+function sqlStr(value: string): string {
+  return value.toString().replace(/'/g, "''");
+}
 
 export interface Employee {
   employee_id: number;
@@ -32,7 +38,7 @@ export class EmployeeRepository {
     const results = await this.sqlClient.select<Employee>(
       'mst_employee',
       '*',
-      `emp_code = '${empCode}'`
+      `emp_code = '${sqlStr(empCode)}'`
     );
     return results[0] || null;
   }
@@ -87,7 +93,7 @@ export class EmployeeRepository {
           last_seen_at: new Date(),
           updated_at: new Date(),
         },
-        `emp_code = '${data.emp_code}'`
+        `emp_code = '${sqlStr(data.emp_code)}'`
       );
       return existing.employee_id;
     } else {
@@ -139,7 +145,7 @@ export class EmployeeRepository {
     return this.sqlClient.select<Employee>(
       'mst_employee',
       '*',
-      `emp_name LIKE '%${name}%' AND is_active = 1`,
+      `emp_name LIKE '%${sqlStr(name)}%' AND is_active = 1`,
       'emp_code',
       50
     );
