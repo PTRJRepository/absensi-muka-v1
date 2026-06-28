@@ -17,6 +17,18 @@ tsconfig.tsbuildinfo
 tmp.json
 .ctx-*.mjs
 
+# Root scratch (one-off scripts/logs/plans, not source)
+_*.txt
+_*.py
+_*.sql
+_*.log
+_*.mjs
+db-audit-results.json
+mig_*.sql
+migration_v2_*.sql
+*.log
+*.err.log
+
 # DB export dumps (CSV/logs from one-off fix scripts)
 exports/
 
