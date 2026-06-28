@@ -7,10 +7,8 @@ import {
   Settings,
   Bell,
   Activity,
-  Database,
   Grid3X3,
   Users,
-  ShieldCheck,
 } from 'lucide-react';
 
 const navItems = [
@@ -21,8 +19,6 @@ const navItems = [
   { to: '/absensi/matriks', icon: Grid3X3, label: 'Matriks Bulanan' },
   { to: '/karyawan', icon: Users, label: 'Karyawan' },
   { to: '/laporan', icon: FileText, label: 'Data Quality' },
-  { to: '/laporan/mapping-quality', icon: ShieldCheck, label: 'Mapping Quality' },
-  { to: '/batch', icon: Database, label: 'Riwayat Batch' },
   { to: '/notifikasi', icon: Bell, label: 'Notifikasi' },
 ];
 
