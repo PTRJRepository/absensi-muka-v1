@@ -34,6 +34,7 @@ route("GET", "/api/alerts/rules", async (ctx) => {
     ctx.res.writeHead(200, { "Content-Type": "application/json" });
     ctx.res.end(JSON.stringify({ success: true, data: formattedRules }));
   } catch (e: any) {
+    console.error('[alerts/rules GET] failed:', e);
     ctx.res.writeHead(200, { "Content-Type": "application/json" });
     ctx.res.end(JSON.stringify({ success: true, data: [] }));
   }
@@ -139,6 +140,7 @@ route("GET", "/api/alerts/history", async (ctx) => {
     ctx.res.writeHead(200, { "Content-Type": "application/json" });
     ctx.res.end(JSON.stringify({ success: true, data: formatted }));
   } catch (e: any) {
+    console.error('[alerts/history] failed:', e);
     ctx.res.writeHead(200, { "Content-Type": "application/json" });
     ctx.res.end(JSON.stringify({ success: true, data: [] }));
   }
@@ -155,6 +157,7 @@ route("GET", "/api/alerts/active", async (ctx) => {
     ctx.res.writeHead(200, { "Content-Type": "application/json" });
     ctx.res.end(JSON.stringify({ success: true, data: formatted }));
   } catch (e: any) {
+    console.error('[alerts/active] failed:', e);
     ctx.res.writeHead(200, { "Content-Type": "application/json" });
     ctx.res.end(JSON.stringify({ success: true, data: [] }));
   }

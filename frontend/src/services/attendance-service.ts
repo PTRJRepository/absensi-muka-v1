@@ -150,7 +150,7 @@ function dateKeyFromRecord(record: RawMatrixRecord): string {
   const directDate = firstString(record.attendance_date, record.scan_date);
   if (directDate) return directDate.slice(0, 10);
 
-  const timeValue = firstString(record.scan_time, record.final_check_in, record.check_in_at, record.raw_record_time);
+  const timeValue = firstString(record.raw_record_time, record.final_check_in, record.check_in_at, record.scan_time);
   return timeValue ? timeValue.slice(0, 10) : '';
 }
 
@@ -389,7 +389,7 @@ export function groupMatrixRecords(
         status,
         source,
         scanCount: dayScanCount,
-        checkInAt: toStringOrNull(record?.final_check_in ?? record?.check_in_at ?? record?.scan_time),
+        checkInAt: toStringOrNull(record?.final_check_in ?? record?.check_in_at ?? record?.raw_record_time),
         checkOutAt: toStringOrNull(record?.final_check_out ?? record?.check_out_at ?? null),
         machineCode: toStringOrNull(record?.machine_code ?? employee.machineCode),
         qualityFlags,

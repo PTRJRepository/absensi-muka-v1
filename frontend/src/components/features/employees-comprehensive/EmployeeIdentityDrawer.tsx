@@ -126,7 +126,7 @@ export function EmployeeIdentityDrawer({
     enabled: !!employee && open,
   });
 
-  const detail: EmployeeIdentity | null = detailData?.data || null;
+  const detail: EmployeeIdentity | null = detailData || null;
 
   // Fetch scan history
   const {
@@ -145,8 +145,8 @@ export function EmployeeIdentityDrawer({
     enabled: !!employee && open,
   });
 
-  const scans = scansData?.data?.rows || [];
-  const scansPagination = scansData?.data?.pagination;
+  const scans = scansData?.rows || [];
+  const scansPagination = scansData?.pagination;
   const totalScanPages = scansPagination?.totalPages ?? 1;
 
   // Get title from employee data
