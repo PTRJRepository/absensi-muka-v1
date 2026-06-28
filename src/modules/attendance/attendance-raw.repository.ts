@@ -1,6 +1,19 @@
 /**
+ * @deprecated 2026-06-26 — DEAD CODE CLUSTER. Do NOT use.
+ *
+ * Queries tables DROPPED in Phase A cleanup:
+ *   - attendance_raw_log (DROPPED — replaced by attendance_scan_logs)
+ *   - mst_machine (DROPPED — replaced by attendance_machines)
+ *   - machine_user_map (DROPPED — 0 rows, replaced by employees.parsed_employee_code/current_emp_code resolved at import)
+ *
+ * No route mounts this repository's methods. Live raw data access uses
+ * attendance_scan_logs directly (parsed_employee_code + current_emp_code
+ * already resolved at sync time, no map JOIN needed).
+ *
+ * Retained for git history reference only. Will be removed in a later phase.
+ *
  * Attendance Raw Repository
- * 
+ *
  * Data access layer for attendance_raw_log table
  */
 

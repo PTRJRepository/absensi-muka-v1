@@ -1,8 +1,8 @@
 /**
  * HR Current Snapshot Service
  *
- * Provides read-only queries for hr_employee_current_snapshot and employee_code_history tables.
- * These tables track NIK-based employee data and historical code changes.
+ * Provides read-only queries for hr_reference table (unified from hr_employee_current_snapshot and employee_code_history).
+ * This table tracks NIK-based employee data and historical code changes.
  */
 
 import { query, sql } from '../../lib/db';
@@ -121,19 +121,19 @@ export class HrCurrentSnapshotService {
       SELECT TOP 1
         id,
         nik,
-        current_emp_code,
-        current_emp_name,
-        current_loc_code,
-        current_status,
-        current_create_date,
-        current_update_date,
-        active_count,
-        row_count,
+        emp_code AS current_emp_code,
+        emp_name AS current_emp_name,
+        loc_code AS current_loc_code,
+        hr_status AS current_status,
+        create_date AS current_create_date,
+        update_date AS current_update_date,
+        NULL AS active_count,
+        NULL AS row_count,
         is_ambiguous,
         ambiguity_reason,
         synced_at
-      FROM hr_employee_current_snapshot
-      WHERE nik = @nik
+      FROM hr_reference
+      WHERE type = 'current' AND nik = @nik
     `, [
       { name: 'nik', type: sql.NVarChar, value: normalizedNik },
     ]);
@@ -161,19 +161,19 @@ export class HrCurrentSnapshotService {
       SELECT TOP 1
         id,
         nik,
-        current_emp_code,
-        current_emp_name,
-        current_loc_code,
-        current_status,
-        current_create_date,
-        current_update_date,
-        active_count,
-        row_count,
+        emp_code AS current_emp_code,
+        emp_name AS current_emp_name,
+        loc_code AS current_loc_code,
+        hr_status AS current_status,
+        create_date AS current_create_date,
+        update_date AS current_update_date,
+        NULL AS active_count,
+        NULL AS row_count,
         is_ambiguous,
         ambiguity_reason,
         synced_at
-      FROM hr_employee_current_snapshot
-      WHERE current_emp_code = @empCode
+      FROM hr_reference
+      WHERE type = 'current' AND emp_code = @empCode
     `, [
       { name: 'empCode', type: sql.NVarChar, value: normalizedCode },
     ]);
@@ -209,8 +209,8 @@ export class HrCurrentSnapshotService {
         update_date,
         is_current,
         synced_at
-      FROM employee_code_history
-      WHERE nik = @nik
+      FROM hr_reference
+      WHERE type = 'history' AND nik = @nik
       ORDER BY update_date DESC, id DESC
     `, [
       { name: 'nik', type: sql.NVarChar, value: normalizedNik },
@@ -234,18 +234,19 @@ export class HrCurrentSnapshotService {
       SELECT
         id,
         nik,
-        current_emp_code,
-        current_emp_name,
-        current_loc_code,
-        current_status,
-        current_create_date,
-        current_update_date,
-        active_count,
-        row_count,
+        emp_code AS current_emp_code,
+        emp_name AS current_emp_name,
+        loc_code AS current_loc_code,
+        hr_status AS current_status,
+        create_date AS current_create_date,
+        update_date AS current_update_date,
+        NULL AS active_count,
+        NULL AS row_count,
         is_ambiguous,
         ambiguity_reason,
         synced_at
-      FROM hr_employee_current_snapshot
+      FROM hr_reference
+      WHERE type = 'current'
       ORDER BY nik ASC
       OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
     `, [
@@ -268,19 +269,19 @@ export class HrCurrentSnapshotService {
       SELECT TOP (@limit)
         id,
         nik,
-        current_emp_code,
-        current_emp_name,
-        current_loc_code,
-        current_status,
-        current_create_date,
-        current_update_date,
-        active_count,
-        row_count,
+        emp_code AS current_emp_code,
+        emp_name AS current_emp_name,
+        loc_code AS current_loc_code,
+        hr_status AS current_status,
+        create_date AS current_create_date,
+        update_date AS current_update_date,
+        NULL AS active_count,
+        NULL AS row_count,
         is_ambiguous,
         ambiguity_reason,
         synced_at
-      FROM hr_employee_current_snapshot
-      WHERE is_ambiguous = 1
+      FROM hr_reference
+      WHERE type = 'current' AND is_ambiguous = 1
       ORDER BY synced_at DESC
     `, [
       { name: 'limit', type: sql.Int, value: limit },
@@ -301,19 +302,19 @@ export class HrCurrentSnapshotService {
       SELECT
         id,
         nik,
-        current_emp_code,
-        current_emp_name,
-        current_loc_code,
-        current_status,
-        current_create_date,
-        current_update_date,
-        active_count,
-        row_count,
+        emp_code AS current_emp_code,
+        emp_name AS current_emp_name,
+        loc_code AS current_loc_code,
+        hr_status AS current_status,
+        create_date AS current_create_date,
+        update_date AS current_update_date,
+        NULL AS active_count,
+        NULL AS row_count,
         is_ambiguous,
         ambiguity_reason,
         synced_at
-      FROM hr_employee_current_snapshot
-      WHERE synced_at < DATEADD(HOUR, -@hours, SYSUTCDATETIME())
+      FROM hr_reference
+      WHERE type = 'current' AND synced_at < DATEADD(HOUR, -@hours, SYSUTCDATETIME())
       ORDER BY synced_at ASC
     `, [
       { name: 'hours', type: sql.Int, value: hours },
@@ -336,14 +337,10 @@ export class HrCurrentSnapshotService {
       last_sync_at: Date | null;
     }>(`
       SELECT
-        (SELECT COUNT(*) FROM hr_employee_current_snapshot) AS snapshot_count,
-        (SELECT COUNT(*) FROM employee_code_history) AS history_count,
-        (SELECT COUNT(*) FROM hr_employee_current_snapshot WHERE is_ambiguous = 1) AS ambiguous_count,
-        (SELECT MAX(synced_at) FROM (
-          SELECT synced_at FROM hr_employee_current_snapshot
-          UNION ALL
-          SELECT synced_at FROM employee_code_history
-        ) AS all_synced) AS last_sync_at
+        (SELECT COUNT(*) FROM hr_reference WHERE type = 'current') AS snapshot_count,
+        (SELECT COUNT(*) FROM hr_reference WHERE type = 'history') AS history_count,
+        (SELECT COUNT(*) FROM hr_reference WHERE type = 'current' AND is_ambiguous = 1) AS ambiguous_count,
+        (SELECT MAX(synced_at) FROM hr_reference) AS last_sync_at
     `);
 
     const stats = rows[0];
@@ -371,22 +368,24 @@ export class HrCurrentSnapshotService {
       SELECT TOP (@limit)
         id,
         nik,
-        current_emp_code,
-        current_emp_name,
-        current_loc_code,
-        current_status,
-        current_create_date,
-        current_update_date,
-        active_count,
-        row_count,
+        emp_code AS current_emp_code,
+        emp_name AS current_emp_name,
+        loc_code AS current_loc_code,
+        hr_status AS current_status,
+        create_date AS current_create_date,
+        update_date AS current_update_date,
+        NULL AS active_count,
+        NULL AS row_count,
         is_ambiguous,
         ambiguity_reason,
         synced_at
-      FROM hr_employee_current_snapshot
-      WHERE current_emp_code LIKE @pattern
-         OR current_emp_name LIKE @pattern
-         OR nik LIKE @pattern
-      ORDER BY current_emp_code ASC
+      FROM hr_reference
+      WHERE type = 'current' AND (
+        emp_code LIKE @pattern
+        OR emp_name LIKE @pattern
+        OR nik LIKE @pattern
+      )
+      ORDER BY emp_code ASC
     `, [
       { name: 'pattern', type: sql.NVarChar, value: normalizedPattern },
       { name: 'limit', type: sql.Int, value: safeLimit },
@@ -417,10 +416,12 @@ export class HrCurrentSnapshotService {
         update_date,
         is_current,
         synced_at
-      FROM employee_code_history
-      WHERE emp_code LIKE @pattern
-         OR emp_name LIKE @pattern
-         OR nik LIKE @pattern
+      FROM hr_reference
+      WHERE type = 'history' AND (
+        emp_code LIKE @pattern
+        OR emp_name LIKE @pattern
+        OR nik LIKE @pattern
+      )
       ORDER BY update_date DESC
     `, [
       { name: 'pattern', type: sql.NVarChar, value: normalizedPattern },

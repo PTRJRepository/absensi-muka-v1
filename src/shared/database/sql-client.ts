@@ -1,6 +1,18 @@
 /**
+ * @deprecated 2026-06-26 — VESTIGIAL. Use direct `mssql` pool instead.
+ *
+ * SQL Gateway HTTP Client (HTTP wrapper for legacy SQL gateway at 10.0.0.110:8001).
+ * Live attendance pipeline (sync-orchestrator, rebuild-attendance-imports, all API
+ * routes except import.routes) uses direct `mssql` pool (83 files vs 18 gateway).
+ * Only `import.routes.ts` still references this — manual import feature (vestigial,
+ * no active HTTP route calls its methods per Phase B.1 audit).
+ *
+ * CLAUDE.md rule: "Jangan pakai SqlClient/extend_db_ptrj untuk attendance baru."
+ * New code MUST use `src/shared/database/sql-client-direct.ts` (or equivalent
+ * mssql.connect pool).
+ *
  * SQL Gateway HTTP Client
- * 
+ *
  * Connects to SQL Server via HTTP Gateway at http://10.0.0.110:8001/v1/query
  * Server: SERVER_PROFILE_1
  * Database: extend_db_ptrj

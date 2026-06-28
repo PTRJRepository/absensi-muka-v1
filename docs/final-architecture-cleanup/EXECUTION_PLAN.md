@@ -1,5 +1,8 @@
 # EXECUTION_PLAN — Cleanup + Rename Bertahap
 
+> ✅ Phase 0 + Phase A DONE 2026-06-26 (65→51 tables, gangs gone, 4 broken views dropped, 8 views clean, 0 dangling refs).
+> Backup in-DB: 12 `snap_*_20260626` tables + 12 `arch_*` archive tables.
+>
 > Keputusan user (2026-06-26):
 > - Rename tabel: **YA, bertahap** (compat view layer, jangan break web app)
 > - Backup: **YA, lakukan dulu**
@@ -50,14 +53,14 @@ Rename kolom: tahap terakhir, setelah tabel rename stabil (view bisa alias kolom
 
 ## Phase B: Fix Active-Broken Deps
 
-| Step | Aksi |
-|------|------|
-| B.1 | Stop `machine_user_map` usage: migrate 3 service (attendance-raw.repository, employee-mapping.service, summary.service) ke `machine_user_raw`+`employees` |
-| B.2 | Fix `quality.routes.ts` query dropped `zkteco_absensi_user_registry` → migrate ke `employees`+`hr_current_snapshot` |
-| B.3 | Parameterize SQL injection (4 file high-risk) |
-| B.4 | Fix `extend_db_ptrj` hardcoded default → `rebinmas_absensi_monitoring` |
-| B.5 | Drop `machine_user_map` (after B.1, 0 rows) |
-| B.6 | Drop backup tables (after Phase 0.3 archive verified) |
+| Step | Aksi | Status |
+|------|------|--------|
+| B.2 | Fix `quality.routes.ts` query dropped `zkteco_absensi_user_registry` → repoint ke `employees` | ✅ DONE 2026-06-26 (2 endpoint fixed + pre-existing TOP+OFFSET bug + missing column fix) |
+| B.1 | ~~Migrate machine_user_map usage~~ → **DEAD CODE CLUSTER found**: attendance-raw.repository + data-quality.service + summary.service + employee-mapping.service all unrouted/vestigial (queries dropped attendance_raw_log/mst_machine/machine_user_map). Marked deprecated, table DROPPED (0 rows, 0 FKs, 0 live callers). No rewrite needed. | ✅ DONE 2026-06-26 (table dropped 65→50) |
+| B.3 | Parameterize SQL injection (4 file high-risk: attendance-raw.repository, employee-mapping.service, attendance-reconcile.service:258, import-job.service:154) | pending (riskiest) |
+| B.4 | Fix `extend_db_ptrj` hardcoded default → `rebinmas_absensi_monitoring` | pending (CAUTION: SqlClient is HTTP-gateway client, 23 services use it — changing default risks gateway connectivity, needs separate audit) |
+| B.5 | Drop `machine_user_map` (after B.1, 0 rows) | pending |
+| B.6 | Drop backup tables (after Phase 0 archive verified) | pending |
 
 ## Phase C: Trim Kolom Nonaktif (SKIP time_correction per user)
 
@@ -67,21 +70,36 @@ Rename kolom: tahap terakhir, setelah tabel rename stabil (view bisa alias kolom
 | C.2 | ~~Drop time_correction_* (13 kolom)~~ — **SKIP, user KEEP untuk alternatif** |
 | C.3 | Drop `parsed_division_code` (final lewat division_id) |
 
-## Phase D: Rename Tabel Bertahap (compat view, non-breaking)
+## Phase D: Rename Tabel Bertahap (FUTURE — not executed 2026-06-26)
 
-Urutan (lowest write-path risk dulu):
+**Status:** System clean & stable at 50 tables. Rename = polish, not cleanup. Deferred for future work when time/risk tolerance allows.
 
-| Step | Tabel lama → baru | Write path | View compat |
-|------|-------------------|-----------|-------------|
-| D.1 | `attendance_manual_corrections` → `attendance_corrections` | low (HR admin, 0 rows) | view lama pass-through |
-| D.2 | `attendance_import_batches` → `sync_batches` | med (scheduler writes) | view |
-| D.3 | `attendance_machines` → `machines` | med | view |
-| D.4 | `machine_user_raw` → `zk_machine_users` | med (sync-machines writes) | view |
-| D.5 | `attendance_imports` → `attendance_daily` | med (rebuild writes) | view |
-| D.6 | `attendance_scan_logs` → `zk_scan_logs` | med (sync-orchestrator writes) | view |
-| D.7 | `hr_employee_current_snapshot` → `hr_current_snapshot` | med (snapshot sync writes) | view |
+**Risk assessment (live route usage):**
 
-Tiap step D.x: update write code → sp_rename → create view compat → update SELECT code bertahap → build+test → drop view.
+| Tabel → New | Route hits | Write paths | Risk | Why deferred |
+|-------------|-----------|-------------|------|-------------|
+| `attendance_manual_corrections` → `attendance_corrections` | 15 (incl INSERT in route) | attendance.routes.ts INSERT | **High** | SQL Server view can't support INSERT without INSTEAD OF trigger. Complex. |
+| `attendance_import_batches` → `sync_batches` | 36 (all read) | scripts only | **Med** | Many routes to migrate. Current name works fine. |
+| `attendance_machines` → `machines` | 20 (all read) | scripts/seed only | **Low** | Could do with compat view, but low value vs risk. |
+| `machine_user_raw` → `zk_machine_users` | 3 (all read) | sync-machines.ts write | **Low** | Few callers, but `zk_` prefix non-standard. |
+| `attendance_imports` → `attendance_daily` | 15+ (read/write) | rebuild script | **High** | Complex query migration. Current name clear enough. |
+| `attendance_scan_logs` → `zk_scan_logs` | 15+ (read/write) | sync-orchestrator writes | **High** | Core table, many dependencies. Current name clear. |
+| `hr_employee_current_snapshot` → `hr_current_snapshot` | 3 (all read) | snapshot sync writes | **Low** | Few callers, but current name descriptive. |
+
+**Strategy if proceeding:**
+1. Update write paths first (scripts/services) to new table name
+2. `EXEC sp_rename '<old>', '<new>'`
+3. `CREATE VIEW <old> AS SELECT * FROM <new>` (compat for read paths)
+4. Migrate read paths gradually
+5. Drop compat view when all migrated
+6. Verify: 6 endpoint 200, row counts unchanged
+
+**Blockers:**
+- `attendance_manual_corrections` has INSERT in route → need INSTEAD OF trigger or route code update before rename
+- High-risk tables (scan_logs, imports) have 15+ route hits each → large migration surface
+- Low ROI: current names already clear, system stable
+
+**Conclusion:** Rename = polish. Not needed for Phase A–C cleanup success. Defer to future iteration.
 
 ## Phase E: Rename Kolom (setelah tabel stabil)
 

@@ -40,20 +40,13 @@ async function seedOrganization() {
       { name: 'code', type: sql.NVarChar, value: code }, { name: 'name', type: sql.NVarChar, value: `Dummy ${code}` },
     ]);
   }
-  for (let index = 1; index <= 10; index++) {
-    const divisionCode = divisions[(index - 1) % divisions.length];
-    const gangCode = `GANG-${String.fromCharCode(64 + ((index - 1) % 5) + 1)}${Math.ceil(index / 5)}`;
-    await upsert(`IF NOT EXISTS (SELECT 1 FROM gangs WHERE gang_code=@gangCode)
-      INSERT INTO gangs(gang_code,gang_name,division_id) SELECT @gangCode,@gangName,id FROM divisions WHERE division_code=@divisionCode`, [
-      { name: 'gangCode', type: sql.NVarChar, value: gangCode }, { name: 'gangName', type: sql.NVarChar, value: `Dummy ${gangCode}` }, { name: 'divisionCode', type: sql.NVarChar, value: divisionCode },
-    ]);
-  }
+  // gangs table dropped (Phase B) — skip gang seeding
   for (let index = 1; index <= 50; index++) {
     const divisionCode = divisions[(index - 1) % divisions.length];
     const employeeCode = `EMP${index.toString().padStart(3, '0')}`;
     await upsert(`IF NOT EXISTS (SELECT 1 FROM employees WHERE employee_code=@employeeCode)
-      INSERT INTO employees(employee_code,employee_name,division_id,gang_id)
-      SELECT @employeeCode,@employeeName,d.id,(SELECT TOP 1 id FROM gangs WHERE division_id=d.id ORDER BY id) FROM divisions d WHERE d.division_code=@divisionCode`, [
+      INSERT INTO employees(employee_code,employee_name,division_id)
+      SELECT @employeeCode,@employeeName,d.id FROM divisions d WHERE d.division_code=@divisionCode`, [
       { name: 'employeeCode', type: sql.NVarChar, value: employeeCode }, { name: 'employeeName', type: sql.NVarChar, value: `Dummy Employee ${index}` }, { name: 'divisionCode', type: sql.NVarChar, value: divisionCode },
     ]);
   }
@@ -61,9 +54,9 @@ async function seedOrganization() {
 
 async function seedMachineKnowledge() {
   const scanners: Array<[string, number]> = [['P1A',100],['ARC',200],['P1B',300],['AB2',400],['P2A',500],['P2B',600],['DME',700],['ARA',800],['AB1',900]];
-  for (const [division, code] of scanners) await upsert(`IF NOT EXISTS (SELECT 1 FROM scanner_codes WHERE scanner_code=@scannerCode) INSERT INTO scanner_codes(division_code,scanner_code,description) VALUES(@divisionCode,@scannerCode,@description)`, [{ name: 'divisionCode', type: sql.NVarChar, value: division }, { name: 'scannerCode', type: sql.Int, value: code }, { name: 'description', type: sql.NVarChar, value: `${division} scanner code` }]);
+  for (const [division, code] of scanners) await upsert(`IF NOT EXISTS (SELECT 1 FROM scanner_configs WHERE type='scanner' AND scanner_code=@scannerCode) INSERT INTO scanner_configs(type,division_code,scanner_code,description) VALUES('scanner',@divisionCode,@scannerCode,@description)`, [{ name: 'divisionCode', type: sql.NVarChar, value: division }, { name: 'scannerCode', type: sql.Int, value: code }, { name: 'description', type: sql.NVarChar, value: `${division} scanner code` }]);
   const locs: Array<[string, string]> = [['P1A','A'],['P1B','B'],['P2A','C'],['P2B','D'],['DME','E'],['ARA','F'],['AB1','G'],['AB2','H'],['ARC','J'],['IJL','L'],['PGE','A']];
-  for (const [division, loc] of locs) await upsert(`IF NOT EXISTS (SELECT 1 FROM loc_codes WHERE division_code=@divisionCode AND loc_code=@locCode) INSERT INTO loc_codes(division_code,loc_code,emp_code_prefix,description) VALUES(@divisionCode,@locCode,@locCode,@description)`, [{ name: 'divisionCode', type: sql.NVarChar, value: division }, { name: 'locCode', type: sql.NVarChar, value: loc }, { name: 'description', type: sql.NVarChar, value: `${division} loc code` }]);
+  for (const [division, loc] of locs) await upsert(`IF NOT EXISTS (SELECT 1 FROM scanner_configs WHERE type='loc' AND division_code=@divisionCode AND loc_code=@locCode) INSERT INTO scanner_configs(type,division_code,loc_code,emp_code_prefix,description) VALUES('loc',@divisionCode,@locCode,@locCode,@description)`, [{ name: 'divisionCode', type: sql.NVarChar, value: division }, { name: 'locCode', type: sql.NVarChar, value: loc }, { name: 'description', type: sql.NVarChar, value: `${division} loc code` }]);
 
   const machines = [
     ['DEVICE-001','Dummy Device 001','192.0.2.10',4370,'ACCESSIBLE','DIRECT_ZKTECO'],
@@ -87,27 +80,14 @@ async function seedAttendance() {
       const date = `2026-05-${day.toString().padStart(2, '0')}`;
       const status = day % 7 === 0 ? 'ABSENT' : 'PRESENT';
       await upsert(`IF NOT EXISTS (SELECT 1 FROM attendance_imports WHERE employee_code=@employeeCode AND attendance_date=@attendanceDate AND source='DUMMY' AND source_reference=@sourceReference)
-        INSERT INTO attendance_imports(employee_id,employee_code,division_code,gang_code,attendance_date,attendance_year,attendance_month,check_in_at,check_out_at,attendance_status,has_work,overtime_hours,source,source_reference,batch_id)
-        SELECT e.id,e.employee_code,d.division_code,g.gang_code,@attendanceDate,2026,5,DATEADD(HOUR,7,CAST(@attendanceDate AS DATETIME2)),DATEADD(HOUR,16,CAST(@attendanceDate AS DATETIME2)),@status,CASE WHEN @status='PRESENT' THEN 1 ELSE 0 END,CASE WHEN @status='PRESENT' AND @day % 5 = 0 THEN 1.5 ELSE 0 END,'DUMMY',@sourceReference,(SELECT id FROM attendance_import_batches WHERE batch_code='DUMMY-2026-05')
-        FROM employees e JOIN divisions d ON d.id=e.division_id LEFT JOIN gangs g ON g.id=e.gang_id WHERE e.employee_code=@employeeCode`, [
+        INSERT INTO attendance_imports(employee_id,employee_code,division_code,attendance_date,attendance_year,attendance_month,check_in_at,check_out_at,attendance_status,has_work,overtime_hours,source,source_reference,batch_id)
+        SELECT e.id,e.employee_code,d.division_code,@attendanceDate,2026,5,DATEADD(HOUR,7,CAST(@attendanceDate AS DATETIME2)),DATEADD(HOUR,16,CAST(@attendanceDate AS DATETIME2)),@status,CASE WHEN @status='PRESENT' THEN 1 ELSE 0 END,CASE WHEN @status='PRESENT' AND @day % 5 = 0 THEN 1.5 ELSE 0 END,'DUMMY',@sourceReference,(SELECT id FROM attendance_import_batches WHERE batch_code='DUMMY-2026-05')
+        FROM employees e JOIN divisions d ON d.id=e.division_id WHERE e.employee_code=@employeeCode`, [
         { name: 'employeeCode', type: sql.NVarChar, value: code }, { name: 'attendanceDate', type: sql.Date, value: date }, { name: 'status', type: sql.NVarChar, value: status }, { name: 'day', type: sql.Int, value: day }, { name: 'sourceReference', type: sql.NVarChar, value: `DUMMY-${code}-${date}` },
       ]);
     }
   }
-  for (let index = 1; index <= 10; index++) {
-    const code = `EMP${index.toString().padStart(3, '0')}`;
-    await upsert(`IF NOT EXISTS (SELECT 1 FROM attendance_manual_corrections WHERE employee_code=@employeeCode AND attendance_date='2026-05-07')
-      INSERT INTO attendance_manual_corrections(employee_id,employee_code,division_code,gang_code,attendance_date,attendance_status,has_work,overtime_hours,reason,created_by)
-      SELECT e.id,e.employee_code,d.division_code,g.gang_code,'2026-05-07','PRESENT',1,0,'Dummy correction reason',(SELECT TOP 1 id FROM users ORDER BY id)
-      FROM employees e JOIN divisions d ON d.id=e.division_id LEFT JOIN gangs g ON g.id=e.gang_id WHERE e.employee_code=@employeeCode`, [{ name: 'employeeCode', type: sql.NVarChar, value: code }]);
-  }
-  for (let index = 1; index <= 20; index++) {
-    await upsert(`IF NOT EXISTS (SELECT 1 FROM attendance_sync_logs WHERE sync_type='DUMMY' AND source='DUMMY' AND machine_code=@machineCode AND started_at=DATEADD(MINUTE,-@minutes,CAST('2026-06-01T00:00:00' AS DATETIME2)))
-      INSERT INTO attendance_sync_logs(sync_type,source,machine_code,status,started_at,finished_at,duration_ms,records_synced,error_message)
-      VALUES('DUMMY','DUMMY',@machineCode,@status,DATEADD(MINUTE,-@minutes,CAST('2026-06-01T00:00:00' AS DATETIME2)),DATEADD(MINUTE,-@minutes+1,CAST('2026-06-01T00:00:00' AS DATETIME2)),1000,@records,@errorMessage)`, [
-      { name: 'machineCode', type: sql.NVarChar, value: `DEVICE-00${(index % 5) + 1}` }, { name: 'minutes', type: sql.Int, value: index * 15 }, { name: 'status', type: sql.NVarChar, value: index % 6 === 0 ? 'FAILED' : 'SUCCESS' }, { name: 'records', type: sql.Int, value: 100 + index }, { name: 'errorMessage', type: sql.NVarChar, value: index % 6 === 0 ? 'Dummy timeout error' : null },
-    ]);
-  }
+  // attendance_manual_corrections + attendance_sync_logs dropped (Phase B) — skip seeding
 }
 
 async function seedConfigs() {

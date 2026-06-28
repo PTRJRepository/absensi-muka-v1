@@ -443,25 +443,26 @@ route('GET', '/api/quality/summary', async (ctx) => {
 route('GET', '/api/quality/current-empcode/summary', async (ctx) => {
   const [registryStats, parsedCodeChanges, snapshotHealth] = await Promise.all([
     // Registry quality summary by resolution status
+    // (was zkteco_absensi_user_registry, merged INTO employees by migration 056)
     query<any>(`
       SELECT
         current_resolution_status AS status,
         COUNT(*) AS total
-      FROM dbo.zkteco_absensi_user_registry
+      FROM dbo.employees
       WHERE current_resolution_status IS NOT NULL
       GROUP BY current_resolution_status
     `),
 
-    // ParsedCode → currentEmpCode changes
+    // ParsedCode → currentEmpCode changes (employees.employee_code = parsed code)
     query<any>(`
       SELECT TOP 20
-        parsed_employee_code AS parsed_code,
+        employee_code AS parsed_code,
         current_emp_code,
         COUNT(*) AS change_count
-      FROM dbo.zkteco_absensi_user_registry
+      FROM dbo.employees
       WHERE current_emp_code IS NOT NULL
-        AND parsed_employee_code <> current_emp_code
-      GROUP BY parsed_employee_code, current_emp_code
+        AND employee_code <> current_emp_code
+      GROUP BY employee_code, current_emp_code
       ORDER BY change_count DESC
     `),
 
@@ -471,7 +472,8 @@ route('GET', '/api/quality/current-empcode/summary', async (ctx) => {
         COUNT(*) AS total_snapshots,
         SUM(CASE WHEN is_ambiguous = 1 THEN 1 ELSE 0 END) AS ambiguous_nik,
         MAX(synced_at) AS last_sync_at
-      FROM dbo.hr_employee_current_snapshot
+      FROM dbo.hr_reference
+      WHERE type = 'current'
     `),
   ]);
 
@@ -523,12 +525,12 @@ route('GET', '/api/quality/current-empcode/ambiguous', async (ctx) => {
   const ambiguousRecords = await query<any>(`
     SELECT
       nik,
-      current_emp_code,
-      active_count,
+      emp_code AS current_emp_code,
+      NULL AS active_count,
       ambiguity_reason
-    FROM dbo.hr_employee_current_snapshot
-    WHERE is_ambiguous = 1
-    ORDER BY active_count DESC, nik ASC
+    FROM dbo.hr_reference
+    WHERE type = 'current' AND is_ambiguous = 1
+    ORDER BY nik ASC
   `);
 
   const data = ambiguousRecords.map((r: any) => ({
@@ -551,18 +553,18 @@ route('GET', '/api/quality/current-empcode/changes', async (ctx) => {
 
   const [changes, countResult] = await Promise.all([
     query<any>(`
-      SELECT TOP (@limit)
+      SELECT
         raw_device_user_id,
-        parsed_employee_code AS parsed_code,
+        employee_code AS parsed_code,
         current_emp_code,
         resolved_nik,
         current_emp_name,
-        current_hr_status,
+        hr_status AS current_hr_status,
         current_resolution_status,
         current_resolution_reason
-      FROM dbo.zkteco_absensi_user_registry
+      FROM dbo.employees
       WHERE current_emp_code IS NOT NULL
-        AND parsed_employee_code <> current_emp_code
+        AND employee_code <> current_emp_code
       ORDER BY current_resolved_at DESC
       OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
     `, [
@@ -572,9 +574,9 @@ route('GET', '/api/quality/current-empcode/changes', async (ctx) => {
 
     query<any>(`
       SELECT COUNT(*) AS total
-      FROM dbo.zkteco_absensi_user_registry
+      FROM dbo.employees
       WHERE current_emp_code IS NOT NULL
-        AND parsed_employee_code <> current_emp_code
+        AND employee_code <> current_emp_code
     `),
   ]);
 

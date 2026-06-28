@@ -86,13 +86,13 @@ type RawAttendanceRecord = {
   id?: string | number;
 };
 
-function insertRawScanLog(
+async function insertRawScanLog(
   pool: any,
   batchId: number,
   machine: { machine_id: number; machine_code: string; ip_address: string; scanner_code?: number | null; loc_code?: string | null },
   att: RawAttendanceRecord,
   profile: { timezoneMode: string; offsetMinutes: number } | null
-): { inserted: boolean } {
+): Promise<{ inserted: boolean }> {
   const rawDeviceUserId = pickAbsensiId(att.deviceUserId, undefined, undefined, undefined);
   const rawUserSn = att.userSn == null ? null : String(att.userSn);
   const zktecoUserName =
@@ -134,6 +134,8 @@ function insertRawScanLog(
     zktecoUserName: zktecoUserName,
   });
 
+  // RAW layer: insert machine data ONLY (pure, no processed columns).
+  // Processed columns live in scan_map (1:1 via scan_log_id = SCOPE_IDENTITY()).
   const req = pool.request()
     .input('machineId', pool.mssql.Int, machine.machine_id)
     .input('machineCode', machine.machine_code)
@@ -153,23 +155,32 @@ function insertRawScanLog(
     .input('parsedEmployeeCode', parsed.parsedEmployeeCode)
     .input('parsedDivisionCode', parsed.locCode)
     .input('mappingStatus', parsed.allowAutoMap ? 'MAPPED' : 'NEED_REVIEW')
-    .input('mappingReason', parsed.reason);
+    .input('mappingReason', parsed.reason)
+    .input('scannerPrefix', parsed.parsedEmployeeCode ? parsed.parsedEmployeeCode.charAt(0) : null);
 
-  req.query(`
-    INSERT INTO attendance_scan_logs
+  await req.query(`
+    DECLARE @newId BIGINT;
+    INSERT INTO attendance_raw
       (machine_id, machine_code, raw_device_user_id, raw_user_sn,
        raw_record_time, raw_ip, zkteco_user_name,
        scan_time, scan_date, event_type, verify_type, work_code,
-       sync_batch_id, mapping_status,
-       parsed_employee_code, parsed_division_code, mapping_reason,
+       sync_batch_id,
        time_correction_status, time_correction_offset_minutes)
     VALUES
       (@machineId, @machineCode, @rawDeviceUserId, @rawUserSn,
        @rawRecordTime, @rawIp, @zktecoUserName,
        @scanTime, @scanDate, @eventType, @verifyType, @workCode,
-       @batchId, @mappingStatus,
-       @parsedEmployeeCode, @parsedDivisionCode, @mappingReason,
-       @correctionStatus, @offsetMinutes)
+       @batchId, @correctionStatus, @offsetMinutes);
+    SET @newId = SCOPE_IDENTITY();
+
+    INSERT INTO scan_map
+      (scan_log_id, parsed_emp_code, scanner_prefix, loc_code,
+       map_status, map_reason, resolution_status, resolution_method, resolved_at)
+    VALUES
+      (@newId, @parsedEmployeeCode, @scannerPrefix, @parsedDivisionCode,
+       @mappingStatus, @mappingReason,
+       CASE WHEN @mappingStatus = 'NEED_REVIEW' THEN 'NEED_REVIEW' ELSE NULL END,
+       'ssot_parser_at_sync', SYSUTCDATETIME());
   `);
 
   return { inserted: true };
@@ -421,7 +432,7 @@ export class SyncOrchestrator {
         let newRecordsInserted = 0;
         const attendances = (attResult.data || []) as any[];
         for (const att of attendances) {
-          const result = insertRawScanLog(this.mssqlPool, batchId, machine, att, machineProfile);
+          const result = await insertRawScanLog(this.mssqlPool, batchId, machine, att, machineProfile);
           attCount++;
           if (result.inserted) newRecordsInserted++;
         }
@@ -456,50 +467,52 @@ export class SyncOrchestrator {
                     THEN 'EMPTY_RAW_USER_NAME'
                     ELSE 'NO_RAW_USER'
                 END
-            FROM attendance_scan_logs sl
-            INNER JOIN machine_user_raw r
+            FROM attendance_raw sl
+            INNER JOIN attendance_raw_users r
                 ON r.machine_id = sl.machine_id AND r.machine_user_id = sl.raw_device_user_id
             WHERE sl.machine_id = @machineId
               AND sl.sync_batch_id = @batchId
           `);
-          console.log(`[Orchestrator] Enriched user names from machine_user_raw`);
+          console.log(`[Orchestrator] Enriched user names from attendance_raw_users`);
         } catch (enrichError: unknown) {
           const msg = enrichError instanceof Error ? enrichError.message : String(enrichError);
           console.warn(`[Orchestrator] Failed to enrich user names: ${msg}`);
         }
 
-        // ── Enrich current_emp_code from employees (NIK resolution) ──
+        // ── Enrich current_emp_code from employees (NIK resolution) → scan_map ──
         try {
           const req2 = this.mssqlPool.request()
             .input('machineId', this.mssqlPool.mssql.Int, machine.machine_id)
             .input('batchId', this.mssqlPool.mssql.BigInt, batchId)
             .input('syncTime', this.mssqlPool.mssql.DateTime2, new Date());
           await req2.query(`
-            UPDATE sl
+            UPDATE sm
             SET
-                sl.current_emp_code = COALESCE(e_curr.employee_code, e_parsed.current_emp_code, e_parsed.employee_code),
-                sl.current_employee_id = COALESCE(e_curr.id, e_parsed.id),
-                sl.current_mapping_status = CASE
+                sm.current_emp_code = COALESCE(e_curr.employee_code, e_parsed.current_emp_code, e_parsed.employee_code),
+                sm.current_emp_name = COALESCE(e_curr.employee_name, e_parsed.employee_name),
+                sm.resolved_nik = e_parsed.nik,
+                sm.resolution_status = CASE
                     WHEN COALESCE(e_curr.id, e_parsed.id) IS NOT NULL THEN 'MAPPED'
                     ELSE 'NEED_REVIEW'
                 END,
-                sl.current_mapping_reason = CASE
+                sm.resolution_method = CASE
                     WHEN e_curr.id IS NOT NULL THEN 'NIK_RESOLVED_VIA_CURRENT_EMP_CODE'
                     WHEN e_parsed.id IS NOT NULL THEN 'MAPPED_VIA_PARSED_EMPLOYEE_CODE'
                     ELSE 'PARSED_CODE_NOT_FOUND_IN_EMPLOYEES'
                 END,
-                sl.current_resolved_at = @syncTime
-            FROM attendance_scan_logs sl
+                sm.resolved_at = @syncTime
+            FROM scan_map sm
+            INNER JOIN attendance_raw sl ON sl.id = sm.scan_log_id
             LEFT JOIN employees e_parsed
-                ON e_parsed.employee_code = sl.parsed_employee_code
+                ON e_parsed.employee_code = sm.parsed_emp_code
             LEFT JOIN employees e_curr
                 ON e_curr.employee_code = e_parsed.current_emp_code
                 AND e_curr.is_active = 1
                 AND e_curr.employee_code != ISNULL(e_parsed.employee_code, '')
             WHERE sl.machine_id = @machineId
               AND sl.sync_batch_id = @batchId
-              AND sl.parsed_employee_code IS NOT NULL
-              AND sl.parsed_employee_code != ''
+              AND sm.parsed_emp_code IS NOT NULL
+              AND sm.parsed_emp_code != ''
           `);
           console.log(`[Orchestrator] Enriched current_emp_code from employees`);
         } catch (enrichError: unknown) {

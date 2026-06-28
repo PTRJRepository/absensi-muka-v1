@@ -1,4 +1,13 @@
 /**
+ * @deprecated 2026-06-26 — DEAD CODE. No route mounts this service.
+ *
+ * Depends on AttendanceRawRepository which queries DROPPED tables
+ * (attendance_raw_log, mst_machine, machine_user_map). Every method 500s.
+ * Live data quality lives in src/api/routes/quality.routes.ts (queries
+ * employees + attendance_scan_logs directly).
+ *
+ * Retained for git history only.
+ *
  * Data Quality Service
  *
  * Provides comprehensive data quality checks for attendance data

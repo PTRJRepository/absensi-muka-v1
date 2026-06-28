@@ -145,6 +145,8 @@ async function main() {
           COUNT(*) AS scan_count, MAX(s.sync_batch_id) AS max_batch_id, MIN(s.id) AS min_id
         FROM attendance_scan_logs s
         WHERE s.mapping_status = 'NEED_REVIEW'
+          -- short id (<=5 digit) stays raw-only (mode mesin), excluded from imports
+          AND LEN(LTRIM(RTRIM(s.raw_device_user_id))) > 5
         GROUP BY s.raw_device_user_id, s.scan_date, s.machine_code
       ) g
       WHERE NOT EXISTS (

@@ -83,6 +83,9 @@ route('GET', '/api/machines', async (ctx) => {
   const rows = await query(`SELECT m.id, m.machine_code, m.location_name, m.access_status, m.ip_address, m.port, m.is_active, m.data_source, m.loc_code, m.machine_type,
     m.last_sync_at,
     m.last_error_message,
+    m.machine_record_count,
+    m.machine_record_count_updated_at,
+    COALESCE((SELECT COUNT(*) FROM attendance_raw WHERE machine_code=m.machine_code), 0) AS db_record_count,
     COALESCE((SELECT COUNT(*) FROM attendance_scan_logs WHERE machine_code=m.machine_code AND scan_date >= CAST(GETDATE() AS DATE)), 0) AS scan_count_today,
     COALESCE((SELECT COUNT(DISTINCT COALESCE(NULLIF(parsed_employee_code, ''), raw_device_user_id)) FROM attendance_scan_logs WHERE machine_code=m.machine_code AND scan_date >= CAST(GETDATE() AS DATE)), 0) AS user_count_today,
     COALESCE((

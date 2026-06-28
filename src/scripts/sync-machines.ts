@@ -288,25 +288,36 @@ async function insertRawScan(
     .input('parsedDivisionCode', n.parsedDivisionCode)
     .input('mappingStatus', n.mappingStatus)
     .input('mappingReason', n.mappingReason)
+    .input('scannerPrefix', n.parsedEmployeeCode ? n.parsedEmployeeCode.charAt(0) : null)
     .query(`
       IF NOT EXISTS (
-        SELECT 1 FROM attendance_scan_logs
+        SELECT 1 FROM attendance_raw
         WHERE machine_code = @machineCode
           AND raw_device_user_id = @rawDeviceUserId
           AND raw_record_time = @rawRecordTime
       )
-      INSERT INTO attendance_scan_logs
-        (machine_id, machine_code, raw_device_user_id, raw_user_sn,
-         raw_record_time, raw_ip, zkteco_user_name,
-         scan_time, scan_date, event_type, verify_type, work_code,
-         sync_batch_id, mapping_status,
-         parsed_employee_code, parsed_division_code, mapping_reason)
-      VALUES
-        (@machineId, @machineCode, @rawDeviceUserId, @rawUserSn,
-         @rawRecordTime, @rawIp, @zktecoUserName,
-         @scanTime, @scanDate, @eventType, @verifyType, @workCode,
-         @batchId, @mappingStatus,
-         @parsedEmployeeCode, @parsedDivisionCode, @mappingReason)
+      BEGIN
+        DECLARE @newId BIGINT;
+        INSERT INTO attendance_raw
+          (machine_id, machine_code, raw_device_user_id, raw_user_sn,
+           raw_record_time, raw_ip, zkteco_user_name,
+           scan_time, scan_date, event_type, verify_type, work_code,
+           sync_batch_id)
+        VALUES
+          (@machineId, @machineCode, @rawDeviceUserId, @rawUserSn,
+           @rawRecordTime, @rawIp, @zktecoUserName,
+           @scanTime, @scanDate, @eventType, @verifyType, @workCode,
+           @batchId);
+        SET @newId = SCOPE_IDENTITY();
+        INSERT INTO scan_map
+          (scan_log_id, parsed_emp_code, scanner_prefix, loc_code,
+           map_status, map_reason, resolution_status, resolution_method, resolved_at)
+        VALUES
+          (@newId, @parsedEmployeeCode, @scannerPrefix, @parsedDivisionCode,
+           @mappingStatus, @mappingReason,
+           CASE WHEN @mappingStatus = 'NEED_REVIEW' THEN 'NEED_REVIEW' ELSE NULL END,
+           'ssot_parser_at_sync', SYSUTCDATETIME());
+      END
     `);
 
   return {
@@ -447,6 +458,14 @@ async function syncMachine(
       rawCount++;
       if (result.inserted) newRecordsInserted++;
     }
+
+    // Update machine_record_count (total logs on machine) for sync gap indicator
+    try {
+      await pool.request()
+        .input('machineCode', mssql.NVarChar, machine.machine_code)
+        .input('recordCount', mssql.Int, records.length)
+        .query('UPDATE attendance_machines SET machine_record_count = @recordCount, machine_record_count_updated_at = SYSUTCDATETIME() WHERE machine_code = @machineCode');
+    } catch {}
 
     try {
       await zk.disconnect();

@@ -76,13 +76,13 @@ export class AttendanceProcessService {
       //   1. e_parsed:  direct match on parsed_employee_code = employee_code
       //   2. e_current: follow current_emp_code (NIK-resolved) if parsed row has one
       //   3. e_fallback: try employees by matching current_emp_code directly from
-      //                  hr_employee_current_snapshot (for codes not in employees yet)
+      //                  hr_reference (for codes not in employees yet)
       //
       // Priority: e_current.id > e_parsed.id > NULL (manual review)
-      // Enrichment columns — populated at INSERT time from employees + hr_employee_current_snapshot
+      // Enrichment columns — populated at INSERT time from employees + hr_reference
       // This eliminates the need for a separate post-INSERT enrichment step.
       // Layer 1 (employees): employee_name, hr_status, hr_loc_code, nik
-      // Layer 2 (hr_employee_current_snapshot via NIK): current_emp_name, current_hr_loc_code, current_hr_status
+      // Layer 2 (hr_reference via NIK): current_emp_name, current_hr_loc_code, current_hr_status
       const mappedResult = await execute(
         `INSERT INTO attendance_imports (
           employee_id, employee_code, division_code,
@@ -114,10 +114,10 @@ export class AttendanceProcessService {
           COALESCE(e_current.hr_status, e_parsed.hr_status) AS hr_status,
           COALESCE(e_current.hr_loc_code, e_parsed.hr_loc_code) AS hr_loc_code,
           COALESCE(e_curr_hr.nik, e_parsed.nik) AS nik,
-          -- Layer 2 enrichment from hr_employee_current_snapshot via NIK
-          COALESCE(e_curr_hr.current_emp_name, e_current.employee_name, e_parsed.employee_name) AS current_emp_name,
-          e_curr_hr.current_loc_code AS current_hr_loc_code,
-          e_curr_hr.current_status AS current_hr_status
+          -- Layer 2 enrichment from hr_reference via NIK
+          COALESCE(e_curr_hr.emp_name, e_current.employee_name, e_parsed.employee_name) AS current_emp_name,
+          e_curr_hr.loc_code AS current_hr_loc_code,
+          e_curr_hr.hr_status AS current_hr_status
         FROM attendance_scan_logs s
         -- Step 1: direct match on parsed_employee_code
         LEFT JOIN employees e_parsed ON e_parsed.employee_code = s.parsed_employee_code
@@ -126,9 +126,9 @@ export class AttendanceProcessService {
           ON e_current.employee_code = e_parsed.current_emp_code
           AND e_current.is_active = 1
           AND e_current.employee_code != e_parsed.employee_code
-        -- Layer 2: hr_employee_current_snapshot via NIK
-        LEFT JOIN hr_employee_current_snapshot e_curr_hr
-          ON e_curr_hr.nik = e_parsed.nik
+        -- Layer 2: hr_reference via NIK
+        LEFT JOIN hr_reference e_curr_hr
+          ON e_curr_hr.nik = e_parsed.nik AND e_curr_hr.type = 'current'
         LEFT JOIN divisions d ON d.id = COALESCE(e_current.division_id, e_parsed.division_id)
         WHERE s.sync_batch_id = @batchId
           AND s.mapping_status IN ('MAPPED', 'AUTO_MAPPED')
@@ -219,6 +219,9 @@ export class AttendanceProcessService {
         LEFT JOIN divisions d_direct ON d_direct.id = e_direct.division_id
         WHERE s.sync_batch_id = @batchId
           AND s.mapping_status = 'NEED_REVIEW'
+          -- Short id (<=5 digit) orphans stay raw-only (mode mesin), excluded from imports.
+          -- Direct-match short ids (valid PGE/MILL employees) still allowed via e_direct.id IS NOT NULL.
+          AND (e_direct.id IS NOT NULL OR LEN(LTRIM(RTRIM(s.raw_device_user_id))) > 5)
           -- Skip if already processed:
           -- Direct-lookup record not yet inserted
           AND NOT EXISTS (
@@ -263,7 +266,7 @@ export class AttendanceProcessService {
         console.warn('[processScanLogsForBatch] Layer 1 enrichment failed:', enrichErr);
       }
 
-      // Layer 2: current_emp_name, current_hr_loc_code, current_hr_status from hr_employee_current_snapshot
+      // Layer 2: current_emp_name, current_hr_loc_code, current_hr_status from hr_reference
       try {
         await execute(`
           UPDATE ai SET
@@ -275,8 +278,8 @@ export class AttendanceProcessService {
               h.current_status)
           FROM attendance_imports ai
           INNER JOIN employees e ON e.id = ai.employee_id
-          LEFT JOIN hr_employee_current_snapshot h
-            ON h.nik = e.nik
+          LEFT JOIN hr_reference h
+            ON h.nik = e.nik AND h.type = 'current'
           WHERE ai.batch_id = @batchId
             AND ai.current_emp_name IS NULL
         `, [{ name: "batchId", type: sql.BigInt, value: batchId }]);
@@ -374,10 +377,10 @@ export class AttendanceProcessService {
         const hrLocCode = emp?.hr_loc_code ?? null;
         const nik = emp?.nik ?? null;
 
-        // Layer 2: current_emp_name from hr_employee_current_snapshot via NIK
+        // Layer 2: current_emp_name from hr_reference via NIK
         const hrSnapshot = nik ? await query<any>(
-          `SELECT TOP 1 current_emp_name, current_loc_code, current_status
-           FROM hr_employee_current_snapshot WHERE nik = @nik`,
+          `SELECT TOP 1 emp_name, loc_code, hr_status
+           FROM hr_reference WHERE nik = @nik AND type = 'current'`,
           [{ name: "nik", type: sql.NVarChar, value: nik }]
         ) : [];
         const hrRow = hrSnapshot?.[0];
@@ -456,9 +459,10 @@ export class AttendanceProcessService {
                 AND ai.attendance_date = s.scan_date
                 AND ai.source_reference = s.machine_code
             )
-            -- STEP 2: skip if orphan already inserted
+            -- STEP 2: skip if orphan already inserted (short id orphans excluded — raw-only)
             OR (
               e_direct.id IS NULL
+              AND LEN(LTRIM(RTRIM(s.raw_device_user_id))) > 5
               AND NOT EXISTS (
                 SELECT 1 FROM attendance_imports ai
                 WHERE ai.employee_code = 'MANUAL_' + s.raw_device_user_id
@@ -512,7 +516,8 @@ export class AttendanceProcessService {
           );
         }
         // STEP 2: True orphan — route to MANUAL_REVIEW
-        else {
+        // Short id (<=5 digit) orphans stay raw-only (mode mesin), excluded from imports.
+        else if (String(row.raw_device_user_id ?? '').trim().length > 5) {
           await execute(
             `INSERT INTO attendance_imports (
               employee_id, employee_code, division_code, attendance_date,
@@ -535,6 +540,7 @@ export class AttendanceProcessService {
             ]
           );
         }
+        // Short id orphan (<=5): stay in raw only, skip imports
         reviewProcessed++;
       }
 

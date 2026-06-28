@@ -235,10 +235,12 @@ class SchedulerService {
       this.startGlobalScheduler();
     }
 
-    // Start individual jobs
-    for (const job of this.config.jobs) {
-      if (job.enabled) {
-        this.startJob(job.name);
+    // Start individual jobs (only if scheduler globally enabled)
+    if (this.config.enabled) {
+      for (const job of this.config.jobs) {
+        if (job.enabled) {
+          this.startJob(job.name);
+        }
       }
     }
   }

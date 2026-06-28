@@ -330,11 +330,12 @@ route('GET', '/api/divisions/:code/machines', async (ctx) => {
       m.location_name,
       m.ip_address,
       COUNT(s.id)                                          AS scan_count,
-      COUNT(DISTINCT s.parsed_employee_code)                AS unique_employees,
+      COUNT(DISTINCT sm.parsed_emp_code)                AS unique_employees,
       MAX(s.scan_time)                                      AS last_scan
     FROM attendance_machines m
-    INNER JOIN attendance_scan_logs s ON s.machine_code = m.machine_code
-    WHERE s.parsed_division_code = @code
+    INNER JOIN attendance_raw s ON s.machine_code = m.machine_code
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+    WHERE sm.loc_code = @code
     GROUP BY m.machine_code, m.location_name, m.ip_address
     ORDER BY scan_count DESC
   `, [{ name: 'code', type: sql.NVarChar, value: code }]);
@@ -366,7 +367,7 @@ route('GET', '/api/divisions/:code/scans', async (ctx) => {
   const total = countResult[0]?.total ?? 0;
 
   const logs = await query<any>(`
-    SELECT TOP ${limit}
+    SELECT
       raw_device_user_id,
       parsed_employee_code,
       machine_code,

@@ -99,6 +99,27 @@ function isWeekend(date: string) {
   return day === 0 || day === 6;
 }
 
+function isPastDate(date: string) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return new Date(date + 'T00:00:00') < today;
+}
+
+function formatWorkDuration(checkInAt?: string | null, checkOutAt?: string | null): string {
+  if (!checkInAt || !checkOutAt) return '-';
+  const start = new Date(checkInAt).getTime();
+  const end = new Date(checkOutAt).getTime();
+  if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return '-';
+  const totalMinutes = Math.round((end - start) / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}j ${minutes}m`;
+}
+
+function formatTimeWib(value?: string | null): string {
+  return value ? new Date(value).toLocaleTimeString('id-ID') : '-';
+}
+
 export function AttendanceMatrixPage() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
@@ -326,17 +347,21 @@ export function AttendanceMatrixPage() {
                           <span className="meta-length" title="Panjang ID dari mesin">({row.rawIdLength}d)</span>
                         )}
                       </td>
-                      {row.days.map((cell) => (
+                      {row.days.map((cell) => {
+                        const isAlfa = cell.status === 'NO_DATA' && isPastDate(cell.date) && cell.expectedStatus === 'WORKDAY' && !cell.holidayName;
+                        const displayStatus = isAlfa ? 'TIDAK_HADIR' : cell.status;
+                        return (
                         <td key={cell.date} className="matrix-cell-wrap">
                           <button
-                            className={`matrix-cell status-${cell.status.toLowerCase()} ${cell.qualityFlags.length > 0 ? 'flagged' : ''}`}
+                            className={`matrix-cell status-${displayStatus.toLowerCase()} ${cell.qualityFlags.length > 0 ? 'flagged' : ''}`}
                             onClick={() => setSelectedCell({ row, cell })}
-                            title={`${row.employeeName} · ${cell.date} · ${STATUS_LABEL[cell.status]} · ${cell.source} · ${cell.scanCount} scan`}
+                            title={`${row.employeeName} · ${cell.date} · ${STATUS_LABEL[displayStatus] ?? displayStatus} · ${cell.source} · ${cell.scanCount} scan · In: ${formatTimeWib(cell.checkInAt)} · Out: ${formatTimeWib(cell.checkOutAt)}${isAlfa ? ' · ALFA' : ''}`}
                           >
-                            {attendanceStatusCode(cell.status)}
+                            {attendanceStatusCode(displayStatus)}
                           </button>
                         </td>
-                      ))}
+                        );
+                      })}
                       <td className="summary-col success">{row.summary.present}</td>
                       <td className="summary-col muted">{row.summary.noData}</td>
                       <td className="summary-col muted">{row.summary.offDay}</td>
@@ -393,8 +418,9 @@ export function AttendanceMatrixPage() {
             <div className="matrix-detail-grid">
               <div><span>Check In</span><strong>{selectedCell.cell.checkInAt ? new Date(selectedCell.cell.checkInAt).toLocaleTimeString('id-ID') : '-'}</strong></div>
               <div><span>Check Out</span><strong>{selectedCell.cell.checkOutAt ? new Date(selectedCell.cell.checkOutAt).toLocaleTimeString('id-ID') : '-'}</strong></div>
-              <div><span>Machine</span><strong>{selectedCell.cell.machineCode ?? '-'}</strong></div>
-              <div><span>Raw ID</span><strong>{selectedCell.cell.rawDeviceUserId ?? '-'}</strong></div>
+              <div><span>Durasi</span><strong>{formatWorkDuration(selectedCell.cell.checkInAt, selectedCell.cell.checkOutAt)}</strong></div>
+              <div><span>Machine</span><strong>{(cellDetail?.raw_logs?.[0]?.machine_code ?? selectedCell.cell.machineCode) ?? '-'}</strong></div>
+              <div><span>Raw ID</span><strong>{(cellDetail?.raw_logs?.[0]?.raw_device_user_id ?? selectedCell.cell.rawDeviceUserId) ?? '-'}</strong></div>
               <div><span>Expected</span><strong>{selectedCell.cell.expectedLabel ?? selectedCell.cell.expectedStatus ?? '-'}</strong></div>
               <div><span>Trace</span><strong>{selectedCell.cell.traceState ?? '-'}</strong></div>
             </div>

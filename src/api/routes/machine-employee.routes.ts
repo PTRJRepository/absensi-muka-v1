@@ -20,14 +20,15 @@ function rawIdLengthSql(alias = 's') {
 }
 
 /**
- * Employee code: priority cascade from attendance_scan_logs.
- * 1. parsed_employee_code from scan log (via SSOT parser)
+ * Employee code: priority cascade.
+ * 1. sm.parsed_emp_code from scan_map (SSOT parser result)
  * 2. employees.current_emp_code via zkteco_user_id lookup
- * 3. employees.current_emp_code via parsed_employee_code → employee_code lookup
+ * 3. employees.current_emp_code via parsed_emp_code → employee_code lookup
+ * Requires: LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
  */
 function resolvedEmployeeCodeSql(alias = 's') {
   return `COALESCE(
-    NULLIF(LTRIM(RTRIM(${alias}.parsed_employee_code)), ''),
+    NULLIF(LTRIM(RTRIM(sm.parsed_emp_code)), ''),
     (
       SELECT TOP 1 e.current_emp_code
       FROM employees e
@@ -38,7 +39,7 @@ function resolvedEmployeeCodeSql(alias = 's') {
     (
       SELECT TOP 1 e.current_emp_code
       FROM employees e
-      WHERE LTRIM(RTRIM(e.employee_code)) = LTRIM(RTRIM(${alias}.parsed_employee_code))
+      WHERE LTRIM(RTRIM(e.employee_code)) = LTRIM(RTRIM(sm.parsed_emp_code))
         AND e.current_emp_code IS NOT NULL
       ORDER BY e.id DESC
     )
@@ -47,8 +48,9 @@ function resolvedEmployeeCodeSql(alias = 's') {
 
 /**
  * Employee name: priority cascade.
- * 1. employees.employee_name via zkteco_user_id or employee_code lookup
- * 2. attendance_scan_logs.zkteco_user_name (from machine)
+ * 1. employees.employee_name via zkteco_user_id or parsed_emp_code lookup
+ * 2. s.zkteco_user_name (from machine, raw)
+ * Requires: LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
  */
 function resolvedEmployeeNameSql(alias = 's') {
   return `COALESCE(
@@ -62,7 +64,7 @@ function resolvedEmployeeNameSql(alias = 's') {
     (
       SELECT TOP 1 e.employee_name
       FROM employees e
-      WHERE LTRIM(RTRIM(e.employee_code)) = LTRIM(RTRIM(${alias}.parsed_employee_code))
+      WHERE LTRIM(RTRIM(e.employee_code)) = LTRIM(RTRIM(sm.parsed_emp_code))
         AND e.employee_name IS NOT NULL
       ORDER BY e.id DESC
     ),
@@ -154,13 +156,14 @@ route('GET', '/api/monitoring/machine/:code/employees', async (ctx) => {
       mur.last_seen_at,
       COUNT(sl.id) AS occurrence_count,
       MAX(sl.scan_time) AS last_seen,
-      MAX(sl.parsed_employee_code) AS parsed_employee_code,
-      MAX(sl.mapping_status) AS mapping_status,
+      MAX(sm.parsed_emp_code) AS parsed_employee_code,
+      MAX(sm.map_status) AS mapping_status,
       LEN(LTRIM(RTRIM(CAST(mur.machine_user_id AS NVARCHAR(100))))) AS raw_id_length
-    FROM machine_user_raw mur
-    LEFT JOIN attendance_scan_logs sl
+    FROM attendance_raw_users mur
+    LEFT JOIN attendance_raw sl
       ON sl.machine_id = mur.machine_id
      AND sl.raw_device_user_id = mur.machine_user_id
+    LEFT JOIN scan_map sm ON sm.scan_log_id = sl.id
     WHERE mur.machine_id = @machineId
     GROUP BY mur.machine_user_raw_id, mur.machine_user_id, mur.user_name,
              mur.machine_raw_user_name, mur.role, mur.card_no,
@@ -182,8 +185,8 @@ route('GET', '/api/monitoring/machine/:code/employees', async (ctx) => {
         s.machine_code,
         MAX(s.scan_time) AS last_scan
       FROM employees e
-      INNER JOIN attendance_scan_logs s ON s.parsed_employee_code = e.employee_code
-        AND s.machine_code = @code
+      INNER JOIN attendance_raw s ON s.machine_code = @code
+        AND s.id IN (SELECT scan_log_id FROM scan_map WHERE parsed_emp_code = e.employee_code)
       LEFT JOIN divisions d ON d.id = e.division_id
       GROUP BY e.employee_code, e.employee_name, d.division_code, s.machine_code
       ORDER BY last_scan DESC
@@ -223,7 +226,8 @@ route('GET', '/api/monitoring/machine/:code/raw-data', async (ctx) => {
 
   const countRow = await query<any>(`
     SELECT COUNT(DISTINCT s.raw_device_user_id) AS total
-    FROM attendance_scan_logs s
+    FROM attendance_raw s
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
     ${where}
   `, [{ name: 'code', type: sql.NVarChar, value: code }]);
   const total = countRow[0]?.total ?? 0;
@@ -232,16 +236,17 @@ route('GET', '/api/monitoring/machine/:code/raw-data', async (ctx) => {
     SELECT TOP ${limit}
       s.raw_device_user_id AS raw_id,
       s.raw_user_sn,
-      s.parsed_employee_code,
+      sm.parsed_emp_code AS parsed_employee_code,
       NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
       ${resolvedEmployeeCodeSql()} AS employee_code,
       ${resolvedEmployeeNameSql()} AS employee_name,
-      s.parsed_division_code,
+      sm.loc_code AS parsed_division_code,
       CASE WHEN ${resolvedEmployeeCodeSql()} IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
       ${resolvedMappingReasonSql()} AS mapping_reason,
       ${rawIdLengthSql()} AS raw_id_length,
       s.scan_time, s.scan_date, s.event_type, s.verify_type
-    FROM attendance_scan_logs s
+    FROM attendance_raw s
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
     ${where}
     ORDER BY s.scan_time DESC
   `, [{ name: 'code', type: sql.NVarChar, value: code }]);
@@ -270,7 +275,8 @@ route('GET', '/api/monitoring/machine/:code/user/:rawId/attendance', async (ctx)
       ${resolvedMappingReasonSql()} AS mapping_reason,
       MIN(s.event_type) AS event_type,
       MIN(s.verify_type) AS verify_type
-    FROM attendance_scan_logs s
+    FROM attendance_raw s
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
     WHERE s.machine_code = @code
       AND s.raw_device_user_id = @rawId
     GROUP BY CAST(s.scan_date AS DATE), ${resolvedEmployeeCodeSql()}

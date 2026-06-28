@@ -1,6 +1,6 @@
 /**
  * Sync HR Employee Current Snapshot
- * Purpose: Populate hr_employee_current_snapshot and employee_code_history
+ * Purpose: Populate hr_reference table (unified from hr_employee_current_snapshot and employee_code_history)
  * Schedule: Run daily or on-demand
  * Usage: node dist/scripts/sync-hr-current-snapshot.js [--dry-run] [--full-sync]
  *
@@ -203,23 +203,20 @@ async function main(): Promise<void> {
     log('Step 2: Preparing destination tables...');
 
     if (fullSync) {
-      log('  Full sync mode: Truncating tables...');
+      log('  Full sync mode: Truncating hr_reference table...');
       if (!dryRun) {
-        await localPool.request().query(`
-          TRUNCATE TABLE dbo.hr_employee_current_snapshot;
-          TRUNCATE TABLE dbo.employee_code_history;
-        `);
-        log('  Tables truncated successfully');
+        await localPool.request().query(`TRUNCATE TABLE dbo.hr_reference`);
+        log('  Table truncated successfully');
       } else {
-        log('  [DRY RUN] Tables would be truncated');
+        log('  [DRY RUN] Table would be truncated');
       }
     } else {
-      log('  Incremental sync mode: Tables will be upserted');
+      log('  Incremental sync mode: hr_reference will be upserted');
     }
 
-    // Step 3: Populate employee_code_history (ALL rows)
+    // Step 3: Populate hr_reference with type='history' (ALL rows)
     log('');
-    log('Step 3: Populating employee_code_history...');
+    log('Step 3: Populating hr_reference with type=history...');
 
     const historyRows = allRows.filter(r => r.nik_normalized); // Skip rows without NIK
 
@@ -234,6 +231,7 @@ async function main(): Promise<void> {
         const batch = historyRows.slice(i, i + batchSize);
         const values = batch.map(row => {
           return `(
+            'history',
             N'${escapeSqlString(row.nik_normalized)}',
             N'${escapeSqlString(row.EmpCode)}',
             N'${escapeSqlString(row.EmpName)}',
@@ -242,15 +240,17 @@ async function main(): Promise<void> {
             ${row.CreateDate ? `'${formatDateTime(row.CreateDate)}'` : 'NULL'},
             ${row.UpdateDate ? `'${formatDateTime(row.UpdateDate)}'` : 'NULL'},
             ${Number(row.current_rank) === 1 ? 1 : 0},
+            NULL,
+            NULL,
             N'db_ptrj.dbo.HR_EMPLOYEE',
             SYSUTCDATETIME()
           )`;
         }).join(',\n');
 
         const insertQuery = `
-          INSERT INTO dbo.employee_code_history (
-            nik, emp_code, emp_name, loc_code, hr_status,
-            create_date, update_date, is_current, source_table, synced_at
+          INSERT INTO dbo.hr_reference (
+            type, nik, emp_code, emp_name, loc_code, hr_status,
+            create_date, update_date, is_current, is_ambiguous, ambiguity_reason, source_table, synced_at
           )
           VALUES ${values}
         `;
@@ -260,18 +260,19 @@ async function main(): Promise<void> {
         } else {
           // For incremental, use MERGE
           await localPool.request().query(`
-            MERGE INTO dbo.employee_code_history AS target
+            MERGE INTO dbo.hr_reference AS target
             USING (
               SELECT
-                nik, emp_code, emp_name, loc_code, hr_status,
-                create_date, update_date, is_current, source_table, synced_at
+                type, nik, emp_code, emp_name, loc_code, hr_status,
+                create_date, update_date, is_current, is_ambiguous, ambiguity_reason, source_table, synced_at
               FROM (
                 VALUES ${values}
               ) AS src (
-                nik, emp_code, emp_name, loc_code, hr_status,
-                create_date, update_date, is_current, source_table, synced_at
+                type, nik, emp_code, emp_name, loc_code, hr_status,
+                create_date, update_date, is_current, is_ambiguous, ambiguity_reason, source_table, synced_at
               )
             ) AS source ON (
+              target.type = 'history' AND
               target.nik = source.nik AND
               target.emp_code = source.emp_code AND
               target.source_table = 'db_ptrj.dbo.HR_EMPLOYEE'
@@ -286,8 +287,8 @@ async function main(): Promise<void> {
                 is_current = source.is_current,
                 synced_at = source.synced_at
             WHEN NOT MATCHED THEN
-              INSERT (nik, emp_code, emp_name, loc_code, hr_status, create_date, update_date, is_current, source_table, synced_at)
-              VALUES (source.nik, source.emp_code, source.emp_name, source.loc_code, source.hr_status, source.create_date, source.update_date, source.is_current, source.source_table, source.synced_at);
+              INSERT (type, nik, emp_code, emp_name, loc_code, hr_status, create_date, update_date, is_current, is_ambiguous, ambiguity_reason, source_table, synced_at)
+              VALUES (source.type, source.nik, source.emp_code, source.emp_name, source.loc_code, source.hr_status, source.create_date, source.update_date, source.is_current, source.is_ambiguous, source.ambiguity_reason, source.source_table, source.synced_at);
           `);
         }
 
@@ -298,9 +299,9 @@ async function main(): Promise<void> {
       }
     }
 
-    // Step 4: Populate hr_employee_current_snapshot (only current rows)
+    // Step 4: Populate hr_reference with type='current' (only current rows)
     log('');
-    log('Step 4: Populating hr_employee_current_snapshot...');
+    log('Step 4: Populating hr_reference with type=current...');
 
     // Get current rows (current_rank = 1)
     const currentRows = allRows.filter(r => Number(r.current_rank) === 1 && r.nik_normalized);
@@ -327,11 +328,11 @@ async function main(): Promise<void> {
     log(`  Ambiguous NIKs (multiple active rows): ${ambiguousNik}`);
 
     if (dryRun) {
-      log(`  [DRY RUN] Would insert ${currentRows.length} snapshot rows`);
+      log(`  [DRY RUN] Would insert ${currentRows.length} current rows`);
     } else {
-      // Clear and repopulate snapshot table
+      // Clear current rows and repopulate
       if (fullSync) {
-        await localPool.request().query('DELETE FROM dbo.hr_employee_current_snapshot');
+        await localPool.request().query("DELETE FROM dbo.hr_reference WHERE type = 'current'");
       }
 
       // Batch insert
@@ -348,6 +349,7 @@ async function main(): Promise<void> {
             : null;
 
           return `(
+            'current',
             N'${escapeSqlString(row.nik_normalized)}',
             N'${escapeSqlString(row.EmpCode)}',
             N'${escapeSqlString(row.EmpName)}',
@@ -355,19 +357,18 @@ async function main(): Promise<void> {
             N'${escapeSqlString(row.Status)}',
             ${row.CreateDate ? `'${formatDateTime(row.CreateDate)}'` : 'NULL'},
             ${row.UpdateDate ? `'${formatDateTime(row.UpdateDate)}'` : 'NULL'},
-            ${stats.activeCount},
-            ${stats.rowCount},
+            NULL,
             ${isAmbiguous},
             ${ambiguityReason ? `N'${escapeSqlString(ambiguityReason)}'` : 'NULL'},
+            NULL,
             SYSUTCDATETIME()
           )`;
         }).join(',\n');
 
         const insertQuery = `
-          INSERT INTO dbo.hr_employee_current_snapshot (
-            nik, current_emp_code, current_emp_name, current_loc_code, current_status,
-            current_create_date, current_update_date, active_count, row_count,
-            is_ambiguous, ambiguity_reason, synced_at
+          INSERT INTO dbo.hr_reference (
+            type, nik, emp_code, emp_name, loc_code, hr_status,
+            create_date, update_date, is_current, is_ambiguous, ambiguity_reason, source_table, synced_at
           )
           VALUES ${values}
         `;
@@ -377,38 +378,35 @@ async function main(): Promise<void> {
         } else {
           // For incremental, use MERGE
           await localPool.request().query(`
-            MERGE INTO dbo.hr_employee_current_snapshot AS target
+            MERGE INTO dbo.hr_reference AS target
             USING (
               SELECT * FROM (
                 VALUES ${values}
               ) AS src (
-                nik, current_emp_code, current_emp_name, current_loc_code, current_status,
-                current_create_date, current_update_date, active_count, row_count,
-                is_ambiguous, ambiguity_reason, synced_at
+                type, nik, emp_code, emp_name, loc_code, hr_status,
+                create_date, update_date, is_current, is_ambiguous, ambiguity_reason, source_table, synced_at
               )
-            ) AS source ON target.nik = source.nik
+            ) AS source ON target.type = 'current' AND target.nik = source.nik
             WHEN MATCHED THEN
               UPDATE SET
-                current_emp_code = source.current_emp_code,
-                current_emp_name = source.current_emp_name,
-                current_loc_code = source.current_loc_code,
-                current_status = source.current_status,
-                current_create_date = source.current_create_date,
-                current_update_date = source.current_update_date,
-                active_count = source.active_count,
-                row_count = source.row_count,
+                emp_code = source.emp_code,
+                emp_name = source.emp_name,
+                loc_code = source.loc_code,
+                hr_status = source.hr_status,
+                create_date = source.create_date,
+                update_date = source.update_date,
                 is_ambiguous = source.is_ambiguous,
                 ambiguity_reason = source.ambiguity_reason,
                 synced_at = SYSUTCDATETIME()
             WHEN NOT MATCHED THEN
-              INSERT (nik, current_emp_code, current_emp_name, current_loc_code, current_status, current_create_date, current_update_date, active_count, row_count, is_ambiguous, ambiguity_reason, synced_at)
-              VALUES (source.nik, source.current_emp_code, source.current_emp_name, source.current_loc_code, source.current_status, source.current_create_date, source.current_update_date, source.active_count, source.row_count, source.is_ambiguous, source.ambiguity_reason, source.synced_at);
+              INSERT (type, nik, emp_code, emp_name, loc_code, hr_status, create_date, update_date, is_current, is_ambiguous, ambiguity_reason, source_table, synced_at)
+              VALUES (source.type, source.nik, source.emp_code, source.emp_name, source.loc_code, source.hr_status, source.create_date, source.update_date, source.is_current, source.is_ambiguous, source.ambiguity_reason, source.source_table, source.synced_at);
           `);
         }
 
         insertedSnapshot += batch.length;
         if (insertedSnapshot % 1000 === 0 || insertedSnapshot === currentRows.length) {
-          log(`  Inserted ${insertedSnapshot}/${currentRows.length} snapshot rows`);
+          log(`  Inserted ${insertedSnapshot}/${currentRows.length} current rows`);
         }
       }
     }
@@ -422,12 +420,12 @@ async function main(): Promise<void> {
 
     if (!dryRun) {
       const snapshotCount = await localPool.request().query<{ cnt: number }>(
-        'SELECT COUNT(*) AS cnt FROM dbo.hr_employee_current_snapshot'
+        "SELECT COUNT(*) AS cnt FROM dbo.hr_reference WHERE type = 'current'"
       );
       snapshotRows = snapshotCount.recordset[0]?.cnt ?? 0;
 
       const historyCount = await localPool.request().query<{ cnt: number }>(
-        'SELECT COUNT(*) AS cnt FROM dbo.employee_code_history'
+        "SELECT COUNT(*) AS cnt FROM dbo.hr_reference WHERE type = 'history'"
       );
       historyRowsCount = historyCount.recordset[0]?.cnt ?? 0;
     }

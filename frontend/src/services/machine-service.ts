@@ -28,8 +28,8 @@ export function normalizeMachine(machine: Partial<Machine> & Record<string, unkn
   const userCount = toNumber(machine.user_count ?? machine.userCount ?? machine.user_count_today ?? machine.total_users);
   const qualityScore = toNumber(machine.quality_score ?? machine.qualityScore, scanToday > 0 ? 90 : 0);
   const status = normalizeMachineStatus({
-    access_status: toStringOrNull(machine.access_status),
-    status: toStringOrNull(machine.status),
+    access_status: toStringOrNull(machine.real_access_status ?? machine.access_status),
+    status: toStringOrNull(machine.display_status ?? machine.status),
     is_active: machine.is_active as boolean | number | null | undefined,
     last_sync_at: toStringOrNull(machine.last_sync_at),
     scan_count_today: scanToday,
@@ -46,7 +46,10 @@ export function normalizeMachine(machine: Partial<Machine> & Record<string, unkn
     divisionCode: String(machine.division_code ?? machine.loc_code ?? ''),
     networkGroup: NETWORK_GROUPS[machineCode] ?? 'Other Network',
     status,
-    accessStatus: String(machine.access_status ?? status),
+    accessStatus: String(machine.real_access_status ?? machine.access_status ?? status),
+    accessLatencyMs: machine.access_latency_ms != null ? toNumber(machine.access_latency_ms) : null,
+    machineRecordCount: machine.machine_record_count != null ? toNumber(machine.machine_record_count) : null,
+    dbRecordCount: toNumber(machine.db_record_count, 0),
     dataSource: String(machine.data_source ?? ''),
     lastSeenAt: toStringOrNull(machine.last_seen_at ?? machine.last_sync_at),
     lastSyncAt: toStringOrNull(machine.last_sync_at),

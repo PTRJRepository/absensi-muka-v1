@@ -31,11 +31,11 @@ route('GET', '/api/attendance/daily', async (ctx) => {
   const rows = await query(`
     SELECT
        employee_code, employee_name, division_code, gang_code,
-       attendance_date, final_status AS attendance_status,
-       final_check_in AS check_in_at, final_check_out AS check_out_at,
+       attendance_date, attendance_status,
+       check_in_at, check_out_at,
        source, is_leave, is_sick, is_holiday, overtime_hours,
-       zkteco_machine_code AS machine_code
-     FROM vw_attendance_monthly_matrix
+       source AS machine_code
+     FROM vw_attendance_final
      WHERE attendance_date=@date
        AND (@division IS NULL OR division_code=@division)
        AND (@gang IS NULL OR gang_code=@gang)
@@ -58,7 +58,7 @@ route('GET', '/api/attendance/monthly', async (ctx) => {
   const month = Number(ctx.query.get('month') ?? new Date().getMonth() + 1);
   const division = ctx.query.get('divisionCode');
   const rows = await query(`
-    SELECT * FROM vw_attendance_monthly_summary_v2
+    SELECT * FROM vw_attendance_monthly_summary
      WHERE attendance_year=@year AND attendance_month=@month
        AND (@division IS NULL OR division_code=@division)
      ORDER BY employee_code`,
@@ -176,7 +176,7 @@ function matrixCurrentHrLocCodeSql(canonicalAlias = 'canonical', employeeAlias =
     NULLIF(${employeeAlias}.current_hr_loc_code, ''),
     NULLIF(${employeeAlias}.hr_loc_code, ''),
     NULLIF(${viewAlias}.division_code, ''),
-    NULLIF(${viewAlias}.zkteco_machine_code, '')
+    NULLIF(${viewAlias}.source, '')
   )`;
 }
 
@@ -230,7 +230,7 @@ async function loadAvailableMonthsRows() {
     SELECT DISTINCT
       YEAR(CAST(attendance_date AS DATE)) AS attendance_year,
       MONTH(CAST(attendance_date AS DATE)) AS attendance_month
-    FROM vw_attendance_monthly_matrix
+    FROM vw_attendance_final
     ORDER BY attendance_year DESC, attendance_month DESC
   `);
   if (fromView.length > 0) return fromView;
@@ -244,7 +244,7 @@ async function loadAvailableMonthsRows() {
       FROM attendance_imports
       UNION
       SELECT CAST(scan_date AS DATE) AS attendance_date
-      FROM attendance_scan_logs
+      FROM attendance_raw
     ) src
     ORDER BY attendance_year DESC, attendance_month DESC
   `);
@@ -466,48 +466,48 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
           COALESCE(NULLIF(canonical.current_emp_code, ''), NULLIF(e.current_emp_code, ''), NULLIF(e.employee_code, ''), NULLIF(v.employee_code, '')) AS current_emp_code,
           COALESCE(NULLIF(canonical.current_emp_code, ''), NULLIF(e.current_emp_code, ''), NULLIF(e.employee_code, ''), NULLIF(v.employee_code, '')) AS employee_code,
           COALESCE(NULLIF(canonical.current_emp_name, ''), NULLIF(canonical.employee_name, ''), NULLIF(e.current_emp_name, ''), NULLIF(e.employee_name, ''), v.employee_name) AS employee_name,
-          COALESCE(NULLIF(canonical.current_hr_loc_code, ''), NULLIF(canonical.hr_loc_code, ''), NULLIF(e.current_hr_loc_code, ''), NULLIF(e.hr_loc_code, ''), v.division_code, v.zkteco_machine_code) AS division_code,
-          COALESCE(d_hr.division_name, v.division_name, v.zkteco_machine_code) AS division_name,
-          COALESCE(NULLIF(canonical.current_hr_loc_code, ''), NULLIF(canonical.hr_loc_code, ''), NULLIF(e.current_hr_loc_code, ''), NULLIF(e.hr_loc_code, ''), v.division_code, v.zkteco_machine_code) AS current_hr_loc_code,
+          COALESCE(NULLIF(canonical.current_hr_loc_code, ''), NULLIF(canonical.hr_loc_code, ''), NULLIF(e.current_hr_loc_code, ''), NULLIF(e.hr_loc_code, ''), v.division_code, v.source) AS division_code,
+          COALESCE(d_hr.division_name, v.division_name, v.source) AS division_name,
+          COALESCE(NULLIF(canonical.current_hr_loc_code, ''), NULLIF(canonical.hr_loc_code, ''), NULLIF(e.current_hr_loc_code, ''), NULLIF(e.hr_loc_code, ''), v.division_code, v.source) AS current_hr_loc_code,
           COALESCE(canonical.id, e.id, v.employee_id) AS employee_id,
           v.attendance_date,
-          COALESCE(v.final_status, CASE WHEN v.final_check_in IS NOT NULL THEN 'HADIR' ELSE 'NO_DATA' END) AS final_status,
+          COALESCE(v.attendance_status, CASE WHEN v.check_in_at IS NOT NULL THEN 'HADIR' ELSE 'NO_DATA' END) AS final_status,
           CASE
             WHEN v.source IS NOT NULL AND v.source != 'NO_DATA' THEN v.source
-            WHEN v.final_check_in IS NOT NULL THEN 'ZKTECO'
+            WHEN v.check_in_at IS NOT NULL THEN 'ZKTECO'
             ELSE 'NO_DATA'
           END AS source,
-          v.final_check_in,
-          v.final_check_out,
+          v.check_in_at AS final_check_in,
+          v.check_out_at AS final_check_out,
           CASE
-            WHEN v.final_check_in IS NOT NULL AND v.final_check_out IS NOT NULL THEN 2
-            WHEN v.final_check_in IS NOT NULL THEN 1
+            WHEN v.check_in_at IS NOT NULL AND v.check_out_at IS NOT NULL THEN 2
+            WHEN v.check_in_at IS NOT NULL THEN 1
             ELSE 0
           END AS scan_count,
-          COALESCE(CAST(v.zkteco_machine_code AS NVARCHAR(30)), NULLIF(e.raw_device_user_id, ''), NULLIF(e.zkteco_user_id, '')) AS machine_code,
+          COALESCE(NULLIF(v.source_reference, ''), CAST(v.source AS NVARCHAR(30)), NULLIF(e.raw_device_user_id, ''), NULLIF(e.zkteco_user_id, '')) AS machine_code,
           COALESCE(NULLIF(e.raw_device_user_id, ''), NULLIF(e.zkteco_user_id, '')) AS raw_device_user_id,
           CASE WHEN v.source = 'MANUAL_CORRECTION' THEN 1 ELSE 0 END AS has_manual_correction,
           CAST(COALESCE(v.is_leave, 0) AS INT) AS is_leave,
           CAST(COALESCE(v.is_sick, 0) AS INT) AS is_sick,
           CAST(COALESCE(v.is_holiday, 0) AS INT) AS is_holiday,
-          COALESCE(v.final_status, CASE WHEN v.final_check_in IS NOT NULL THEN 'HADIR' ELSE 'NO_DATA' END) AS ui_status,
-          CASE WHEN v.final_status IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
+          COALESCE(v.attendance_status, CASE WHEN v.check_in_at IS NOT NULL THEN 'HADIR' ELSE 'NO_DATA' END) AS ui_status,
+          CASE WHEN v.attendance_status IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
           ROW_NUMBER() OVER (
             PARTITION BY COALESCE(NULLIF(canonical.current_emp_code, ''), NULLIF(e.current_emp_code, ''), NULLIF(e.employee_code, ''), NULLIF(v.employee_code, '')), v.attendance_date
             ORDER BY
               CASE WHEN v.source = 'MANUAL_CORRECTION' THEN 0 ELSE 1 END,
-              CASE WHEN v.final_check_in IS NOT NULL THEN 0 ELSE 1 END,
+              CASE WHEN v.check_in_at IS NOT NULL THEN 0 ELSE 1 END,
               e.employee_code
           ) AS identity_rn
-        FROM vw_attendance_monthly_matrix v
+        FROM vw_attendance_final v
         INNER JOIN candidate_codes cc ON cc.employee_code = v.employee_code
         LEFT JOIN employees e ON e.employee_code = v.employee_code
         LEFT JOIN employees canonical ON canonical.employee_code = COALESCE(NULLIF(e.current_emp_code, ''), v.employee_code)
         LEFT JOIN divisions d_hr ON d_hr.division_code = COALESCE(NULLIF(canonical.current_hr_loc_code, ''), NULLIF(canonical.hr_loc_code, ''), NULLIF(e.current_hr_loc_code, ''), NULLIF(e.hr_loc_code, ''))
         WHERE v.attendance_date >= @startDate
           AND v.attendance_date <= EOMONTH(@startDate)
-          AND (@division IS NULL OR COALESCE(NULLIF(canonical.current_hr_loc_code, ''), NULLIF(canonical.hr_loc_code, ''), NULLIF(e.current_hr_loc_code, ''), NULLIF(e.hr_loc_code, ''), v.division_code, v.zkteco_machine_code) = @division)
-          AND (@machineCode IS NULL OR COALESCE(CAST(v.zkteco_machine_code AS NVARCHAR(30)), NULLIF(e.raw_device_user_id, ''), NULLIF(e.zkteco_user_id, '')) = @machineCode)
+          AND (@division IS NULL OR COALESCE(NULLIF(canonical.current_hr_loc_code, ''), NULLIF(canonical.hr_loc_code, ''), NULLIF(e.current_hr_loc_code, ''), NULLIF(e.hr_loc_code, ''), v.division_code, v.source) = @division)
+          AND (@machineCode IS NULL OR COALESCE(CAST(v.source AS NVARCHAR(30)), NULLIF(e.raw_device_user_id, ''), NULLIF(e.zkteco_user_id, '')) = @machineCode)
       ),
       deduped_rows AS (
         SELECT *
@@ -563,16 +563,17 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
       WITH scan_rows AS (
         SELECT
           s.raw_device_user_id,
-          s.parsed_employee_code,
-          COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS employee_code,
+          sm.parsed_emp_code AS parsed_employee_code,
+          COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) AS employee_code,
           NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
           s.machine_code,
           CAST(s.scan_date AS DATE) AS attendance_date,
-          COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
-          s.mapping_status,
-          s.mapping_reason,
+          s.raw_record_time AS scan_time,
+          sm.map_status AS mapping_status,
+          sm.map_reason AS mapping_reason,
           LEN(LTRIM(RTRIM(CAST(s.raw_device_user_id AS NVARCHAR(50))))) AS raw_id_length
-        FROM attendance_scan_logs s
+        FROM attendance_raw s
+        LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
         WHERE s.scan_date >= @startDate
           AND s.scan_date <= EOMONTH(@startDate)
           AND (@machineCode IS NULL OR s.machine_code = @machineCode)
@@ -580,8 +581,8 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
             @searchRaw = ''
             OR s.raw_device_user_id = @searchRaw
             OR s.raw_device_user_id LIKE @search
-            OR s.parsed_employee_code LIKE @search
-            OR COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) LIKE @search
+            OR sm.parsed_emp_code LIKE @search
+            OR COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) LIKE @search
             OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search
           )
       ),
@@ -664,29 +665,30 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
       page,
       page_size: pageSize,
       total,
-      source: 'attendance_scan_logs',
+      source: 'attendance_raw',
       mode,
       period: `${year}-${String(month).padStart(2, '0')}`,
     });
     return;
   }
 
-  const normalizedStatus = normalizeMatrixStatusSql('COALESCE(v.final_status, CASE WHEN r.employee_code IS NOT NULL THEN \'HADIR\' ELSE \'NO_DATA\' END)');
+  const normalizedStatus = normalizeMatrixStatusSql('COALESCE(v.attendance_status, CASE WHEN r.employee_code IS NOT NULL THEN \'HADIR\' ELSE \'NO_DATA\' END)');
   const rows = await query<any>(`
     WITH scan_rows AS (
       SELECT
         s.raw_device_user_id,
-        s.parsed_employee_code,
-        COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS employee_code,
+        sm.parsed_emp_code AS parsed_employee_code,
+        COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) AS employee_code,
         NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
         s.machine_code,
         CAST(s.scan_date AS DATE) AS attendance_date,
-        COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
-        s.mapping_status
-      FROM attendance_scan_logs s
+        s.raw_record_time AS scan_time,
+        sm.map_status AS mapping_status
+      FROM attendance_raw s
+      LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
       WHERE s.scan_date >= @startDate
         AND s.scan_date <= EOMONTH(@startDate)
-        AND COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) IS NOT NULL
+        AND COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) IS NOT NULL
         AND (@machineCode IS NULL OR s.machine_code = @machineCode)
     ),
     raw_daily AS (
@@ -726,24 +728,24 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
       SELECT
         v.employee_id,
         v.attendance_date,
-        v.final_status AS view_final_status,
+        v.attendance_status AS view_final_status,
         v.source AS view_source,
-        v.final_check_in AS view_final_check_in,
-        v.final_check_out AS view_final_check_out,
+        v.check_in_at AS view_final_check_in,
+        v.check_out_at AS view_final_check_out,
         v.division_name AS view_division_name,
-        v.zkteco_machine_code,
+        v.source AS zkteco_machine_code,
         e.id AS source_employee_id,
         e.employee_code AS source_employee_code,
         canonical.id AS canonical_id,
         id_resolved.resolved_employee_code,
         id_resolved.resolved_employee_name,
         id_resolved.resolved_hr_loc_code,
-        COALESCE(d_hr.division_name, v.division_name, v.zkteco_machine_code) AS resolved_division_name,
+        COALESCE(d_hr.division_name, v.division_name, v.source) AS resolved_division_name,
         r.employee_code AS raw_employee_code,
         r.raw_check_in,
         r.raw_check_out,
         COALESCE(r.scan_count, 0) AS scan_count,
-        COALESCE(CAST(v.zkteco_machine_code AS NVARCHAR(30)), r.machine_code) AS machine_code,
+        COALESCE(CAST(v.source AS NVARCHAR(30)), r.machine_code) AS machine_code,
         r.raw_device_user_id,
         CASE WHEN r.employee_code IS NULL THEN 'NEED_REVIEW' WHEN r.is_mapped = 1 THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
         CASE WHEN v.source = 'MANUAL_CORRECTION' THEN 1 ELSE 0 END AS has_manual_correction,
@@ -751,7 +753,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
         CAST(COALESCE(v.is_sick, 0) AS INT) AS is_sick,
         CAST(COALESCE(v.is_holiday, 0) AS INT) AS is_holiday,
         ${normalizedStatus} AS ui_status
-      FROM vw_attendance_monthly_matrix v
+      FROM vw_attendance_final v
       LEFT JOIN employees e ON e.employee_code = v.employee_code
       LEFT JOIN employees canonical ON canonical.employee_code = COALESCE(NULLIF(e.current_emp_code, ''), v.employee_code)
       CROSS APPLY (
@@ -776,7 +778,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
             NULLIF(e.current_hr_loc_code, ''),
             NULLIF(e.hr_loc_code, ''),
             NULLIF(v.division_code, ''),
-            NULLIF(v.zkteco_machine_code, '')
+            NULLIF(v.source, '')
           ) AS resolved_hr_loc_code
       ) id_resolved
       LEFT JOIN divisions d_hr ON d_hr.division_code = id_resolved.resolved_hr_loc_code
@@ -794,7 +796,7 @@ route('GET', '/api/attendance/monthly-matrix', async (ctx) => {
             WHERE sc.resolved_employee_code = id_resolved.resolved_employee_code
           )
         )
-        AND (@machineCode IS NULL OR COALESCE(CAST(v.zkteco_machine_code AS NVARCHAR(30)), r.machine_code) = @machineCode)
+        AND (@machineCode IS NULL OR COALESCE(CAST(v.source AS NVARCHAR(30)), r.machine_code) = @machineCode)
     ),
     final_rows AS (
       SELECT
@@ -951,18 +953,19 @@ route('GET', '/api/attendance/monthly-matrix-traceable', async (ctx) => {
     ),
     scan_rows AS (
       SELECT
-        COALESCE(COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code), s.raw_device_user_id) AS employee_code,
-        COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS resolved_employee_code,
+        COALESCE(COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code), s.raw_device_user_id) AS employee_code,
+        COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) AS resolved_employee_code,
         s.raw_device_user_id,
         s.machine_code,
         CAST(s.scan_date AS DATE) AS attendance_date,
-        COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
-        s.mapping_status
-      FROM attendance_scan_logs s
+        s.raw_record_time AS scan_time,
+        sm.map_status AS mapping_status
+      FROM attendance_raw s
+      LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
       WHERE s.scan_date >= @startDate
         AND s.scan_date <= EOMONTH(@startDate)
         AND (@machineCode IS NULL OR s.machine_code = @machineCode)
-        AND (@searchRaw = '' OR s.raw_device_user_id LIKE @search OR s.parsed_employee_code LIKE @search OR COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) LIKE @search OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search)
+        AND (@searchRaw = '' OR s.raw_device_user_id LIKE @search OR sm.parsed_emp_code LIKE @search OR COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) LIKE @search OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search)
     ),
     raw_daily AS (
       SELECT
@@ -1012,20 +1015,20 @@ route('GET', '/api/attendance/monthly-matrix-traceable', async (ctx) => {
       SELECT
         CASE
           WHEN ${rawDeviceUserIdLengthSql()} < 5 THEN s.raw_device_user_id
-          ELSE COALESCE(COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code), s.raw_device_user_id)
+          ELSE COALESCE(COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code), s.raw_device_user_id)
         END AS employee_code,
-        COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS resolved_employee_code,
+        COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) AS resolved_employee_code,
         s.raw_device_user_id,
         s.machine_code,
         s.zkteco_user_name AS employee_name,
         COALESCE(d.division_code, s.machine_code) AS division_code,
         COALESCE(d.division_name, s.machine_code) AS division_name,
-        COALESCE(g.gang_code, 'N/A') AS gang_code,
-        s.mapping_status
-      FROM attendance_scan_logs s
-      LEFT JOIN employees e ON e.employee_code = COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code)
+        'N/A' AS gang_code,
+        sm.map_status AS mapping_status
+      FROM attendance_raw s
+      LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+      LEFT JOIN employees e ON e.employee_code = COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code)
       LEFT JOIN divisions d ON d.id = e.division_id
-      LEFT JOIN gangs g ON g.id = e.gang_id
       WHERE s.scan_date >= @startDate
         AND s.scan_date <= EOMONTH(@startDate)
         AND (@machineCode IS NULL OR s.machine_code = @machineCode)
@@ -1359,23 +1362,24 @@ route('GET', '/api/attendance/monthly-matrix/cell', async (ctx) => {
   const hasManualCorrections = await checkTableExists('attendance_manual_corrections');
 
   const rawLogs = await query<any>(`
-    SELECT TOP 100
+    SELECT TOP 500
       s.id,
       s.raw_device_user_id,
-      s.parsed_employee_code AS parsed_employee_code,
-      COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS employee_code,
+      sm.parsed_emp_code AS parsed_employee_code,
+      COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) AS employee_code,
       NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
       s.zkteco_user_name AS employee_name,
       s.machine_code,
-      COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
+      s.raw_record_time AS scan_time,
       s.event_type,
       s.verify_type,
       s.work_code,
-      CASE WHEN COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
-      s.mapping_reason
-    FROM attendance_scan_logs s
+      CASE WHEN COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
+      sm.map_reason AS mapping_reason
+    FROM attendance_raw s
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
     WHERE s.scan_date = @date
-      AND (@employeeCode IS NULL OR s.current_emp_code = @employeeCode OR s.parsed_employee_code = @employeeCode OR s.raw_device_user_id = @employeeCode)
+      AND (@employeeCode IS NULL OR sm.current_emp_code = @employeeCode OR sm.parsed_emp_code = @employeeCode OR s.raw_device_user_id = @employeeCode)
       AND (@rawDeviceUserId IS NULL OR s.raw_device_user_id = @rawDeviceUserId)
       AND (@machineCode IS NULL OR s.machine_code = @machineCode)
     ORDER BY s.scan_time ASC`,
@@ -1522,12 +1526,12 @@ route('GET', '/api/attendance/summary', async (ctx) => {
   const rows = await query(`
     SELECT division_code,
        COUNT(DISTINCT employee_code) AS total_employees,
-       SUM(CASE WHEN final_status IN ('PRESENT', 'HADIR') THEN 1 ELSE 0 END) AS total_present,
-       SUM(CASE WHEN final_status IN ('NO_DATA', 'ABSENT', 'ALPHA', 'TIDAK_HADIR') THEN 1 ELSE 0 END) AS total_absent,
+       SUM(CASE WHEN attendance_status IN ('PRESENT', 'HADIR') THEN 1 ELSE 0 END) AS total_present,
+       SUM(CASE WHEN attendance_status IN ('NO_DATA', 'ABSENT', 'ALPHA', 'TIDAK_HADIR') THEN 1 ELSE 0 END) AS total_absent,
        SUM(CASE WHEN is_leave = 1 THEN 1 ELSE 0 END) AS total_leave,
        SUM(CASE WHEN is_sick = 1 THEN 1 ELSE 0 END) AS total_sick,
        SUM(overtime_hours) AS total_overtime_hours
-     FROM vw_attendance_monthly_matrix
+     FROM vw_attendance_final
      WHERE attendance_date=@date
      GROUP BY division_code`,
     [{ name: 'date', type: sql.Date, value: date }]);
@@ -1539,10 +1543,10 @@ route('GET', '/api/attendance/employee/:employeeCode', async (ctx) => {
   const rows = await query(`
     SELECT TOP 120
        employee_code, employee_name, division_code, gang_code,
-       attendance_date, final_status AS attendance_status,
-       final_check_in AS check_in_at, final_check_out AS check_out_at,
+       attendance_date, attendance_status,
+       check_in_at, check_out_at,
        source, is_leave, is_sick, is_holiday, overtime_hours
-     FROM vw_attendance_monthly_matrix
+     FROM vw_attendance_final
      WHERE employee_code=@employeeCode
      ORDER BY attendance_date DESC`,
     [{ name: 'employeeCode', type: sql.NVarChar, value: ctx.params.employeeCode }]);
@@ -1553,20 +1557,21 @@ route('GET', '/api/attendance/employee/:employeeCode', async (ctx) => {
 route('GET', '/api/attendance/employee/:employeeCode/raw', async (ctx) => {
   const limit = Math.min(Number(ctx.query.get('limit') ?? 200), 500);
   const rows = await query(`
-     SELECT TOP @limit
+     SELECT TOP (@limit)
        s.id AS scan_log_id,
-       COALESCE(s.scan_date_wib, s.scan_date) AS scan_date,
-       COALESCE(s.scan_time_wib, DATEADD(hour, 7, s.scan_time)) AS scan_time,
+       s.scan_date,
+       s.raw_record_time AS scan_time,
        s.raw_device_user_id,
        s.machine_code,
-       s.parsed_employee_code,
+       sm.parsed_emp_code AS parsed_employee_code,
        s.zkteco_user_name,
-       COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) AS employee_code,
+       COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) AS employee_code,
        s.zkteco_user_name AS employee_name,
-       s.source,
-       CASE WHEN COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status
-     FROM attendance_scan_logs s
-     WHERE COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) = @employeeCode
+       'ZKTECO' AS source,
+       CASE WHEN COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status
+     FROM attendance_raw s
+     LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+     WHERE COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) = @employeeCode
         OR s.raw_device_user_id = @employeeCode
      ORDER BY s.scan_date DESC, s.scan_time DESC`,
     [

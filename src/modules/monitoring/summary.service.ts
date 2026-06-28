@@ -1,6 +1,14 @@
 /**
+ * @deprecated 2026-06-26 — DEAD CODE. No route mounts this service.
+ *
+ * machine_user_map JOIN at line ~200 references DROPPED table.
+ * Live dashboard summary lives in src/api/routes/dashboard.routes.ts
+ * (queries attendance_scan_logs + attendance_imports directly).
+ *
+ * Retained for git history only.
+ *
  * Summary Service
- * 
+ *
  * Generates daily summary statistics for monitoring dashboard
  */
 

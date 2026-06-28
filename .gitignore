@@ -15,6 +15,10 @@ tsconfig.tsbuildinfo
 # Temp / scratch files
 .tmp-*
 tmp.json
+.ctx-*.mjs
+
+# DB export dumps (CSV/logs from one-off fix scripts)
+exports/
 
 # Agent / tool session state
 .antigravitycli/

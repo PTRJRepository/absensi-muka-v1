@@ -33,10 +33,11 @@ route('GET', '/api/monitoring/dashboard', async (ctx) => {
     query<any>(`
       SELECT
         COUNT(*) AS total_scans,
-        COUNT(DISTINCT parsed_employee_code) AS unique_employees
-      FROM attendance_scan_logs
-      WHERE scan_date = @today
-        AND parsed_employee_code IS NOT NULL
+        COUNT(DISTINCT sm.parsed_emp_code) AS unique_employees
+      FROM attendance_raw s
+      LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+      WHERE s.scan_date = @today
+        AND sm.parsed_emp_code IS NOT NULL
     `, [{ name: 'today', type: sql.NVarChar, value: today }]),
     query<any>(`
       SELECT TOP 1 id, batch_code, status, records_total, records_success,
@@ -100,12 +101,13 @@ route('GET', '/api/monitoring/machines', async (ctx) => {
   const today = new Date().toISOString().split('T')[0];
   const todayStats = await query<any>(`
     SELECT
-      machine_code,
+      s.machine_code,
       COUNT(*)         AS records_today,
-      COUNT(DISTINCT parsed_employee_code) AS employees_today
-    FROM attendance_scan_logs
-    WHERE scan_date = @today
-    GROUP BY machine_code
+      COUNT(DISTINCT sm.parsed_emp_code) AS employees_today
+    FROM attendance_raw s
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+    WHERE s.scan_date = @today
+    GROUP BY s.machine_code
   `, [{ name: 'today', type: sql.NVarChar, value: today }]);
 
   const statMap: Record<string, any> = {};
@@ -134,19 +136,20 @@ route('GET', '/api/monitoring/machine/:code', async (ctx) => {
     query<any>(`
       SELECT
         COUNT(*)                    AS total_scans,
-        COUNT(DISTINCT parsed_employee_code) AS unique_employees,
-        MIN(scan_time)              AS first_scan,
-        MAX(scan_time)              AS last_scan
-      FROM attendance_scan_logs
-      WHERE machine_code = @code AND scan_date = @today
+        COUNT(DISTINCT sm.parsed_emp_code) AS unique_employees,
+        MIN(s.scan_time)            AS first_scan,
+        MAX(s.scan_time)            AS last_scan
+      FROM attendance_raw s
+      LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+      WHERE s.machine_code = @code AND s.scan_date = @today
     `, [{ name: 'code', type: sql.NVarChar, value: code }, { name: 'today', type: sql.NVarChar, value: today }]),
     query<any>(`
       SELECT TOP 10
-        sl.started_at, sl.status, sl.records_synced,
-        sl.duration_ms, sl.error_message
-      FROM attendance_sync_logs sl
-      WHERE sl.machine_code = @code
-      ORDER BY sl.started_at DESC
+        b.started_at, b.status, b.records_success AS records_synced,
+        DATEDIFF(millisecond, b.started_at, b.finished_at) AS duration_ms, b.error_message
+      FROM attendance_import_batches b
+      WHERE b.machine_id = (SELECT id FROM attendance_machines WHERE machine_code = @code)
+      ORDER BY b.started_at DESC
     `, [{ name: 'code', type: sql.NVarChar, value: code }]),
     query<any>(`
       SELECT
@@ -161,15 +164,16 @@ route('GET', '/api/monitoring/machine/:code', async (ctx) => {
     `, [{ name: 'code', type: sql.NVarChar, value: code }]),
     query<any>(`
       SELECT TOP 50
-        raw_device_user_id AS device_user_id,
-        parsed_employee_code,
-        parsed_division_code,
-        mapping_status,
+        s.raw_device_user_id AS device_user_id,
+        sm.parsed_emp_code AS parsed_employee_code,
+        sm.loc_code AS parsed_division_code,
+        sm.map_status AS mapping_status,
         COUNT(*) AS scan_count,
-        MAX(scan_time) AS last_scan
-      FROM attendance_scan_logs
-      WHERE machine_code = @code
-      GROUP BY raw_device_user_id, parsed_employee_code, parsed_division_code, mapping_status
+        MAX(s.scan_time) AS last_scan
+      FROM attendance_raw s
+      LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+      WHERE s.machine_code = @code
+      GROUP BY s.raw_device_user_id, sm.parsed_emp_code, sm.loc_code, sm.map_status
       ORDER BY scan_count DESC
     `, [{ name: 'code', type: sql.NVarChar, value: code }]),
     query<any>(`
@@ -272,9 +276,10 @@ route('GET', '/api/monitoring/batch/:id', async (ctx) => {
 
   const sampleLogs = await query<any>(`
     SELECT TOP 50
-      s.raw_device_user_id, s.parsed_employee_code, s.parsed_division_code,
-      s.mapping_status, s.scan_time, s.event_type, s.verify_type
-    FROM attendance_scan_logs s
+      s.raw_device_user_id, sm.parsed_emp_code AS parsed_employee_code, sm.loc_code AS parsed_division_code,
+      sm.map_status AS mapping_status, s.scan_time, s.event_type, s.verify_type
+    FROM attendance_raw s
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
     WHERE s.sync_batch_id = @id
     ORDER BY s.scan_time DESC
   `, [{ name: 'id', type: sql.BigInt, value: id }]);
@@ -290,23 +295,24 @@ route('GET', '/api/monitoring/quality', async (ctx) => {
   const [summary, dailyTrend, recordsPerDivision, unmappedCodes] = await Promise.all([
     query<any>(`
       SELECT
-        (SELECT COUNT(*) FROM attendance_scan_logs WHERE scan_date >= @since) AS total_scan_logs,
+        (SELECT COUNT(*) FROM attendance_raw WHERE scan_date >= @since) AS total_scan_logs,
         (SELECT COUNT(*) FROM attendance_imports  WHERE attendance_date >= @since) AS total_imports,
-        (SELECT COUNT(DISTINCT raw_device_user_id) FROM attendance_scan_logs
-         WHERE scan_date >= @since AND mapping_status != 'MAPPED') AS unmapped_count,
-        (SELECT COUNT(*) FROM attendance_scan_logs
-         WHERE scan_date >= @since AND mapping_status = 'MAPPED') AS mapped_count
+        (SELECT COUNT(DISTINCT s.raw_device_user_id) FROM attendance_raw s LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+         WHERE s.scan_date >= @since AND (sm.map_status IS NULL OR sm.map_status != 'MAPPED')) AS unmapped_count,
+        (SELECT COUNT(*) FROM attendance_raw s LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+         WHERE s.scan_date >= @since AND sm.map_status = 'MAPPED') AS mapped_count
     `, [{ name: 'since', type: sql.NVarChar, value: since }]),
 
     query<any>(`
       SELECT
-        scan_date AS date,
+        s.scan_date AS date,
         COUNT(*)                                    AS record_count,
-        COUNT(DISTINCT parsed_employee_code)        AS unique_employees
-      FROM attendance_scan_logs
-      WHERE scan_date >= @since
-      GROUP BY scan_date
-      ORDER BY scan_date DESC
+        COUNT(DISTINCT sm.parsed_emp_code)          AS unique_employees
+      FROM attendance_raw s
+      LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+      WHERE s.scan_date >= @since
+      GROUP BY s.scan_date
+      ORDER BY s.scan_date DESC
     `, [{ name: 'since', type: sql.NVarChar, value: since }]),
 
     query<any>(`
@@ -322,13 +328,14 @@ route('GET', '/api/monitoring/quality', async (ctx) => {
 
     query<any>(`
       SELECT TOP 30
-        raw_device_user_id,
+        s.raw_device_user_id,
         COUNT(*)           AS occurrence_count,
-        STRING_AGG(machine_code, ', ') AS machines,
-        MAX(scan_time)     AS last_seen
-      FROM attendance_scan_logs
-      WHERE scan_date >= @since AND mapping_status != 'MAPPED'
-      GROUP BY raw_device_user_id
+        STRING_AGG(s.machine_code, ', ') AS machines,
+        MAX(s.scan_time)     AS last_seen
+      FROM attendance_raw s
+      LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+      WHERE s.scan_date >= @since AND (sm.map_status IS NULL OR sm.map_status != 'MAPPED')
+      GROUP BY s.raw_device_user_id
       ORDER BY occurrence_count DESC
     `, [{ name: 'since', type: sql.NVarChar, value: since }]),
   ]);

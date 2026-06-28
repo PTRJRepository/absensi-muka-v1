@@ -115,7 +115,7 @@ route("DELETE", "/api/alerts/rules/:id", async (ctx) => {
 route("POST", "/api/alerts/run", async (ctx) => {
   const alerts = [];
   try {
-    const unmappedCount = await query<any>(`SELECT COUNT(*) as cnt FROM attendance_scan_logs WHERE mapping_status != 'MAPPED'`);
+    const unmappedCount = await query<any>(`SELECT COUNT(*) as cnt FROM attendance_raw r JOIN scan_map sm ON sm.scan_log_id = r.id WHERE sm.map_status != 'MAPPED'`);
     if (unmappedCount[0]?.cnt > 50) {
       alerts.push({ title: "Warning: High Unmapped Employees", severity: "WARNING", message: `${unmappedCount[0].cnt} unmapped employees found` });
     }
@@ -132,7 +132,9 @@ route("POST", "/api/alerts/run", async (ctx) => {
 route("GET", "/api/alerts/history", async (ctx) => {
   const limit = parseInt(ctx.query.get("limit") || "100");
   try {
-    const alerts = await query<any>(`SELECT TOP ${limit} id, config_key as title, config_value, created_at FROM app_configs WHERE config_key LIKE 'LOG:%' ORDER BY created_at DESC`);
+    const alerts = await query<any>(`SELECT TOP (@limit) id, config_key as title, config_value, created_at FROM app_configs WHERE config_key LIKE 'LOG:%' ORDER BY created_at DESC`, [
+      { name: 'limit', type: sql.Int, value: limit }
+    ]);
     const formatted = alerts.map((a: any) => ({ ...JSON.parse(a.config_value || "{}"), id: a.id, title: a.title, createdAt: a.created_at }));
     ctx.res.writeHead(200, { "Content-Type": "application/json" });
     ctx.res.end(JSON.stringify({ success: true, data: formatted }));

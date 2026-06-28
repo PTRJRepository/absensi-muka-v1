@@ -23,7 +23,7 @@ import { getOperationalMachines, syncAllMachines, syncMachine } from '../../../s
 import type { Machine, MachineOperationalStatus, MachineOperationalStatusCode, SchedulerInfo } from '../../../types';
 import { MachineDetailModal } from './components/MachineDetailModal';
 
-type StatusFilter = 'all' | MachineOperationalStatusCode;
+type StatusFilter = 'all' | 'online' | 'offline';
 
 const SEVERITY_GROUPS: Array<{
   key: string;
@@ -32,44 +32,31 @@ const SEVERITY_GROUPS: Array<{
   statuses: MachineOperationalStatusCode[];
 }> = [
   {
-    key: 'critical',
-    title: 'Critical / Blocked',
+    key: 'online',
+    title: 'Online',
+    subtitle: 'Mesin dapat diakses (termasuk warning/stale)',
+    statuses: ['ONLINE', 'WARNING', 'STALE'],
+  },
+  {
+    key: 'offline',
+    title: 'Offline',
     subtitle: 'Port blocked, unreachable, atau offline',
-    statuses: ['BLOCKED', 'UNREACHABLE', 'OFFLINE'],
-  },
-  {
-    key: 'warning',
-    title: 'Warning / Stale',
-    subtitle: 'Sync terlambat atau kualitas turun',
-    statuses: ['WARNING', 'STALE'],
-  },
-  {
-    key: 'healthy',
-    title: 'Healthy / Online',
-    subtitle: 'Mesin aktif dan dapat diakses',
-    statuses: ['ONLINE'],
-  },
-  {
-    key: 'disabled',
-    title: 'Disabled',
-    subtitle: 'Mesin tidak aktif dalam konfigurasi',
-    statuses: ['DISABLED'],
+    statuses: ['BLOCKED', 'UNREACHABLE', 'OFFLINE', 'DISABLED'],
   },
 ];
 
 const STATUS_LABEL: Record<MachineOperationalStatusCode, string> = {
   ONLINE: 'Online',
-  WARNING: 'Warning',
-  BLOCKED: 'Blocked',
-  UNREACHABLE: 'Unreachable',
+  WARNING: 'Online',
+  BLOCKED: 'Offline',
+  UNREACHABLE: 'Offline',
   OFFLINE: 'Offline',
-  DISABLED: 'Disabled',
-  STALE: 'Stale',
+  DISABLED: 'Offline',
+  STALE: 'Online',
 };
 
 function statusClass(status: MachineOperationalStatusCode) {
-  if (status === 'ONLINE') return 'online';
-  if (status === 'WARNING' || status === 'STALE') return 'warning';
+  if (status === 'ONLINE' || status === 'WARNING' || status === 'STALE') return 'online';
   return 'offline';
 }
 
@@ -129,7 +116,8 @@ export function MachinesPage() {
   } = useQuery<MachineOperationalStatus[]>({
     queryKey: ['operational-machines'],
     queryFn: () => getOperationalMachines(),
-    refetchInterval: 30000,
+    refetchInterval: 60000,
+    refetchIntervalInBackground: true,
   });
 
   const { data: scheduler } = useQuery<SchedulerInfo>({
@@ -180,7 +168,7 @@ export function MachinesPage() {
   const filteredMachines = useMemo(() => {
     const needle = searchQuery.trim().toLowerCase();
     return machines.filter((machine) => {
-      const matchesStatus = statusFilter === 'all' || machine.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || statusClass(machine.status) === statusFilter;
       const matchesSearch = !needle ||
         machine.machineCode.toLowerCase().includes(needle) ||
         machine.machineName.toLowerCase().includes(needle) ||
@@ -295,15 +283,8 @@ export function MachinesPage() {
           </div>
           <div className="filter-chips">
             <button className={`chip ${statusFilter === 'all' ? 'active' : ''}`} onClick={() => setStatusFilter('all')}>Semua</button>
-            {Object.keys(STATUS_LABEL).map((status) => (
-              <button
-                key={status}
-                className={`chip ${statusFilter === status ? 'active' : ''}`}
-                onClick={() => setStatusFilter(status as MachineOperationalStatusCode)}
-              >
-                {STATUS_LABEL[status as MachineOperationalStatusCode]}
-              </button>
-            ))}
+            <button className={`chip ${statusFilter === 'online' ? 'active' : ''}`} onClick={() => setStatusFilter('online')}>Online</button>
+            <button className={`chip ${statusFilter === 'offline' ? 'active' : ''}`} onClick={() => setStatusFilter('offline')}>Offline</button>
           </div>
         </div>
 
@@ -368,16 +349,16 @@ export function MachinesPage() {
 
                         <div className="machine-stats">
                           <div className="machine-stat">
+                            <div className="machine-stat-value">{machine.dbRecordCount ?? 0}</div>
+                            <div className="machine-stat-label">DB record</div>
+                          </div>
+                          <div className="machine-stat">
+                            <div className="machine-stat-value">{machine.machineRecordCount ?? '-'}</div>
+                            <div className="machine-stat-label">Mesin</div>
+                          </div>
+                          <div className="machine-stat">
                             <div className="machine-stat-value">{machine.scanToday}</div>
                             <div className="machine-stat-label">Scan hari ini</div>
-                          </div>
-                          <div className="machine-stat">
-                            <div className="machine-stat-value">{machine.userCount}</div>
-                            <div className="machine-stat-label">User</div>
-                          </div>
-                          <div className="machine-stat">
-                            <div className="machine-stat-value">{machine.qualityScore}%</div>
-                            <div className="machine-stat-label">Quality</div>
                           </div>
                         </div>
 

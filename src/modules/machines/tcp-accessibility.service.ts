@@ -19,7 +19,7 @@ export type TcpCacheEntry = {
   expiresAt: number;
 };
 
-const DEFAULT_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const DEFAULT_TTL_MS = 60 * 1000; // 1 minute (real-time refresh)
 const DEFAULT_TIMEOUT_MS = 5000;
 
 const cache = new Map<string, TcpCacheEntry>();
@@ -59,11 +59,11 @@ function testTcpConnection(
 
   return new Promise((resolve) => {
     const socket = new Socket();
+    const start = Date.now();
 
     socket.setTimeout(timeoutMs);
 
     socket.on('connect', () => {
-      const start = Date.now();
       socket.destroy();
       resolve({ status: 'ACCESSIBLE', latencyMs: Date.now() - start, testedAt });
     });

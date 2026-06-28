@@ -338,9 +338,9 @@ export function MachineDetailModal({ machine, isOpen, onClose }: MachineDetailMo
                 </h3>
                 <div className="info-grid">
                   <div className="info-card">
-                    <div className="info-label">Access Status</div>
-                    <div className={`info-value ${machine.access_status === 'ACCESSIBLE' ? 'text-success' : machine.access_status === 'PORT_BLOCKED' ? 'text-error' : machine.access_status === 'NETWORK_UNREACHABLE' ? 'text-error' : 'text-warning'}`}>
-                      {(machine.access_status ?? 'UNKNOWN').replace(/_/g, ' ')}
+                    <div className="info-label">Access Status (Live)</div>
+                    <div className={`info-value ${(machine.real_access_status ?? machine.access_status) === 'ACCESSIBLE' ? 'text-success' : (machine.real_access_status ?? machine.access_status) === 'PORT_BLOCKED' ? 'text-error' : (machine.real_access_status ?? machine.access_status) === 'NETWORK_UNREACHABLE' ? 'text-error' : 'text-warning'}`}>
+                      {((machine.real_access_status ?? machine.access_status) ?? 'UNKNOWN').replace(/_/g, ' ')}{machine.access_latency_ms != null ? ` · ${machine.access_latency_ms}ms` : ''}
                     </div>
                   </div>
                   <div className="info-card">

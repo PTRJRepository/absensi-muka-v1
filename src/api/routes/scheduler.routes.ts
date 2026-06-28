@@ -129,10 +129,23 @@ route('GET', '/api/scheduler/status', async (ctx) => {
     enabled: config.enabled,
     interval_minutes: config.intervalMinutes,
     running_jobs: activeJobs.map((j) => j.name),
+    jobs: config.jobs.map((j) => ({
+      id: j.id,
+      name: j.name,
+      enabled: j.enabled,
+      intervalMinutes: j.intervalMinutes,
+      lastRun: j.lastRun ?? null,
+      nextRun: j.nextRun ?? null,
+      script: j.script,
+    })),
+    last_run: config.jobs.reduce<string | null>((max, j) => {
+      if (!j.lastRun) return max;
+      return !max || j.lastRun > max ? j.lastRun : max;
+    }, null),
     next_scheduled_run: activeJobs.length > 0 && config.intervalMinutes
       ? new Date(Date.now() + config.intervalMinutes * 60000).toISOString()
       : null,
-    status: activeJobs.length > 0 ? 'IDLE' : 'IDLE'
+    status: activeJobs.length > 0 && config.enabled ? 'IDLE' : 'IDLE'
   });
 });
 

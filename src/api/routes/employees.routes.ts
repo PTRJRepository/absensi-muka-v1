@@ -291,20 +291,20 @@ route('GET', '/api/employees/:id/detail', async (ctx) => {
       // Lookup by NIK
       const normalizedNik = id.trim().replace(/\s+/g, '');
 
-      // Get employee from hr_employee_current_snapshot
+      // Get employee from hr_reference (current)
       const snapshotRows = await query<Record<string, unknown>>(`
         SELECT
           id,
           nik,
-          current_emp_code,
-          current_emp_name,
-          current_loc_code,
-          current_status,
-          current_create_date,
-          current_update_date,
+          emp_code AS current_emp_code,
+          emp_name AS current_emp_name,
+          loc_code AS current_loc_code,
+          hr_status AS current_status,
+          create_date AS current_create_date,
+          update_date AS current_update_date,
           synced_at
-        FROM hr_employee_current_snapshot
-        WHERE nik = @nik
+        FROM hr_reference
+        WHERE type = 'current' AND nik = @nik
       `, [{ name: 'nik', type: sql.NVarChar, value: normalizedNik }]);
 
       if (snapshotRows.length > 0) {
@@ -335,8 +335,8 @@ route('GET', '/api/employees/:id/detail', async (ctx) => {
             is_current,
             source_table,
             synced_at
-          FROM employee_code_history
-          WHERE nik = @nik
+          FROM hr_reference
+          WHERE type = 'history' AND nik = @nik
           ORDER BY is_current DESC, update_date DESC, create_date DESC
         `, [{ name: 'nik', type: sql.NVarChar, value: normalizedNik }]);
 
@@ -382,7 +382,7 @@ route('GET', '/api/employees/:id/detail', async (ctx) => {
           updateDate: emp.updated_at,
         };
 
-        // Get code history from hr_employee_current_snapshot if NIK exists
+        // Get code history from hr_reference if NIK exists
         if (emp.nik) {
           const normalizedNik = (emp.nik as string).trim().replace(/\s+/g, '');
 
@@ -399,8 +399,8 @@ route('GET', '/api/employees/:id/detail', async (ctx) => {
               is_current,
               source_table,
               synced_at
-            FROM employee_code_history
-            WHERE nik = @nik
+            FROM hr_reference
+            WHERE type = 'history' AND nik = @nik
             ORDER BY is_current DESC, update_date DESC, create_date DESC
           `, [{ name: 'nik', type: sql.NVarChar, value: normalizedNik }]);
         }
@@ -462,20 +462,20 @@ route('GET', '/api/employees/by-nik/:nik', async (ctx) => {
   try {
     const normalizedNik = nik.trim().replace(/\s+/g, '');
 
-    // Get from hr_employee_current_snapshot
+    // Get from hr_reference (current)
     const snapshotRows = await query<Record<string, unknown>>(`
       SELECT
         id,
         nik,
-        current_emp_code,
-        current_emp_name,
-        current_loc_code,
-        current_status,
-        current_create_date,
-        current_update_date,
+        emp_code AS current_emp_code,
+        emp_name AS current_emp_name,
+        loc_code AS current_loc_code,
+        hr_status AS current_status,
+        create_date AS current_create_date,
+        update_date AS current_update_date,
         synced_at
-      FROM hr_employee_current_snapshot
-      WHERE nik = @nik
+      FROM hr_reference
+      WHERE type = 'current' AND nik = @nik
     `, [{ name: 'nik', type: sql.NVarChar, value: normalizedNik }]);
 
     if (snapshotRows.length === 0) {
@@ -510,8 +510,8 @@ route('GET', '/api/employees/by-nik/:nik', async (ctx) => {
         is_current,
         source_table,
         synced_at
-      FROM employee_code_history
-      WHERE nik = @nik
+      FROM hr_reference
+      WHERE type = 'history' AND nik = @nik
       ORDER BY is_current DESC, update_date DESC, create_date DESC
     `, [{ name: 'nik', type: sql.NVarChar, value: normalizedNik }]);
 

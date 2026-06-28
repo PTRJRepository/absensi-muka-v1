@@ -70,16 +70,17 @@ export async function getCrossLocationSummary(ctx: any) {
       m.machine_code,
       m.scanner_code,
       m.machine_name,
-      LEFT(s.parsed_employee_code, 1) AS emp_prefix,
-      COUNT(DISTINCT s.parsed_employee_code) AS unique_employees,
+      LEFT(sm.parsed_emp_code, 1) AS emp_prefix,
+      COUNT(DISTINCT sm.parsed_emp_code) AS unique_employees,
       COUNT(*) AS total_scans,
       MIN(s.scan_date) AS first_scan,
       MAX(s.scan_date) AS last_scan
     FROM attendance_machines m
-    LEFT JOIN attendance_scan_logs s ON s.machine_code = m.machine_code
+    LEFT JOIN attendance_raw s ON s.machine_code = m.machine_code
       AND s.scan_date >= DATEADD(day, -${days}, GETDATE())
-      AND s.parsed_employee_code IS NOT NULL
-      AND LEFT(s.parsed_employee_code, 1) IN ('A','B','C','D','E','F','G','H','J','L')
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+      AND sm.parsed_emp_code IS NOT NULL
+      AND LEFT(sm.parsed_emp_code, 1) IN ('A','B','C','D','E','F','G','H','J','L')
     WHERE m.is_active = 1
     GROUP BY m.machine_code, m.scanner_code, m.machine_name
     ORDER BY m.machine_code
@@ -156,10 +157,10 @@ export async function getMachineCrossLocation(ctx: any) {
   // Get all employee prefixes at this machine
   const employees = await query<any>(`
     SELECT
-      s.parsed_employee_code AS employeeCode,
-      e.emp_name AS employeeName,
-      LEFT(s.parsed_employee_code, 1) AS empPrefix,
-      CASE LEFT(s.parsed_employee_code, 1)
+      sm.parsed_emp_code AS employeeCode,
+      e.employee_name AS employeeName,
+      LEFT(sm.parsed_emp_code, 1) AS empPrefix,
+      CASE LEFT(sm.parsed_emp_code, 1)
         WHEN 'A' THEN 'P1A'
         WHEN 'B' THEN 'P1B'
         WHEN 'C' THEN 'P2A'
@@ -174,13 +175,14 @@ export async function getMachineCrossLocation(ctx: any) {
       COUNT(*) AS totalScans,
       MIN(s.scan_date) AS firstScan,
       MAX(s.scan_date) AS lastScan
-    FROM attendance_scan_logs s
-    LEFT JOIN mst_employee e ON e.emp_code = s.parsed_employee_code
+    FROM attendance_raw s
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+    LEFT JOIN employees e ON e.employee_code = sm.parsed_emp_code
     WHERE s.machine_code = @machineCode
       AND s.scan_date >= DATEADD(day, -${days}, GETDATE())
-      AND s.parsed_employee_code IS NOT NULL
-      AND LEFT(s.parsed_employee_code, 1) IN ('A','B','C','D','E','F','G','H','J','L')
-    GROUP BY s.parsed_employee_code, e.emp_name, LEFT(s.parsed_employee_code, 1)
+      AND sm.parsed_emp_code IS NOT NULL
+      AND LEFT(sm.parsed_emp_code, 1) IN ('A','B','C','D','E','F','G','H','J','L')
+    GROUP BY sm.parsed_emp_code, e.employee_name, LEFT(sm.parsed_emp_code, 1)
     ORDER BY COUNT(*) DESC
   `, [{ name: 'machineCode', type: sql.NVarChar, value: machineCode }]);
 
@@ -236,8 +238,8 @@ export async function getCrossLocationReport(ctx: any) {
       m.machine_code,
       m.scanner_code,
       m.machine_name,
-      LEFT(s.parsed_employee_code, 1) AS emp_prefix,
-      CASE LEFT(s.parsed_employee_code, 1)
+      LEFT(sm.parsed_emp_code, 1) AS emp_prefix,
+      CASE LEFT(sm.parsed_emp_code, 1)
         WHEN 'A' THEN 'P1A'
         WHEN 'B' THEN 'P1B'
         WHEN 'C' THEN 'P2A'
@@ -250,44 +252,45 @@ export async function getCrossLocationReport(ctx: any) {
         WHEN 'L' THEN 'IJL/PGE'
       END AS home_division,
       CASE
-        WHEN m.scanner_code = 100 AND LEFT(s.parsed_employee_code, 1) != 'A' THEN 1
-        WHEN m.scanner_code = 200 AND LEFT(s.parsed_employee_code, 1) != 'J' THEN 1
-        WHEN m.scanner_code = 300 AND LEFT(s.parsed_employee_code, 1) != 'B' THEN 1
-        WHEN m.scanner_code = 400 AND LEFT(s.parsed_employee_code, 1) != 'H' THEN 1
-        WHEN m.scanner_code = 500 AND LEFT(s.parsed_employee_code, 1) != 'C' THEN 1
-        WHEN m.scanner_code = 600 AND LEFT(s.parsed_employee_code, 1) != 'D' THEN 1
-        WHEN m.scanner_code = 700 AND LEFT(s.parsed_employee_code, 1) != 'E' THEN 1
-        WHEN m.scanner_code = 800 AND LEFT(s.parsed_employee_code, 1) != 'F' THEN 1
-        WHEN m.scanner_code = 900 AND LEFT(s.parsed_employee_code, 1) != 'G' THEN 1
+        WHEN m.scanner_code = 100 AND LEFT(sm.parsed_emp_code, 1) != 'A' THEN 1
+        WHEN m.scanner_code = 200 AND LEFT(sm.parsed_emp_code, 1) != 'J' THEN 1
+        WHEN m.scanner_code = 300 AND LEFT(sm.parsed_emp_code, 1) != 'B' THEN 1
+        WHEN m.scanner_code = 400 AND LEFT(sm.parsed_emp_code, 1) != 'H' THEN 1
+        WHEN m.scanner_code = 500 AND LEFT(sm.parsed_emp_code, 1) != 'C' THEN 1
+        WHEN m.scanner_code = 600 AND LEFT(sm.parsed_emp_code, 1) != 'D' THEN 1
+        WHEN m.scanner_code = 700 AND LEFT(sm.parsed_emp_code, 1) != 'E' THEN 1
+        WHEN m.scanner_code = 800 AND LEFT(sm.parsed_emp_code, 1) != 'F' THEN 1
+        WHEN m.scanner_code = 900 AND LEFT(sm.parsed_emp_code, 1) != 'G' THEN 1
         ELSE 0
       END AS is_cross_location,
-      s.parsed_employee_code AS employee_code,
-      e.emp_name AS employee_name,
+      sm.parsed_emp_code AS employee_code,
+      e.employee_name AS employee_name,
       COUNT(*) AS scan_count,
       MIN(s.scan_date) AS first_scan,
       MAX(s.scan_date) AS last_scan
     FROM attendance_machines m
-    JOIN attendance_scan_logs s ON s.machine_code = m.machine_code
-    LEFT JOIN mst_employee e ON e.emp_code = s.parsed_employee_code
+    JOIN attendance_raw s ON s.machine_code = m.machine_code
+    LEFT JOIN scan_map sm ON sm.scan_log_id = s.id
+    LEFT JOIN employees e ON e.employee_code = sm.parsed_emp_code
     WHERE m.is_active = 1
-      AND s.parsed_employee_code IS NOT NULL
-      AND LEFT(s.parsed_employee_code, 1) IN ('A','B','C','D','E','F','G','H','J','L')
+      AND sm.parsed_emp_code IS NOT NULL
+      AND LEFT(sm.parsed_emp_code, 1) IN ('A','B','C','D','E','F','G','H','J','L')
       ${dateFilter}
     GROUP BY
       m.machine_code, m.scanner_code, m.machine_name,
-      LEFT(s.parsed_employee_code, 1),
-      s.parsed_employee_code, e.emp_name
+      LEFT(sm.parsed_emp_code, 1),
+      sm.parsed_emp_code, e.employee_name
     HAVING
       CASE
-        WHEN m.scanner_code = 100 AND LEFT(s.parsed_employee_code, 1) != 'A' THEN 1
-        WHEN m.scanner_code = 200 AND LEFT(s.parsed_employee_code, 1) != 'J' THEN 1
-        WHEN m.scanner_code = 300 AND LEFT(s.parsed_employee_code, 1) != 'B' THEN 1
-        WHEN m.scanner_code = 400 AND LEFT(s.parsed_employee_code, 1) != 'H' THEN 1
-        WHEN m.scanner_code = 500 AND LEFT(s.parsed_employee_code, 1) != 'C' THEN 1
-        WHEN m.scanner_code = 600 AND LEFT(s.parsed_employee_code, 1) != 'D' THEN 1
-        WHEN m.scanner_code = 700 AND LEFT(s.parsed_employee_code, 1) != 'E' THEN 1
-        WHEN m.scanner_code = 800 AND LEFT(s.parsed_employee_code, 1) != 'F' THEN 1
-        WHEN m.scanner_code = 900 AND LEFT(s.parsed_employee_code, 1) != 'G' THEN 1
+        WHEN m.scanner_code = 100 AND LEFT(sm.parsed_emp_code, 1) != 'A' THEN 1
+        WHEN m.scanner_code = 200 AND LEFT(sm.parsed_emp_code, 1) != 'J' THEN 1
+        WHEN m.scanner_code = 300 AND LEFT(sm.parsed_emp_code, 1) != 'B' THEN 1
+        WHEN m.scanner_code = 400 AND LEFT(sm.parsed_emp_code, 1) != 'H' THEN 1
+        WHEN m.scanner_code = 500 AND LEFT(sm.parsed_emp_code, 1) != 'C' THEN 1
+        WHEN m.scanner_code = 600 AND LEFT(sm.parsed_emp_code, 1) != 'D' THEN 1
+        WHEN m.scanner_code = 700 AND LEFT(sm.parsed_emp_code, 1) != 'E' THEN 1
+        WHEN m.scanner_code = 800 AND LEFT(sm.parsed_emp_code, 1) != 'F' THEN 1
+        WHEN m.scanner_code = 900 AND LEFT(sm.parsed_emp_code, 1) != 'G' THEN 1
         ELSE 0
       END = 1
     ORDER BY m.machine_code, COUNT(*) DESC

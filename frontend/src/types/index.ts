@@ -227,10 +227,22 @@ export interface PaginatedResponse<T> {
   };
 }
 
+export interface SchedulerJob {
+  id: string;
+  name: string;
+  enabled: boolean;
+  intervalMinutes: number;
+  lastRun: string | null;
+  nextRun: string | null;
+  script: string;
+}
+
 export interface SchedulerInfo {
   enabled: boolean;
   interval_minutes: number;
   running_jobs: string[];
+  jobs: SchedulerJob[];
+  last_run: string | null;
   next_scheduled_run: string | null;
   status: 'IDLE' | 'SYNCING' | 'ERROR';
 }
@@ -610,6 +622,9 @@ export interface MachineOperationalStatus {
   networkGroup: string;
   status: MachineOperationalStatusCode;
   accessStatus: string;
+  accessLatencyMs?: number | null;
+  machineRecordCount?: number | null;
+  dbRecordCount?: number;
   dataSource: string;
   lastSeenAt: string | null;
   lastSyncAt: string | null;

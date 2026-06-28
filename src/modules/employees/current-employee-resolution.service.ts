@@ -7,7 +7,7 @@
  *
  * Flow:
  *   raw_device_user_id → parsedCode → lookup HR_EMPLOYEE by parsedCode → get NewICNo (NIK)
- *   → lookup hr_employee_current_snapshot by NIK → currentEmpCode
+ *   → lookup hr_reference by NIK → currentEmpCode
  *
  * Resolution Status Values:
  *   MAPPED_CURRENT              - Successfully resolved to current employee
@@ -46,7 +46,7 @@ export type CurrentResolutionStatus =
 export interface CurrentResolutionResult {
   /** Normalized NIK (NewICNo) */
   resolvedNik: string | null;
-  /** Current employee code from hr_employee_current_snapshot */
+  /** Current employee code from hr_reference */
   currentEmpCode: string | null;
   /** Current employee name */
   currentEmpName: string | null;
@@ -98,16 +98,16 @@ interface HREmployeeRow {
 }
 
 /**
- * Interface for hr_employee_current_snapshot row
+ * Interface for hr_reference row (current)
  */
 interface CurrentSnapshotRow {
   nik: string;
-  current_emp_code: string;
-  current_emp_name: string | null;
-  current_loc_code: string | null;
-  current_status: string | null;
-  current_create_date: Date | null;
-  current_update_date: Date | null;
+  emp_code: string;
+  emp_name: string | null;
+  loc_code: string | null;
+  hr_status: string | null;
+  create_date: Date | null;
+  update_date: Date | null;
   is_ambiguous: number;
   ambiguity_reason: string | null;
 }
@@ -227,7 +227,7 @@ export class CurrentEmployeeResolutionService {
    * 1. Check cache for existing MAPPED_CURRENT result
    * 2. Lookup parsedCode in db_ptrj.HR_EMPLOYEE → get NewICNo (NIK)
    * 3. If NewICNo empty → PARSED_CODE_NOT_FOUND_IN_HR or NIK_NOT_FOUND
-   * 4. Lookup hr_employee_current_snapshot by NIK → get current_emp_code
+   * 4. Lookup hr_reference by NIK → get current_emp_code
    * 5. If NIK ambiguous → NIK_DUPLICATE_AMBIGUOUS
    * 6. Return MAPPED_CURRENT with currentEmpCode
    *
@@ -289,14 +289,14 @@ export class CurrentEmployeeResolutionService {
       step: 'lookup_snapshot',
     });
 
-    // Step 4: Lookup hr_employee_current_snapshot by NIK
+    // Step 4: Lookup hr_reference by NIK
     const snapshot = await this.lookupCurrentSnapshotByNik(resolvedNik);
 
     if (!snapshot) {
       const result = createFailedResult(
         normalizedParsedCode,
         'CURRENT_EMP_NOT_FOUND',
-        `NIK '${resolvedNik}' not found in hr_employee_current_snapshot`,
+        `NIK '${resolvedNik}' not found in hr_reference`,
         resolvedNik
       );
       this.storeInCache(normalizedParsedCode, result);
@@ -307,12 +307,12 @@ export class CurrentEmployeeResolutionService {
     if (snapshot.is_ambiguous === 1) {
       const result: CurrentResolutionResult = {
         resolvedNik,
-        currentEmpCode: snapshot.current_emp_code,
-        currentEmpName: snapshot.current_emp_name,
-        currentHrStatus: snapshot.current_status,
-        currentHrLocCode: snapshot.current_loc_code,
-        currentHrCreateDate: snapshot.current_create_date,
-        currentHrUpdateDate: snapshot.current_update_date,
+        currentEmpCode: snapshot.emp_code,
+        currentEmpName: snapshot.emp_name,
+        currentHrStatus: snapshot.hr_status,
+        currentHrLocCode: snapshot.loc_code,
+        currentHrCreateDate: snapshot.create_date,
+        currentHrUpdateDate: snapshot.update_date,
         resolutionStatus: 'NIK_DUPLICATE_AMBIGUOUS',
         resolutionMethod: 'snapshot_lookup_ambiguous',
         resolutionReason:
@@ -322,7 +322,7 @@ export class CurrentEmployeeResolutionService {
       };
       logResolution('resolve', normalizedParsedCode, 'NIK_DUPLICATE_AMBIGUOUS', {
         resolvedNik,
-        currentEmpCode: snapshot.current_emp_code,
+        currentEmpCode: snapshot.emp_code,
       });
       this.storeInCache(normalizedParsedCode, result);
       return result;
@@ -331,22 +331,22 @@ export class CurrentEmployeeResolutionService {
     // Step 6: Successfully resolved
     const result: CurrentResolutionResult = {
       resolvedNik,
-      currentEmpCode: snapshot.current_emp_code,
-      currentEmpName: snapshot.current_emp_name,
-      currentHrStatus: snapshot.current_status,
-      currentHrLocCode: snapshot.current_loc_code,
-      currentHrCreateDate: snapshot.current_create_date,
-      currentHrUpdateDate: snapshot.current_update_date,
+      currentEmpCode: snapshot.emp_code,
+      currentEmpName: snapshot.emp_name,
+      currentHrStatus: snapshot.hr_status,
+      currentHrLocCode: snapshot.loc_code,
+      currentHrCreateDate: snapshot.create_date,
+      currentHrUpdateDate: snapshot.update_date,
       resolutionStatus: 'MAPPED_CURRENT',
       resolutionMethod: 'snapshot_lookup',
-      resolutionReason: `Successfully resolved via NIK '${resolvedNik}' from hr_employee_current_snapshot`,
+      resolutionReason: `Successfully resolved via NIK '${resolvedNik}' from hr_reference`,
       resolvedAt: new Date(),
     };
 
     logResolution('resolve', normalizedParsedCode, 'MAPPED_CURRENT', {
       resolvedNik,
-      currentEmpCode: snapshot.current_emp_code,
-      currentEmpName: snapshot.current_emp_name,
+      currentEmpCode: snapshot.emp_code,
+      currentEmpName: snapshot.emp_name,
     });
 
     this.storeInCache(normalizedParsedCode, result);
@@ -472,8 +472,8 @@ export class CurrentEmployeeResolutionService {
         is_current,
         source_table,
         synced_at
-      FROM dbo.employee_code_history
-      WHERE nik = @nik
+      FROM dbo.hr_reference
+      WHERE type = 'history' AND nik = @nik
       ORDER BY is_current DESC, update_date DESC, create_date DESC, emp_code DESC`,
       [{ name: 'nik', type: sql.NVarChar, value: normalizedNik }]
     );
@@ -595,16 +595,16 @@ export class CurrentEmployeeResolutionService {
       const snapshots = await query<CurrentSnapshotRow>(
         `SELECT
           nik,
-          current_emp_code,
-          current_emp_name,
-          current_loc_code,
-          current_status,
-          current_create_date,
-          current_update_date,
+          emp_code,
+          emp_name,
+          loc_code,
+          hr_status,
+          create_date,
+          update_date,
           is_ambiguous,
           ambiguity_reason
-        FROM dbo.hr_employee_current_snapshot
-        WHERE nik IN (${nikList})`,
+        FROM dbo.hr_reference
+        WHERE type = 'current' AND nik IN (${nikList})`,
         []
       );
 
@@ -648,12 +648,12 @@ export class CurrentEmployeeResolutionService {
         if (snapshot.is_ambiguous === 1) {
           results.set(empCode, {
             resolvedNik: nik,
-            currentEmpCode: snapshot.current_emp_code,
-            currentEmpName: snapshot.current_emp_name,
-            currentHrStatus: snapshot.current_status,
-            currentHrLocCode: snapshot.current_loc_code,
-            currentHrCreateDate: snapshot.current_create_date,
-            currentHrUpdateDate: snapshot.current_update_date,
+            currentEmpCode: snapshot.emp_code,
+            currentEmpName: snapshot.emp_name,
+            currentHrStatus: snapshot.hr_status,
+            currentHrLocCode: snapshot.loc_code,
+            currentHrCreateDate: snapshot.create_date,
+            currentHrUpdateDate: snapshot.update_date,
             resolutionStatus: 'NIK_DUPLICATE_AMBIGUOUS',
             resolutionMethod: 'snapshot_lookup_ambiguous',
             resolutionReason:
@@ -667,15 +667,15 @@ export class CurrentEmployeeResolutionService {
         // Successfully resolved
         results.set(empCode, {
           resolvedNik: nik,
-          currentEmpCode: snapshot.current_emp_code,
-          currentEmpName: snapshot.current_emp_name,
-          currentHrStatus: snapshot.current_status,
-          currentHrLocCode: snapshot.current_loc_code,
-          currentHrCreateDate: snapshot.current_create_date,
-          currentHrUpdateDate: snapshot.current_update_date,
+          currentEmpCode: snapshot.emp_code,
+          currentEmpName: snapshot.emp_name,
+          currentHrStatus: snapshot.hr_status,
+          currentHrLocCode: snapshot.loc_code,
+          currentHrCreateDate: snapshot.create_date,
+          currentHrUpdateDate: snapshot.update_date,
           resolutionStatus: 'MAPPED_CURRENT',
           resolutionMethod: 'snapshot_lookup',
-          resolutionReason: `Successfully resolved via NIK '${nik}' from hr_employee_current_snapshot`,
+          resolutionReason: `Successfully resolved via NIK '${nik}' from hr_reference`,
           resolvedAt: new Date(),
         });
       }
@@ -714,16 +714,16 @@ export class CurrentEmployeeResolutionService {
     const rows = await query<CurrentSnapshotRow>(
       `SELECT TOP 1
         nik,
-        current_emp_code,
-        current_emp_name,
-        current_loc_code,
-        current_status,
-        current_create_date,
-        current_update_date,
+        emp_code,
+        emp_name,
+        loc_code,
+        hr_status,
+        create_date,
+        update_date,
         is_ambiguous,
         ambiguity_reason
-      FROM dbo.hr_employee_current_snapshot
-      WHERE nik = @nik`,
+      FROM dbo.hr_reference
+      WHERE type = 'current' AND nik = @nik`,
       [{ name: 'nik', type: sql.NVarChar, value: nik }]
     );
 

@@ -1,6 +1,19 @@
 /**
+ * @partial-deprecated 2026-06-26 — machine_user_map methods DEAD.
+ *
+ * Methods upsertMapping/getEmpCode/getUnmappedDeviceUsers/verifyMapping
+ * (lines ~379-484) target DROPPED table machine_user_map (0 rows, dropped
+ * Phase A). getUnmappedDeviceUsers also queries DROPPED attendance_raw_log +
+ * mst_machine. import.routes.ts instantiates this service but no route
+ * calls these map methods. Live mapping uses SSOT parser
+ * (zkteco-employee-code-parser.ts) + employees.current_emp_code resolved
+ * at sync time.
+ *
+ * Other methods in this file may still be live — audit before reuse.
+ * Retained for git history reference.
+ *
  * Employee Mapping Service
- * 
+ *
  * Maps machine_user_id (deviceUserId) to emp_code
  * Handles scanner code suffix logic from machine-config.ts
  */
