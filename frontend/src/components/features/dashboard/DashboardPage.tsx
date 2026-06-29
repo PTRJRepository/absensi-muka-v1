@@ -188,7 +188,7 @@ export function DashboardPage() {
             title="Topologi Operasional"
             subtitle="Network group dan status mesin prioritas"
             icon={<Monitor size={16} />}
-            actions={<a href="/mesin" style={{ fontSize: 12, color: 'var(--primary-accent)' }}>Mesin NOC</a>}
+            actions={<a href="/mesin" style={{ fontSize: 12, color: 'var(--primary-accent)' }}>Mesin Absensi</a>}
           >
             {machinesLoading ? (
               <div className="empty-state"><p>Memuat mesin...</p></div>

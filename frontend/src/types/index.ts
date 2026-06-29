@@ -1,4 +1,4 @@
-// === Shared Types for Absensi Muka Frontend ===
+// === Shared Types for REBINMAS Absensi Monitoring Frontend ===
 
 export interface Machine {
   machine_code: string;

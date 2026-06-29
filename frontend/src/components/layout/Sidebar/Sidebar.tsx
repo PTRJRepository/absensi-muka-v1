@@ -26,7 +26,7 @@ export function Sidebar() {
   return (
     <aside className="app-sidebar">
       <div className="sidebar-logo">
-        Rebinmas <span>Intelligence</span>
+        REBINMAS <span>Absensi Monitoring</span>
       </div>
 
       <nav className="sidebar-nav">
@@ -54,7 +54,7 @@ export function Sidebar() {
 
       <div style={{ padding: '16px', marginTop: 'auto', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
-          Absensi Muka v1.0
+          REBINMAS Absensi Monitoring v1.0
         </div>
       </div>
     </aside>

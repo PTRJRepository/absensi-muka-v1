@@ -329,11 +329,15 @@ export function AttendanceMatrixPage() {
                   <tr>
                     <th className="sticky-col employee-col">Karyawan</th>
                     <th className="sticky-col meta-col">Mapping</th>
-                    {dateCells.map((day) => (
-                      <th key={day.date} className={isWeekend(day.date) ? 'weekend' : ''}>
-                        <span>{day.day}</span>
-                      </th>
-                    ))}
+                    {dateCells.map((day) => {
+                      const dayName = new Date(day.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short' });
+                      return (
+                        <th key={day.date} className={isWeekend(day.date) ? 'weekend' : ''}>
+                          <span>{day.day}</span>
+                          <span className="col-day-name">{dayName}</span>
+                        </th>
+                      );
+                    })}
               <th className="summary-col">H</th>
               <th className="summary-col">-</th>
               <th className="summary-col">O</th>

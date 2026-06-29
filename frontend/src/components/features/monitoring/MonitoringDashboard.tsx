@@ -99,7 +99,7 @@ export function MonitoringDashboard() {
             title="Monitoring Wall"
             subtitle="Prioritas mesin berdasarkan severity"
             icon={<Monitor size={16} />}
-            actions={<a href="/mesin" style={{ fontSize: 12, color: 'var(--primary-accent)' }}>Mesin NOC</a>}
+            actions={<a href="/mesin" style={{ fontSize: 12, color: 'var(--primary-accent)' }}>Mesin Absensi</a>}
           >
             {machinesLoading ? (
               <div className="loading-state"><RefreshCw size={22} className="spin" /><span>Memuat status mesin...</span></div>
