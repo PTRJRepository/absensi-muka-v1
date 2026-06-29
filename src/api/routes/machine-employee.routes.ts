@@ -230,6 +230,8 @@ route('GET', '/api/monitoring/machine/:code/user/:rawId/attendance', async (ctx)
   const { code, rawId } = ctx.params;
   const limit = parseInt(ctx.query.get('limit') ?? '30');
 
+  // ponytail: mapping_reason wrapped in MIN() — resolvedMappingReasonSql refs sm.map_reason
+  // which is not in GROUP BY. raw_id is WHERE-filtered (constant per row) so CASE is stable.
   const rows = await query<any>(`
     SELECT TOP ${limit}
       CAST(s.scan_date AS DATE) AS scan_date,
@@ -238,7 +240,7 @@ route('GET', '/api/monitoring/machine/:code/user/:rawId/attendance', async (ctx)
       COUNT(DISTINCT CONVERT(VARCHAR(19), s.scan_time, 120)) AS scan_count,
       ${resolvedEmployeeCodeSql()} AS employee_code,
       CASE WHEN ${resolvedEmployeeCodeSql()} IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
-      ${resolvedMappingReasonSql()} AS mapping_reason,
+      MIN(${resolvedMappingReasonSql()}) AS mapping_reason,
       MIN(s.event_type) AS event_type,
       MIN(s.verify_type) AS verify_type
     FROM attendance_raw s
@@ -252,16 +254,17 @@ route('GET', '/api/monitoring/machine/:code/user/:rawId/attendance', async (ctx)
     { name: 'rawId', type: sql.NVarChar, value: rawId },
   ]);
 
+  // attendance_scan_logs is a VIEW exposing current_emp_code/current_mapping_reason directly,
+  // so no scan_map JOIN needed here (previously referenced sm.* without a JOIN → broken).
   const userInfo = await query<any>(`
     SELECT TOP 1
       s.raw_device_user_id,
-      s.parsed_employee_code,
+      NULLIF(LTRIM(RTRIM(s.parsed_employee_code)), '') AS parsed_employee_code,
       NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') AS zkteco_user_name,
-      ${resolvedEmployeeCodeSql()} AS employee_code,
-      ${resolvedEmployeeNameSql()} AS employee_name,
+      COALESCE(NULLIF(LTRIM(RTRIM(s.current_emp_code)), ''), NULLIF(LTRIM(RTRIM(s.parsed_employee_code)), '')) AS employee_code,
       s.parsed_division_code,
-      CASE WHEN ${resolvedEmployeeCodeSql()} IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
-      ${resolvedMappingReasonSql()} AS mapping_reason,
+      CASE WHEN COALESCE(NULLIF(LTRIM(RTRIM(s.current_emp_code)), ''), NULLIF(LTRIM(RTRIM(s.parsed_employee_code)), '')) IS NOT NULL THEN 'MAPPED' ELSE 'NEED_REVIEW' END AS mapping_status,
+      COALESCE(NULLIF(LTRIM(RTRIM(s.current_mapping_reason)), ''), NULLIF(LTRIM(RTRIM(s.mapping_reason)), ''), 'UNKNOWN') AS mapping_reason,
       ${rawIdLengthSql()} AS raw_id_length
     FROM attendance_scan_logs s
     WHERE s.machine_code = @code AND s.raw_device_user_id = @rawId

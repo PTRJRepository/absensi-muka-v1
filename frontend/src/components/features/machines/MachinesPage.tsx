@@ -213,7 +213,7 @@ export function MachinesPage() {
           <div>
             <div className="machine-page-title">
               <Monitor size={34} />
-              <h1>Mesin NOC</h1>
+              <h1>Mesin Absensi (ZKTeco)</h1>
             </div>
             <p className="machine-page-subtitle">
               Severity-first monitoring untuk {counts.total} mesin absensi dan jalur jaringan.
@@ -353,8 +353,8 @@ export function MachinesPage() {
                             <div className="machine-stat-label">DB record</div>
                           </div>
                           <div className="machine-stat">
-                            <div className="machine-stat-value">{machine.machineRecordCount ?? '-'}</div>
-                            <div className="machine-stat-label">Mesin</div>
+                            <div className="machine-stat-value">{machine.userCount || 0}</div>
+                            <div className="machine-stat-label">Karyawan</div>
                           </div>
                           <div className="machine-stat">
                             <div className="machine-stat-value">{machine.scanToday}</div>
@@ -363,7 +363,7 @@ export function MachinesPage() {
                         </div>
 
                         <div className="machine-footer">
-                          <span className="last-sync">Sync: <strong>{formatTime(machine.lastSyncAt)}</strong></span>
+                          <span className="last-sync">Last sync: <strong>{formatTime(machine.lastSyncAt)}</strong></span>
                           <div className="machine-card-actions">
                             <button
                               className="btn-organic btn-organic-secondary btn-organic-icon"

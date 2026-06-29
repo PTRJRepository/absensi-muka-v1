@@ -14,7 +14,7 @@ import {
 const navItems = [
   { to: '/dasbor', icon: LayoutDashboard, label: 'Ops Center' },
   { to: '/monitoring', icon: Activity, label: 'Monitoring' },
-  { to: '/mesin', icon: Monitor, label: 'Mesin NOC' },
+  { to: '/mesin', icon: Monitor, label: 'Mesin Absensi' },
   { to: '/absensi', icon: ClipboardList, label: 'Absensi Harian' },
   { to: '/absensi/matriks', icon: Grid3X3, label: 'Matriks Bulanan' },
   { to: '/karyawan', icon: Users, label: 'Karyawan' },

@@ -125,6 +125,7 @@ export function AttendanceMatrixPage() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
   const [division, setDivision] = useState('');
+  const [machineCode, setMachineCode] = useState('');
   const [search, setSearch] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('database');
   const [statusFilter, setStatusFilter] = useState<'' | IntelligenceAttendanceStatus>('');
@@ -141,16 +142,25 @@ export function AttendanceMatrixPage() {
     staleTime: 60000,
   });
 
+  // Machine list for filter. Database mode is machine-agnostic (attendance_imports is aggregated),
+  // so the dropdown only filters datamesin/raw mode — disabled otherwise.
+  const { data: machines } = useQuery<Array<{ machine_code: string; location_name: string }>>({
+    queryKey: ['matrix-machines'],
+    queryFn: () => api('/api/machines'),
+    staleTime: 120000,
+  });
+
   useEffect(() => {
     setPage(1);
-  }, [year, month, division, debouncedSearch, viewMode, statusFilter, mappingFilter, sourceFilter]);
+  }, [year, month, division, machineCode, debouncedSearch, viewMode, statusFilter, mappingFilter, sourceFilter]);
 
   const { data, isLoading, isFetching, refetch, error } = useQuery({
-    queryKey: ['attendance-monthly-matrix', year, month, division, debouncedSearch, viewMode, statusFilter, mappingFilter, sourceFilter, page],
+    queryKey: ['attendance-monthly-matrix', year, month, division, machineCode, debouncedSearch, viewMode, statusFilter, mappingFilter, sourceFilter, page],
     queryFn: () => getMonthlyMatrix({
       year,
       month,
       divisionCode: division || undefined,
+      machineCode: machineCode || undefined,
       search: debouncedSearch,
       mode: viewMode,
       status: statusFilter,
@@ -262,6 +272,17 @@ export function AttendanceMatrixPage() {
             <option value="">Semua Divisi</option>
             {(divisions ?? []).map((item) => (
               <option key={item.division_code} value={item.division_code}>{item.division_name}</option>
+            ))}
+          </select>
+          <select
+            value={machineCode}
+            onChange={(event) => setMachineCode(event.target.value)}
+            disabled={viewMode === 'database'}
+            title={viewMode === 'database' ? 'Filter mesin hanya berlaku mode Data Mesin' : 'Filter per mesin'}
+          >
+            <option value="">Semua Mesin</option>
+            {(machines ?? []).map((item) => (
+              <option key={item.machine_code} value={item.machine_code}>{item.machine_code}</option>
             ))}
           </select>
           <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as '' | IntelligenceAttendanceStatus)}>

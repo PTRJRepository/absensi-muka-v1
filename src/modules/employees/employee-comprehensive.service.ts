@@ -74,9 +74,10 @@ export interface EmployeeScanRow {
   raw_device_user_id: string | null;
   machine_code: string;
   parsed_employee_code: string | null;
-  source: string;
   mapping_status: string;
-  scan_direction: string | null;
+  event_type: string | null;
+  verify_type: string | null;
+  zkteco_user_name: string | null;
   total_count?: number;
 }
 
@@ -448,10 +449,13 @@ export async function getEmployeeScans(
   startDate: string,
   endDate: string,
   page: number = 1,
-  pageSize: number = 50
+  pageSize: number = 50,
+  machineCode: string | null = null
 ): Promise<{ rows: EmployeeScanRow[]; pagination: { page: number; pageSize: number; total: number; totalPages: number } }> {
   const offset = (page - 1) * pageSize;
 
+  // ponytail: attendance_scan_logs is a VIEW (attendance_raw LEFT JOIN scan_map).
+  // Match current_emp_code (NIK-resolved) OR parsed_employee_code (SSOT parser) — covers redirected employees.
   const rows = await query<EmployeeScanRow>(`
     SELECT
       s.id AS scan_log_id,
@@ -459,15 +463,17 @@ export async function getEmployeeScans(
       CONVERT(VARCHAR(19), s.scan_time, 126) AS scan_time,
       s.raw_device_user_id,
       s.machine_code,
-      NULLIF(s.parsed_employee_code, '') AS parsed_employee_code,
-      s.source,
+      COALESCE(NULLIF(LTRIM(RTRIM(s.current_emp_code)), ''), NULLIF(LTRIM(RTRIM(s.parsed_employee_code)), '')) AS parsed_employee_code,
       s.mapping_status,
-      s.scan_direction,
+      s.event_type,
+      s.verify_type,
+      s.zkteco_user_name,
       COUNT(*) OVER () AS total_count
     FROM attendance_scan_logs s
-    WHERE s.parsed_employee_code = @employeeCode
+    WHERE (s.parsed_employee_code = @employeeCode OR s.current_emp_code = @employeeCode)
       AND s.scan_date >= @startDate
       AND s.scan_date <= @endDate
+      ${machineCode ? 'AND s.machine_code = @machineCode' : ''}
     ORDER BY s.scan_date DESC, s.scan_time DESC
     OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
   `, [
@@ -476,6 +482,7 @@ export async function getEmployeeScans(
     { name: 'endDate', type: sql.Date, value: endDate },
     { name: 'offset', type: sql.Int, value: offset },
     { name: 'pageSize', type: sql.Int, value: pageSize },
+    ...(machineCode ? [{ name: 'machineCode', type: sql.NVarChar, value: machineCode }] : []),
   ]);
 
   const total = Number(rows[0]?.total_count ?? 0);

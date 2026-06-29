@@ -213,6 +213,7 @@ export interface ScanRecord {
   mappingStatus: string;
   eventType: string | null;
   verifyType: string | null;
+  zktecoUserName?: string | null;
   syncBatchId: string | null;
   createdAt: string;
 }

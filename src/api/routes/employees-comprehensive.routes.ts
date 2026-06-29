@@ -161,6 +161,7 @@ route('GET', '/api/employees-comprehensive/:employeeCode/scans', async (ctx: Req
     return;
   }
 
+  const machineCode = ctx.query.get('machineCode');
   const { startDate, endDate } = getDefaultDateRange();
   const startDateFinal = startDateParam || startDate;
   const endDateFinal = endDateParam || endDate;
@@ -168,8 +169,24 @@ route('GET', '/api/employees-comprehensive/:employeeCode/scans', async (ctx: Req
   const pageSizeNum = Math.min(Math.max(parseInt(pageSize) || 50, 1), 200);
 
   try {
-    const result = await getEmployeeScans(employeeCode, startDateFinal, endDateFinal, pageNum, pageSizeNum);
-    sendEnvelope(ctx.res, 200, result, {
+    const result = await getEmployeeScans(employeeCode, startDateFinal, endDateFinal, pageNum, pageSizeNum, machineCode || null);
+    // Map snake_case rows → camelCase ScanRecord (frontend EmployeeIdentityDrawer reads camelCase)
+    const rows = result.rows.map((r) => ({
+      id: r.scan_log_id,
+      machineCode: r.machine_code,
+      rawDeviceUserId: r.raw_device_user_id ?? '',
+      rawUserSn: null,
+      scanTime: r.scan_time,
+      scanDate: r.scan_date,
+      parsedEmployeeCode: r.parsed_employee_code,
+      mappingStatus: r.mapping_status,
+      eventType: r.event_type,
+      verifyType: r.verify_type,
+      zktecoUserName: r.zkteco_user_name,
+      syncBatchId: null,
+      createdAt: r.scan_time,
+    }));
+    sendEnvelope(ctx.res, 200, { rows, pagination: result.pagination }, {
       source: 'employees_comprehensive_scans',
       employeeCode,
       startDate: startDateFinal,
