@@ -1032,10 +1032,10 @@ route('GET', '/api/attendance/monthly-matrix-traceable', async (ctx) => {
       WHERE s.scan_date >= @startDate
         AND s.scan_date <= EOMONTH(@startDate)
         AND (@machineCode IS NULL OR s.machine_code = @machineCode)
-        AND (@searchRaw = '' OR s.raw_device_user_id LIKE @search OR s.parsed_employee_code LIKE @search OR COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) LIKE @search OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search)
+        AND (@searchRaw = '' OR s.raw_device_user_id LIKE @search OR sm.parsed_emp_code LIKE @search OR COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) LIKE @search OR NULLIF(LTRIM(RTRIM(s.zkteco_user_name)), '') LIKE @search)
         AND (
           LEN(LTRIM(RTRIM(CAST(s.raw_device_user_id AS NVARCHAR(100))))) < 5
-          OR COALESCE(NULLIF(s.current_emp_code, ''), s.parsed_employee_code) IS NULL
+          OR COALESCE(NULLIF(sm.current_emp_code, ''), sm.parsed_emp_code) IS NULL
         )
     ),
     raw_identity_scope AS (

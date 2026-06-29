@@ -1,10 +1,29 @@
 import { RequestContext } from '../router';
 import { verifyToken } from '../services/auth.service';
 import { sendError } from '../response';
+import { env } from '../../config/env';
+import { createHash } from 'crypto';
+
+/** Constant-time compare via SHA-256 to avoid timing-attack on the API key. */
+function safeEqual(a: string, b: string): boolean {
+  const bufA = createHash('sha256').update(a).digest();
+  const bufB = createHash('sha256').update(b).digest();
+  return bufA.equals(bufB);
+}
 
 export async function authMiddleware(ctx: RequestContext, isProtected: boolean) {
   // No auth required - open access
   if (!isProtected) return;
+
+  // Static API key (never expires) — for external data-pull integrations.
+  // Header: X-API-Key: <key>. Grants SUPER_ADMIN access to all attendance data.
+  const apiKey = ctx.req.headers['x-api-key'];
+  if (env.ATTENDANCE_API_KEY && typeof apiKey === 'string' && apiKey.length > 0) {
+    if (safeEqual(apiKey, env.ATTENDANCE_API_KEY)) {
+      ctx.user = { id: 0, username: 'api-key', roles: ['SUPER_ADMIN'] };
+      return;
+    }
+  }
 
   const header = ctx.req.headers.authorization;
   const token = header?.startsWith('Bearer ') ? header.slice(7) : undefined;

@@ -18,6 +18,9 @@ const envSchema = z.object({
   SYNC_INTERVAL_MINUTES: z.coerce.number().int().positive().default(15),
   ZKTECO_PASSWORD: z.string().optional(),
   ZKTECO_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
+  // Static API key for external data-pull integrations (never expires, unlike JWT).
+  // When X-API-Key header matches, the request authenticates as SUPER_ADMIN.
+  ATTENDANCE_API_KEY: z.string().min(16).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -37,6 +40,7 @@ export const env = envSchema.parse({
   SYNC_INTERVAL_MINUTES: process.env.SYNC_INTERVAL_MINUTES,
   ZKTECO_PASSWORD: process.env.ZKTECO_PASSWORD,
   ZKTECO_TIMEOUT_MS: process.env.ZKTECO_TIMEOUT_MS,
+  ATTENDANCE_API_KEY: process.env.ATTENDANCE_API_KEY,
 });
 
 export function safeEnvSummary() {
