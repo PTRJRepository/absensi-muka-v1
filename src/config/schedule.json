@@ -1,6 +1,8 @@
 {
   "enabled": true,
   "intervalMinutes": 60,
+  "staleCheckMinutes": 15,
+  "staleThresholdMinutes": 60,
   "machines": [],
   "jobs": [
     {
@@ -12,8 +14,8 @@
       "script": "dist/scripts/process-attendance-imports.js",
       "dryRun": false,
       "createdAt": "2026-06-25T00:00:00Z",
-      "nextRun": "2026-06-28T17:21:33.992Z",
-      "lastRun": "2026-06-28T16:22:07.410Z"
+      "nextRun": "2026-06-29T05:31:04.255Z",
+      "lastRun": "2026-06-29T04:32:05.516Z"
     },
     {
       "id": "hr_snapshot_sync",
@@ -27,8 +29,8 @@
       },
       "dryRun": false,
       "createdAt": "2026-06-23T00:00:00Z",
-      "nextRun": "2026-06-29T16:21:34.003Z",
-      "lastRun": "2026-06-28T16:21:58.397Z"
+      "nextRun": "2026-06-30T04:31:04.271Z",
+      "lastRun": "2026-06-29T04:31:22.272Z"
     }
   ]
 }

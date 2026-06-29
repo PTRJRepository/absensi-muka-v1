@@ -8,6 +8,7 @@
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { query, sql } from '../../lib/db';
 
 const SCHEDULE_CONFIG_PATH = path.join(process.cwd(), 'src', 'config', 'schedule.json');
 
@@ -31,6 +32,10 @@ export interface ScheduledJob {
 export interface ScheduleConfig {
   enabled: boolean;
   intervalMinutes: number;
+  /** How often (minutes) the scheduler wakes to check for stale machines. */
+  staleCheckMinutes: number;
+  /** A machine is synced only if now - last_sync_at exceeds this (minutes). Real-time basis. */
+  staleThresholdMinutes: number;
   machines: string[];
   jobs: ScheduledJob[];
 }
@@ -51,20 +56,23 @@ class SchedulerService {
   }
 
   private loadConfig(): ScheduleConfig {
+    const defaults: ScheduleConfig = {
+      enabled: true,
+      intervalMinutes: 60,
+      staleCheckMinutes: 15,
+      staleThresholdMinutes: 60,
+      machines: [],
+      jobs: []
+    };
     try {
       if (fs.existsSync(SCHEDULE_CONFIG_PATH)) {
         const content = fs.readFileSync(SCHEDULE_CONFIG_PATH, 'utf-8');
-        return JSON.parse(content);
+        return { ...defaults, ...JSON.parse(content) };
       }
     } catch (err) {
       console.error('[Scheduler] Error loading config:', err);
     }
-    return {
-      enabled: true,
-      intervalMinutes: 60,
-      machines: [],
-      jobs: []
-    };
+    return defaults;
   }
 
   private saveConfig(): void {
@@ -348,23 +356,58 @@ class SchedulerService {
     return this.runningJobs.has(name);
   }
 
+  /**
+   * Stale-based global scheduler.
+   * Every staleCheckMinutes, query machines whose last_sync_at is older than
+   * staleThresholdMinutes (or never synced), and trigger an independent per-machine
+   * sync for each. Real-time basis: fresh machines are skipped, stale ones caught up
+   * fast, and a port-forward-blocked machine cannot stall the others (each spawns
+   * its own process). Replaces the old fixed 60min "sync all 16 machines blindly" loop.
+   */
   private startGlobalScheduler(): void {
     if (this.globalIntervalId) {
       clearInterval(this.globalIntervalId);
     }
 
-    const intervalMs = this.config.intervalMinutes * 60 * 1000;
-    const batchCode = `SYNC_${Date.now()}_GLOBAL`;
+    const checkMs = (this.config.staleCheckMinutes ?? 15) * 60 * 1000;
+    const thresholdMin = this.config.staleThresholdMinutes ?? 60;
 
-    console.log(`[Scheduler] Starting global scheduler (interval: ${this.config.intervalMinutes}min)`);
+    console.log(`[Scheduler] Starting stale-based scheduler (check every ${this.config.staleCheckMinutes ?? 15}min, sync if older than ${thresholdMin}min)`);
 
-    // Run immediately on start
-    this.triggerSync(undefined, batchCode);
+    const runStaleSync = async () => {
+      try {
+        const stale = await query<{ machine_code: string }>(`
+          SELECT machine_code
+          FROM attendance_machines
+          WHERE is_active = 1
+            AND data_source = 'DIRECT_ZKTECO'
+            AND ip_address IS NOT NULL AND port IS NOT NULL
+            AND (
+              last_sync_at IS NULL
+              OR DATEDIFF(minute, last_sync_at, SYSUTCDATETIME()) >= @threshold
+            )
+          ORDER BY machine_code
+        `, [{ name: 'threshold', type: sql.Int, value: thresholdMin }]);
 
-    this.globalIntervalId = setInterval(() => {
-      const newBatchCode = `SYNC_${Date.now()}_GLOBAL`;
-      this.triggerSync(undefined, newBatchCode);
-    }, intervalMs);
+        if (stale.length === 0) {
+          console.log(`[Scheduler] No stale machines (threshold ${thresholdMin}min). Skipping.`);
+          return;
+        }
+
+        const stamp = Date.now();
+        console.log(`[Scheduler] ${stale.length} stale machine(s): ${stale.map(m => m.machine_code).join(', ')}`);
+        // Spawn each sync independently — one blocked machine cannot stall the rest.
+        for (const m of stale) {
+          this.triggerSync(m.machine_code, `SYNC_${stamp}_${m.machine_code}`);
+        }
+      } catch (err) {
+        console.error('[Scheduler] Stale-check query failed:', err instanceof Error ? err.message : err);
+      }
+    };
+
+    // Run immediately on start, then on the check interval.
+    runStaleSync();
+    this.globalIntervalId = setInterval(runStaleSync, checkMs);
   }
 
   // Configuration management
