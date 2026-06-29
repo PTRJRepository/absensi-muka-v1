@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Header } from '../../layout/Header/Header';
 import { Badge } from '../../common/Badge/Badge';
+import { LiveClock } from '../../common/LiveClock/LiveClock';
 import { api } from '../../../lib/api';
 import { getAttendanceCellDetail, getMonthlyMatrix } from '../../../services/attendance-service';
 import { attendanceStatusCode } from '../../../services/status-mapping';
@@ -231,6 +232,7 @@ export function AttendanceMatrixPage() {
         isRefreshing={isFetching}
         actions={
           <div className="matrix-header-actions">
+            <LiveClock compact />
             <div className="matrix-mode-toggle">
               <button className={viewMode === 'database' ? 'active database' : ''} onClick={() => setViewMode('database')}>
                 <Database size={14} /> Database

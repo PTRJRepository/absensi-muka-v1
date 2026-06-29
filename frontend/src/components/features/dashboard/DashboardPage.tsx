@@ -3,6 +3,7 @@ import { Header } from '../../layout/Header/Header';
 import { KpiCard } from './components/KpiCard';
 import { QualityMetrics } from './components/QualityMetrics';
 import { Tile } from '../../common/Tile/Tile';
+import { LiveClock } from '../../common/LiveClock/LiveClock';
 import {
   Monitor,
   Wifi,
@@ -251,9 +252,12 @@ export function DashboardPage() {
           </Tile>
         </div>
 
-        <div style={{ marginTop: 16, padding: '12px 16px', background: 'var(--gray-50)', borderRadius: 8, fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Clock size={14} />
-          Sinkronisasi Terakhir: {stats?.lastSyncAt ? new Date(stats.lastSyncAt).toLocaleString('id-ID') : 'Belum pernah'}
+        <div style={{ marginTop: 16, padding: '12px 16px', background: 'var(--gray-50)', borderRadius: 8, fontSize: 12, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <Clock size={14} />
+            Sinkronisasi Terakhir: {stats?.lastSyncAt ? new Date(stats.lastSyncAt).toLocaleString('id-ID') : 'Belum pernah'}
+          </span>
+          <LiveClock compact />
         </div>
       </div>
     </>

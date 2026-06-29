@@ -389,7 +389,14 @@ async function syncMachine(
   batchCodeOverride?: string
 ): Promise<SyncMachineResult | undefined> {
   const started = Date.now();
-  const { batchId } = await createBatch(pool, machine, batchCodeOverride);
+  // ponytail: attendance_import_batches.batch_code is UNIQUE. The global scheduler passes one
+  // batchCodeOverride (SYNC_<ts>_GLOBAL) to every machine in the loop — reusing it for the 2nd
+  // machine throws a UNIQUE violation and aborts the whole sync (root cause of the 4-day gap).
+  // Append the machine code so each machine gets a distinct, traceable batch_code.
+  const perMachineBatchCode = batchCodeOverride
+    ? `${batchCodeOverride}-${machine.machine_code}`.slice(0, 80)
+    : undefined;
+  const { batchId } = await createBatch(pool, machine, perMachineBatchCode);
   let status = 'FAILED';
   let failureCategory: string | null = null;
   let errorMessage: string | null = null;
