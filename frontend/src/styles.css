@@ -1530,20 +1530,10 @@ textarea:focus {
   margin-top: 1px;
 }
 
-.attendance-matrix-table th.saturday {
-  background: #E8F5E9;
-}
-
-.attendance-matrix-table th.sunday {
-  background: #FFF8E1;
-}
-
-.attendance-matrix-table td.saturday {
-  background: #E8F5E9;
-}
-
+/* Sunday only — subtle red tint matching the dark theme (low opacity, not jarring). */
+.attendance-matrix-table th.sunday,
 .attendance-matrix-table td.sunday {
-  background: #FFF8E1;
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .attendance-matrix-table td {
