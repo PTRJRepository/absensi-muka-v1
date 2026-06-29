@@ -1530,8 +1530,20 @@ textarea:focus {
   margin-top: 1px;
 }
 
-.attendance-matrix-table th.weekend {
-  background: rgba(59, 130, 246, 0.1);
+.attendance-matrix-table th.saturday {
+  background: #E8F5E9;
+}
+
+.attendance-matrix-table th.sunday {
+  background: #FFF8E1;
+}
+
+.attendance-matrix-table td.saturday {
+  background: #E8F5E9;
+}
+
+.attendance-matrix-table td.sunday {
+  background: #FFF8E1;
 }
 
 .attendance-matrix-table td {

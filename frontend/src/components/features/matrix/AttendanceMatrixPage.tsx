@@ -100,6 +100,10 @@ function isWeekend(date: string) {
   return day === 0 || day === 6;
 }
 
+function isSunday(date: string) {
+  return new Date(date).getDay() === 0;
+}
+
 function isPastDate(date: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -331,8 +335,11 @@ export function AttendanceMatrixPage() {
                     <th className="sticky-col meta-col">Mapping</th>
                     {dateCells.map((day) => {
                       const dayName = new Date(day.date + 'T00:00:00').toLocaleDateString('id-ID', { weekday: 'short' });
+                      const sun = isSunday(day.date);
+                      const sat = isWeekend(day.date) && !sun;
+                      const wkClass = sun ? 'sunday' : sat ? 'saturday' : '';
                       return (
-                        <th key={day.date} className={isWeekend(day.date) ? 'weekend' : ''}>
+                        <th key={day.date} className={wkClass}>
                           <span>{day.day}</span>
                           <span className="col-day-name">{dayName}</span>
                         </th>
@@ -375,10 +382,14 @@ export function AttendanceMatrixPage() {
                         )}
                       </td>
                       {row.days.map((cell) => {
-                        const isAlfa = cell.status === 'NO_DATA' && isPastDate(cell.date) && cell.expectedStatus === 'WORKDAY' && !cell.holidayName;
+                        const sun = isSunday(cell.date);
+                        const sat = isWeekend(cell.date) && !sun;
+                        // Weekend without data = NO_DATA (rest day), NOT alfa — even if expectedStatus mislabels WORKDAY.
+                        const isAlfa = !sun && !sat && cell.status === 'NO_DATA' && isPastDate(cell.date) && cell.expectedStatus === 'WORKDAY' && !cell.holidayName;
                         const displayStatus = isAlfa ? 'TIDAK_HADIR' : cell.status;
+                        const weekendClass = sun ? 'sunday' : sat ? 'saturday' : '';
                         return (
-                        <td key={cell.date} className="matrix-cell-wrap">
+                        <td key={cell.date} className={`matrix-cell-wrap ${weekendClass}`}>
                           <button
                             className={`matrix-cell status-${displayStatus.toLowerCase()} ${cell.qualityFlags.length > 0 ? 'flagged' : ''}`}
                             onClick={() => setSelectedCell({ row, cell })}
