@@ -345,7 +345,7 @@ async function createBatch(
       INSERT INTO attendance_import_batches
         (batch_code, source, machine_id, status, started_at, records_total, records_success, records_failed)
       OUTPUT INSERTED.id
-      VALUES (@batchCode, @source, @machineId, 'RUNNING', GETDATE(), 0, 0, 0)
+      VALUES (@batchCode, @source, @machineId, 'RUNNING', SYSUTCDATETIME(), 0, 0, 0)
     `);
   return { batchId: Number(result.recordset[0].id), batchCode };
 }

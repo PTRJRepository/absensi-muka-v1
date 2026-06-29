@@ -16,6 +16,7 @@ import { QualityMetrics } from '../dashboard/components/QualityMetrics';
 import { getOperationalMachines } from '../../../services/machine-service';
 import { getOpsIncidents, getOpsRecommendations, getOpsSummary } from '../../../services/ops-service';
 import { getQualityReport } from '../../../services/quality-service';
+import { SyncProgressPanel } from './SyncProgressPanel';
 import type { MachineOperationalStatus, QualityReport } from '../../../types';
 
 function machineGroupKey(machine: MachineOperationalStatus) {
@@ -90,6 +91,8 @@ export function MonitoringDashboard() {
           <KpiCard icon={<TrendingUp size={20} />} value={`${stats?.qualityScore ?? 0}%`} label="Quality Score" variant="success" />
           <KpiCard icon={<Clock size={20} />} value={stats?.lastSyncAt ? new Date(stats.lastSyncAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-'} label="Last Sync" variant="info" />
         </div>
+
+        <SyncProgressPanel />
 
         <div className="ops-command-grid">
           <Tile

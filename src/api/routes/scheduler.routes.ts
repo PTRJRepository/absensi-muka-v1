@@ -149,6 +149,84 @@ route('GET', '/api/scheduler/status', async (ctx) => {
   });
 });
 
+// GET /api/scheduler/sync-progress — real-time sync status per machine (stale basis)
+// For each active machine: last_sync age, stale flag, live RUNNING batch (syncing now),
+// access_status, latest scan. Surfaces the "sync gap" the user sees, in one place.
+route('GET', '/api/scheduler/sync-progress', async (ctx) => {
+  const config = schedulerService.getConfig();
+  const thresholdMin = config.staleThresholdMinutes ?? 60;
+
+  const rows = await query<{
+    machine_code: string; location_name: string; access_status: string;
+    is_active: number; last_sync_at: string | null;
+    sync_age_min: number | null;
+    latest_scan: string | null; scan_age_min: number | null;
+    running_batch: string | null; running_age_sec: number | null;
+  }>(`
+    SELECT
+      m.machine_code,
+      m.location_name,
+      m.access_status,
+      m.is_active,
+      m.last_sync_at,
+      CASE WHEN m.last_sync_at IS NULL THEN NULL
+           ELSE DATEDIFF(minute, m.last_sync_at, SYSUTCDATETIME()) END AS sync_age_min,
+      lx.latest_scan,
+      CASE WHEN lx.latest_scan IS NULL THEN NULL
+           ELSE DATEDIFF(minute, lx.latest_scan, SYSUTCDATETIME()) END AS scan_age_min,
+      rb.running_batch,
+      CASE WHEN rb.running_started IS NULL THEN NULL
+           ELSE DATEDIFF(second, rb.running_started, SYSUTCDATETIME()) END AS running_age_sec
+    FROM attendance_machines m
+    OUTER APPLY (
+      SELECT MAX(scan_time) AS latest_scan
+      FROM attendance_raw WHERE machine_code = m.machine_code
+    ) lx
+    OUTER APPLY (
+      SELECT TOP 1 b.batch_code AS running_batch, b.started_at AS running_started
+      FROM attendance_import_batches b
+      WHERE b.machine_id = m.id AND b.status = 'RUNNING'
+        AND b.started_at <= SYSUTCDATETIME()
+      ORDER BY b.started_at DESC
+    ) rb
+    WHERE m.is_active = 1
+    ORDER BY
+      CASE WHEN m.last_sync_at IS NULL THEN 0
+           WHEN DATEDIFF(minute, m.last_sync_at, SYSUTCDATETIME()) >= ${thresholdMin} THEN 1
+           ELSE 2 END,
+      m.machine_code
+  `);
+
+  const machines = rows.map((r) => {
+    const stale = r.sync_age_min === null || r.sync_age_min >= thresholdMin;
+    return {
+      machine_code: r.machine_code,
+      location_name: r.location_name,
+      access_status: r.access_status,
+      last_sync_at: r.last_sync_at,
+      sync_age_min: r.sync_age_min,
+      stale,
+      latest_scan: r.latest_scan,
+      scan_age_min: r.scan_age_min,
+      syncing_now: r.running_batch !== null,
+      running_batch: r.running_batch,
+      running_age_sec: r.running_age_sec,
+    };
+  });
+
+  sendJson(ctx.res, 200, {
+    generated_at: new Date().toISOString(),
+    stale_threshold_minutes: thresholdMin,
+    summary: {
+      total: machines.length,
+      fresh: machines.filter((m) => !m.stale).length,
+      stale: machines.filter((m) => m.stale).length,
+      syncing_now: machines.filter((m) => m.syncing_now).length,
+    },
+    machines,
+  });
+});
+
 // PUT /api/scheduler/config — update global config via scheduler service
 route('PUT', '/api/scheduler/config', async (ctx) => {
   const body = ctx.body as { enabled?: boolean; intervalMinutes?: number; machines?: string[] };
