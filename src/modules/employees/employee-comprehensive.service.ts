@@ -366,15 +366,23 @@ export async function getEmployeesComprehensiveKPIs(
     need_review: number;
     total_scans: number;
   }>(`
+    WITH user_agg AS (
+      SELECT
+        s.machine_code + ':' + s.raw_device_user_id AS user_key,
+        MAX(NULLIF(s.parsed_employee_code, '')) AS parsed_code,
+        COUNT(*) AS scans
+      FROM attendance_scan_logs s
+      WHERE s.scan_date >= @startDate
+        AND s.scan_date <= @endDate
+        AND (@machineCode IS NULL OR s.machine_code = @machineCode)
+      GROUP BY s.machine_code, s.raw_device_user_id
+    )
     SELECT
-      COUNT(DISTINCT s.machine_code + ':' + s.raw_device_user_id) AS total_users,
-      SUM(CASE WHEN NULLIF(s.parsed_employee_code, '') IS NOT NULL THEN 1 ELSE 0 END) AS mapped,
-      SUM(CASE WHEN NULLIF(s.parsed_employee_code, '') IS NULL THEN 1 ELSE 0 END) AS need_review,
-      COUNT(*) AS total_scans
-    FROM attendance_scan_logs s
-    WHERE s.scan_date >= @startDate
-      AND s.scan_date <= @endDate
-      AND (@machineCode IS NULL OR s.machine_code = @machineCode)
+      COUNT(*) AS total_users,
+      SUM(CASE WHEN parsed_code IS NOT NULL THEN 1 ELSE 0 END) AS mapped,
+      SUM(CASE WHEN parsed_code IS NULL THEN 1 ELSE 0 END) AS need_review,
+      SUM(scans) AS total_scans
+    FROM user_agg
   `, [
     { name: 'startDate', type: sql.Date, value: startDate },
     { name: 'endDate', type: sql.Date, value: endDate },
@@ -439,6 +447,8 @@ export async function getEmployeeDetail(
     FROM employees e
     LEFT JOIN divisions d ON d.id = e.division_id
     WHERE e.employee_code = @employeeCode
+       OR e.zkteco_user_id = @employeeCode
+       OR e.raw_device_user_id = @employeeCode
   `, [{ name: 'employeeCode', type: sql.NVarChar, value: employeeCode }]);
 
   return rows[0] ?? null;
