@@ -12,8 +12,9 @@ import { AlertPage } from './components/features/alerts/AlertPage';
 import { EmployeeComprehensivePage } from './components/features/employees-comprehensive/EmployeeComprehensivePage';
 import { MachineClockHealthPage } from './components/features/clock-health/MachineClockHealthPage';
 import { ClaudeCliPage } from './components/features/claude-cli/ClaudeCliPage';
-import { UI_ESTATE_GRID } from './config/feature-flags';
+import { UI_ESTATE_GRID, UI_ESTATE_GRID_MATRIX } from './config/feature-flags';
 import { PreviewPage } from './features/estate-attendance/pages/PreviewPage';
+import { AttendanceWorkspacePage } from './features/estate-attendance/pages/AttendanceWorkspacePage';
 
 const router = createBrowserRouter([
   // ─── Estate Operations Grid UI — Preview (standalone, no Layout) ───
@@ -24,6 +25,19 @@ const router = createBrowserRouter([
           element: (
             <ErrorBoundary>
               <PreviewPage />
+            </ErrorBoundary>
+          ),
+        },
+      ]
+    : []),
+  // ─── Estate Operations Grid — Attendance Matrix ───
+  ...(UI_ESTATE_GRID_MATRIX
+    ? [
+        {
+          path: '/attendance',
+          element: (
+            <ErrorBoundary>
+              <AttendanceWorkspacePage />
             </ErrorBoundary>
           ),
         },
