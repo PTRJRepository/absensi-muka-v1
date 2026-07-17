@@ -11,8 +11,24 @@ import { MonitoringDashboard } from './components/features/monitoring/Monitoring
 import { AlertPage } from './components/features/alerts/AlertPage';
 import { EmployeeComprehensivePage } from './components/features/employees-comprehensive/EmployeeComprehensivePage';
 import { MachineClockHealthPage } from './components/features/clock-health/MachineClockHealthPage';
+import { ClaudeCliPage } from './components/features/claude-cli/ClaudeCliPage';
+import { UI_ESTATE_GRID } from './config/feature-flags';
+import { PreviewPage } from './features/estate-attendance/pages/PreviewPage';
 
 const router = createBrowserRouter([
+  // ─── Estate Operations Grid UI — Preview (standalone, no Layout) ───
+  ...(UI_ESTATE_GRID
+    ? [
+        {
+          path: '/preview/estate',
+          element: (
+            <ErrorBoundary>
+              <PreviewPage />
+            </ErrorBoundary>
+          ),
+        },
+      ]
+    : []),
   {
     path: '/',
     element: <Layout />,
@@ -29,6 +45,8 @@ const router = createBrowserRouter([
       { path: 'laporan/clock-health', element: <MachineClockHealthPage /> },
       { path: 'notifikasi', element: <AlertPage /> },
       { path: 'pengaturan', element: <SettingsPage /> },
+      { path: 'claude-cli', element: <ClaudeCliPage /> },
+      { path: 'claude', element: <ClaudeCliPage /> },
     ],
   },
 ]);
