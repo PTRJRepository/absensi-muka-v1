@@ -12,12 +12,13 @@ import { AlertPage } from './components/features/alerts/AlertPage';
 import { EmployeeComprehensivePage } from './components/features/employees-comprehensive/EmployeeComprehensivePage';
 import { MachineClockHealthPage } from './components/features/clock-health/MachineClockHealthPage';
 import { ClaudeCliPage } from './components/features/claude-cli/ClaudeCliPage';
-import { UI_ESTATE_GRID, UI_ESTATE_GRID_MATRIX, UI_ESTATE_GRID_MACHINES, UI_ESTATE_GRID_SEARCH } from './config/feature-flags';
+import { UI_ESTATE_GRID, UI_ESTATE_GRID_MATRIX, UI_ESTATE_GRID_MACHINES, UI_ESTATE_GRID_SEARCH, UI_ESTATE_GRID_MAPPING } from './config/feature-flags';
 import { PreviewPage } from './features/estate-attendance/pages/PreviewPage';
 import { AttendanceWorkspacePage } from './features/estate-attendance/pages/AttendanceWorkspacePage';
 import { MachineDataPage } from './features/estate-attendance/pages/MachineDataPage';
 import { EmployeeSearchPage } from './features/estate-attendance/pages/EmployeeSearchPage';
 import { ParsedDataPage } from './features/estate-attendance/pages/ParsedDataPage';
+import { MappingPage } from './features/estate-attendance/pages/MappingPage';
 
 const router = createBrowserRouter([
   // ─── Estate Operations Grid UI — Preview (standalone, no Layout) ───
@@ -75,6 +76,19 @@ const router = createBrowserRouter([
           element: (
             <ErrorBoundary>
               <ParsedDataPage />
+            </ErrorBoundary>
+          ),
+        },
+      ]
+    : []),
+  // ─── Estate Operations Grid — Mapping Review ───
+  ...(UI_ESTATE_GRID_MAPPING
+    ? [
+        {
+          path: '/mapping',
+          element: (
+            <ErrorBoundary>
+              <MappingPage />
             </ErrorBoundary>
           ),
         },
